@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CalculatedStation, UnitFormat } from '../core/types';
-import { formatFeetInches, formatMeasurement } from '../core/units';
-import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { formatFeetInches, formatMeasurement, parseMeasurement } from '../core/units';
+import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag } from 'lucide-react';
 
 interface ActionTableProps {
   stations: CalculatedStation[];
@@ -12,6 +12,8 @@ interface ActionTableProps {
   onDeleteStation: (stationId: string) => void;
   onAddNextStation: () => void;
   onInsertCustomStation: () => void;
+  onExtendTrack?: (lengthFt: number, intervalFt: number) => void;
+  onSetTurningPoint?: (stationId: string, newReadingInches: number) => void;
   selectedStationId?: string | null;
 }
 
@@ -24,8 +26,31 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   onDeleteStation,
   onAddNextStation,
   onInsertCustomStation,
+  onExtendTrack,
+  onSetTurningPoint,
   selectedStationId,
 }) => {
+  const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
+  const [extendLength, setExtendLength] = useState(50);
+  const [extendInterval, setExtendInterval] = useState(5);
+
+  const [turningPointStation, setTurningPointStation] = useState<CalculatedStation | null>(null);
+  const [tpNewReadingStr, setTpNewReadingStr] = useState('');
+  const [tpError, setTpError] = useState<string | null>(null);
+
+  const lastDist = stations.length > 0 ? stations[stations.length - 1].distanceFt : 0;
+
+  const handleApplyTurningPoint = () => {
+    if (!turningPointStation || !onSetTurningPoint) return;
+    const parsed = parseMeasurement(tpNewReadingStr);
+    if (parsed === null || isNaN(parsed) || parsed <= 0) {
+      setTpError('Please enter a valid positive reading (e.g. 1\' 4 3/8" or 16.5)');
+      return;
+    }
+    setTpError(null);
+    onSetTurningPoint(turningPointStation.id, parsed);
+    setTurningPointStation(null);
+  };
   return (
     <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors">
       {/* Table Header */}
@@ -38,7 +63,17 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             Tap row to record reading or adjust shims
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {onExtendTrack && (
+            <button
+              onClick={() => setIsExtendModalOpen(true)}
+              className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1"
+              title="Add a 50ft or 100ft section of stations in one click"
+            >
+              <Layers className="w-3.5 h-3.5 text-amber-500" />
+              <span>+ Extend Track</span>
+            </button>
+          )}
           <button
             onClick={onInsertCustomStation}
             className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
@@ -105,17 +140,35 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     </button>
                   </td>
 
-                  {/* Station Distance */}
+                  {/* Station Distance & Turning Point Tag */}
                   <td className="py-3 px-3 font-mono font-bold text-zinc-900 dark:text-zinc-200">
-                    {s.distanceFt} ft
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span>{s.distanceFt} ft</span>
+                      {s.isTurningPoint && (
+                        <span
+                          className="text-[10px] bg-purple-500/20 text-purple-600 dark:text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-500/30 flex items-center gap-0.5"
+                          title="Laser Relocation Benchmark (Turning Point)"
+                        >
+                          <Flag className="w-2.5 h-2.5" />
+                          <span>TP</span>
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Laser Reading */}
                   <td className="py-3 px-3 font-mono">
                     {s.readingInches !== null ? (
-                      <span className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                        {formatFeetInches(s.readingInches, fractionResolution)}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-zinc-900 dark:text-zinc-100 font-semibold">
+                          {formatFeetInches(s.readingInches, fractionResolution)}
+                        </span>
+                        {s.datumOffsetInches ? (
+                          <span className="text-[10px] text-purple-500 font-normal" title="Laser datum offset applied">
+                            (adj)
+                          </span>
+                        ) : null}
+                      </div>
                     ) : (
                       <span className="text-zinc-400 text-xs italic bg-zinc-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
                         Need Reading
@@ -161,16 +214,33 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center justify-end gap-1">
+                      {onSetTurningPoint && (
+                        <button
+                          onClick={() => {
+                            setTurningPointStation(s);
+                            setTpNewReadingStr(s.readingInches !== null ? formatFeetInches(s.readingInches) : '');
+                            setTpError(null);
+                          }}
+                          className={`p-1.5 rounded transition ${
+                            s.isTurningPoint
+                              ? 'text-purple-500 bg-purple-500/15 hover:bg-purple-500/25'
+                              : 'text-zinc-400 hover:text-purple-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          }`}
+                          title="Relocate Laser: Set Turning Point on this tie"
+                        >
+                          <Flag className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => onEditStation(s)}
-                        className="p-1.5 text-zinc-400 hover:text-amber-500 rounded transition"
+                        className="p-1.5 text-zinc-400 hover:text-amber-500 rounded transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
                         title="Edit measurement"
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDeleteStation(s.id)}
-                        className="p-1.5 text-zinc-400 hover:text-red-500 rounded transition"
+                        className="p-1.5 text-zinc-400 hover:text-red-500 rounded transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
                         title="Delete station"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -187,6 +257,131 @@ export const ActionTable: React.FC<ActionTableProps> = ({
       {stations.length === 0 && (
         <div className="p-8 text-center text-zinc-400 text-sm">
           No stations added yet. Tap "+ Add Next" to start recording your track profile.
+        </div>
+      )}
+
+      {/* Extend Track Batch Modal */}
+      {isExtendModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+            <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Layers className="w-4 h-4 text-amber-500" />
+              <span>Extend Track Profile</span>
+            </h4>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-zinc-500 font-medium block mb-1">Length to add (feet):</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[25, 50, 100, 200].map(amt => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setExtendLength(amt)}
+                      className={`py-1.5 rounded-lg text-xs font-bold border transition ${
+                        extendLength === amt
+                          ? 'bg-amber-500 text-black border-amber-500'
+                          : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
+                      }`}
+                    >
+                      +{amt}'
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-zinc-500 font-medium block mb-1">Station Interval (feet):</label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[1, 2, 5, 10].map(inv => (
+                    <button
+                      key={inv}
+                      type="button"
+                      onClick={() => setExtendInterval(inv)}
+                      className={`py-1.5 rounded-lg text-xs font-bold border transition ${
+                        extendInterval === inv
+                          ? 'bg-amber-500 text-black border-amber-500'
+                          : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
+                      }`}
+                    >
+                      {inv}'
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[11px] text-zinc-500 bg-zinc-50 dark:bg-zinc-950 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 font-mono">
+                Will create {Math.floor(extendLength / extendInterval)} blank stations ({lastDist + extendInterval}' to{' '}
+                {lastDist + extendLength}').
+              </p>
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <button
+                onClick={() => setIsExtendModalOpen(false)}
+                className="px-3 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onExtendTrack?.(extendLength, extendInterval);
+                  setIsExtendModalOpen(false);
+                }}
+                className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-xl shadow-sm"
+              >
+                Add {extendLength} Feet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Relocate Laser / Turning Point Modal */}
+      {turningPointStation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+            <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+              <Flag className="w-4 h-4 text-purple-500" />
+              <span>Relocate Laser (Turning Point at Station {turningPointStation.distanceFt} ft)</span>
+            </h4>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              When moving the tripod forward or starting next weekend, take one reading on this tie with your{' '}
+              <strong>new laser setup</strong>.
+            </p>
+            <div className="space-y-2 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
+              <div className="flex justify-between items-center pb-1 border-b border-zinc-200 dark:border-zinc-800">
+                <span className="text-zinc-500">Old Laser Reading:</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                  {turningPointStation.readingInches !== null
+                    ? formatFeetInches(turningPointStation.readingInches)
+                    : 'None recorded'}
+                </span>
+              </div>
+              <div className="space-y-1.5 pt-1">
+                <label className="text-zinc-500 font-bold block">New Laser Reading on this tie:</label>
+                <input
+                  type="text"
+                  value={tpNewReadingStr}
+                  onChange={(e) => setTpNewReadingStr(e.target.value)}
+                  placeholder="e.g. 1' 4 3/8 or 16.5"
+                  className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none font-mono"
+                  autoFocus
+                />
+                {tpError && <p className="text-red-500 text-[11px] font-sans">{tpError}</p>}
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end pt-2">
+              <button
+                onClick={() => setTurningPointStation(null)}
+                className="px-3 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApplyTurningPoint}
+                className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs rounded-xl shadow-sm"
+              >
+                Apply Datum Offset
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

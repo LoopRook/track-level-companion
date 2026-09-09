@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { TrackProject } from '../core/types';
+import { TrackProject, StationPoint } from '../core/types';
 import { formatFeetInches } from '../core/units';
 import { X, Download, Upload, Trash2, FolderOpen, Save, FileSpreadsheet, RotateCcw } from 'lucide-react';
 
@@ -71,15 +71,18 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
     }
   };
 
+  const [pendingCsvStations, setPendingCsvStations] = useState<StationPoint[] | null>(null);
+
   // Export to CSV
   const handleExportCSV = () => {
     const rows = [
-      ['Station (ft)', 'Laser Reading (in)', 'Laser Reading (ft/in)', 'Completed', 'Notes'],
+      ['Station (ft)', 'Laser Reading (in)', 'Laser Reading (ft/in)', 'Completed', 'Datum Offset (in)', 'Notes'],
       ...currentProject.stations.map(s => [
         s.distanceFt.toString(),
         s.readingInches !== null ? s.readingInches.toFixed(4) : '',
         s.readingInches !== null ? formatFeetInches(s.readingInches) : '',
         s.completed ? 'YES' : 'NO',
+        s.datumOffsetInches ? s.datumOffsetInches.toFixed(4) : '',
         s.notes || '',
       ])
     ];
@@ -108,31 +111,118 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
       if (lines.length < 2) return;
 
-      const newStations = [];
+      const newStations: StationPoint[] = [];
       for (let i = 1; i < lines.length; i++) {
         const parts = lines[i].split(',');
         const dist = parseFloat(parts[0]);
         const reading = parts[1] ? parseFloat(parts[1]) : null;
+        let datumOffset: number | undefined = undefined;
+        let notes = '';
+
+        if (parts.length >= 6) {
+          const parsedOffset = parseFloat(parts[4]);
+          if (!isNaN(parsedOffset) && parsedOffset !== 0) datumOffset = parsedOffset;
+          notes = parts[5] || '';
+        } else {
+          notes = parts[4] || '';
+        }
+
         if (!isNaN(dist)) {
           newStations.push({
             id: `station-${Date.now()}-${i}`,
             distanceFt: dist,
             readingInches: reading !== null && !isNaN(reading) ? reading : null,
             completed: parts[3]?.toUpperCase() === 'YES',
-            notes: parts[4] || '',
+            datumOffsetInches: datumOffset,
+            isTurningPoint: !!datumOffset,
+            notes,
           });
         }
       }
 
       if (newStations.length > 0) {
-        onLoadProject({
-          ...currentProject,
-          stations: newStations,
-        });
-        onClose();
+        if (currentProject.stations.length > 0) {
+          // Ask user: Replace or Append?
+          setPendingCsvStations(newStations);
+        } else {
+          onLoadProject({
+            ...currentProject,
+            stations: newStations,
+          });
+          onClose();
+        }
       }
     };
     reader.readAsText(file);
+    // Reset file input so user can re-upload same file if needed
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Execute Replace
+  const handleConfirmReplace = () => {
+    if (!pendingCsvStations) return;
+    onLoadProject({
+      ...currentProject,
+      stations: pendingCsvStations,
+    });
+    setPendingCsvStations(null);
+    onClose();
+  };
+
+  // Execute Append (Shift distances so imported track continues after current track)
+  const handleConfirmAppend = (shiftDistances: boolean) => {
+    if (!pendingCsvStations) return;
+    const currentStations = currentProject.stations;
+    const lastDist = currentStations.length > 0 ? currentStations[currentStations.length - 1].distanceFt : 0;
+
+    let appended: StationPoint[];
+    if (shiftDistances) {
+      const firstIncoming = pendingCsvStations[0]?.distanceFt ?? 0;
+      // If incoming starts at 0, shift so 0 becomes lastDist, or skip 0 if lastDist already exists
+      const shift = lastDist - (firstIncoming === 0 ? 0 : 0);
+
+      appended = pendingCsvStations
+        .filter(s => !(firstIncoming === 0 && s.distanceFt === 0)) // Avoid duplicate tie at joint
+        .map((s, idx) => ({
+          ...s,
+          id: `station-${Date.now()}-${idx}`,
+          distanceFt: s.distanceFt + shift,
+        }));
+    } else {
+      appended = pendingCsvStations.map((s, idx) => ({
+        ...s,
+        id: `station-${Date.now()}-${idx}`,
+      }));
+    }
+
+    onLoadProject({
+      ...currentProject,
+      stations: [...currentStations, ...appended],
+    });
+    setPendingCsvStations(null);
+    onClose();
+  };
+
+  // Append a saved project from localStorage to active project
+  const handleAppendSavedProject = (saved: TrackProject) => {
+    const currentStations = currentProject.stations;
+    const lastDist = currentStations.length > 0 ? currentStations[currentStations.length - 1].distanceFt : 0;
+    const firstSavedDist = saved.stations[0]?.distanceFt ?? 0;
+
+    const shift = lastDist;
+    const stationsToAppend = saved.stations
+      .filter(s => !(firstSavedDist === 0 && s.distanceFt === 0)) // Avoid duplicate tie at joint
+      .map((s, idx) => ({
+        ...s,
+        id: `station-${Date.now()}-${idx}`,
+        distanceFt: s.distanceFt + shift,
+      }));
+
+    onLoadProject({
+      ...currentProject,
+      stations: [...currentStations, ...stationsToAppend],
+    });
+    onClose();
   };
 
   return (
@@ -240,6 +330,48 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
             </div>
           </div>
 
+          {/* Pending CSV Import Resolution Card */}
+          {pendingCsvStations && (
+            <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                  CSV Ready: {pendingCsvStations.length} Stations Found
+                </span>
+                <button
+                  onClick={() => setPendingCsvStations(null)}
+                  className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 text-xs"
+                >
+                  Cancel
+                </button>
+              </div>
+              <p className="text-[11px] text-zinc-600 dark:text-zinc-300">
+                Your current active track has {currentProject.stations.length} stations (ending at{' '}
+                {currentProject.stations[currentProject.stations.length - 1]?.distanceFt ?? 0} ft).
+                How would you like to apply this CSV?
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <button
+                  onClick={handleConfirmReplace}
+                  className="py-2 px-3 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-lg text-xs font-bold transition text-left flex flex-col"
+                >
+                  <span>Replace Track</span>
+                  <span className="text-[10px] font-normal text-zinc-500">
+                    Overwrites all current stations
+                  </span>
+                </button>
+                <button
+                  onClick={() => handleConfirmAppend(true)}
+                  className="py-2 px-3 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-xs font-bold transition text-left flex flex-col shadow-sm"
+                >
+                  <span>Append to End</span>
+                  <span className="text-[10px] font-normal text-amber-950">
+                    Continue distances (+{currentProject.stations[currentProject.stations.length - 1]?.distanceFt ?? 0} ft)
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Saved Profiles List */}
           {savedProjects.length > 0 && (
             <div className="space-y-2">
@@ -260,7 +392,14 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                         {p.stations.length} stations • {p.date}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleAppendSavedProject(p)}
+                        className="px-2 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 font-bold rounded-lg transition text-[11px]"
+                        title="Append stations from this track to current track"
+                      >
+                        + Append
+                      </button>
                       <button
                         onClick={() => {
                           onLoadProject(p);

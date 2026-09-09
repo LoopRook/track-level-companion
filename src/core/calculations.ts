@@ -12,21 +12,27 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
 
   // Step 1: Establish Laser Datum and Relative Elevations
   // Higher elevation = physical rail is higher.
-  // Since reading is measured DOWN from laser plane: elevation = datum - reading.
+  // Since reading is measured DOWN from laser plane: elevation = datum - effectiveReading.
   const validStationsWithReading = stations.filter(s => s.readingInches !== null && !isNaN(s.readingInches));
 
   let datumReference = 0;
   if (laserDatumMode === 'fixed_datum' && fixedDatumInches !== undefined && !isNaN(fixedDatumInches)) {
     datumReference = fixedDatumInches;
   } else if (validStationsWithReading.length > 0) {
-    // Relative to first valid station
-    datumReference = validStationsWithReading[0].readingInches!;
+    // Relative to first valid station (normalized by any initial offset)
+    const first = validStationsWithReading[0];
+    datumReference = first.readingInches! - (first.datumOffsetInches || 0);
   }
 
   // Calculate actual elevation for each station
-  const elevations: (number | null)[] = stations.map(s => {
+  const effectiveReadings: (number | null)[] = stations.map(s => {
     if (s.readingInches === null || isNaN(s.readingInches)) return null;
-    return datumReference - s.readingInches;
+    return s.readingInches - (s.datumOffsetInches || 0);
+  });
+
+  const elevations: (number | null)[] = effectiveReadings.map(eff => {
+    if (eff === null) return null;
+    return datumReference - eff;
   });
 
   // Step 2: Calculate Target Elevation Curve based on GradeMode
@@ -146,6 +152,7 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
 
     return {
       ...s,
+      effectiveReadingInches: effectiveReadings[i],
       elevationInches: elev,
       targetElevationInches: target,
       liftInches: lift,

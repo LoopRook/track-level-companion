@@ -8,9 +8,12 @@ export interface StationPoint {
   readingInches: number | null; // Raw measurement down from laser to rail head (inches)
   completed?: boolean;       // Marked as leveled/tamped trackside
   notes?: string;
+  datumOffsetInches?: number; // Laser relocation offset (turning point shift)
+  isTurningPoint?: boolean;   // Flag marking this station as a turning point / benchmark
 }
 
 export interface CalculatedStation extends StationPoint {
+  effectiveReadingInches?: number | null; // readingInches - datumOffsetInches (normalized to initial laser datum)
   elevationInches: number | null; // Relative elevation (higher = higher track)
   targetElevationInches: number | null; // Target elevation based on selected grade mode
   liftInches: number | null;     // Target - Current (positive = lift, negative = lower)

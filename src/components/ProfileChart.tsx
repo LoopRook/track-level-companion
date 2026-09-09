@@ -107,12 +107,38 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     : minX + 10;
   const maxX = Math.max(lastDist, minX + 5);
 
-  // Vertical Extents (inches) - controlled clearly by zoomScale
+  // Zoom Multiplier: magnifies dips & humps relative to target grade
+  const exaggerationMultiplier: number = useMemo(() => {
+    switch (zoomScale) {
+      case '1x': return 1.0;
+      case '3x': return 3.0;
+      case '8x': return 8.0;
+      case '15x': return 15.0;
+      default: return 3.0;
+    }
+  }, [zoomScale]);
+
+  // Helper to compute exaggerated visual elevation for smooth curve and markers
+  const getVisualElev = (s: CalculatedStation): number | null => {
+    if (s.elevationInches === null || isNaN(s.elevationInches)) return null;
+    if (s.targetElevationInches !== null && !isNaN(s.targetElevationInches)) {
+      const diff = s.elevationInches - s.targetElevationInches;
+      return s.targetElevationInches + diff * exaggerationMultiplier;
+    }
+    const base = measuredStations[0]?.elevationInches ?? 0;
+    const diff = s.elevationInches - base;
+    return base + diff * exaggerationMultiplier;
+  };
+
+  // Vertical Extents (inches) - fits visual curve comfortably without clipping
   const { minY, maxY, yTicks } = useMemo(() => {
     const vals: number[] = [0];
     measuredStations.forEach(s => {
-      if (s.elevationInches !== null && !isNaN(s.elevationInches)) vals.push(s.elevationInches);
-      if (s.targetElevationInches !== null && !isNaN(s.targetElevationInches)) vals.push(s.targetElevationInches);
+      const vElev = getVisualElev(s);
+      if (vElev !== null && !isNaN(vElev)) vals.push(vElev);
+      if (s.targetElevationInches !== null && !isNaN(s.targetElevationInches)) {
+        vals.push(s.targetElevationInches);
+      }
     });
 
     const validVals = vals.filter(v => typeof v === 'number' && !isNaN(v));
@@ -120,25 +146,15 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     const rawMax = validVals.length > 0 ? Math.max(...validVals) : 0;
     const actualSpan = Math.max(rawMax - rawMin, 0);
 
-    // Zoom scale options:
-    // 1x Flat: at least 16" window (very gentle, true perspective)
-    // 3x Gentle: at least 6" window (balanced, realistic rail view) -> DEFAULT
-    // 8x Noticeable: at least 2.5" window (clearly shows every 1/4" dip)
-    // 15x Zoom: at least 1.0" window (intense magnification for 1/16" bumps)
-    let minWindow = 6.0;
-    if (zoomScale === '1x') minWindow = 16.0;
-    else if (zoomScale === '3x') minWindow = 6.0;
-    else if (zoomScale === '8x') minWindow = 2.5;
-    else if (zoomScale === '15x') minWindow = 1.0;
-
-    const span = Math.max(actualSpan * 1.3, minWindow);
+    // Provide at least 3.0" minimum visual window and 30% margin
+    const span = Math.max(actualSpan * 1.35, 3.0);
     const center = (rawMax + rawMin) / 2;
 
     const calcMinY = center - span / 2;
     const calcMaxY = center + span / 2;
 
     // Ticks
-    const step = span > 10 ? 2.0 : span > 3 ? 1.0 : 0.5;
+    const step = span > 14 ? 2.0 : span > 4 ? 1.0 : 0.5;
     const ticks: { val: number; label: string }[] = [];
     const firstTick = Math.ceil(calcMinY / step) * step;
 
@@ -155,7 +171,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       maxY: calcMaxY,
       yTicks: ticks,
     };
-  }, [measuredStations, zoomScale]);
+  }, [measuredStations, exaggerationMultiplier]);
 
   // Coordinate transforms
   const getX = (distFt: number) => {
@@ -168,13 +184,13 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     return padding.top + innerHeight - ((elevInches - minY) / (maxY - minY)) * innerHeight;
   };
 
-  // Generate SVG path for actual rail profile
+  // Generate SVG path for actual rail profile (using visual exaggerated points)
   const actualPath = useMemo(() => {
     if (measuredStations.length < 2) return '';
 
     const pts = measuredStations.map(s => ({
       x: getX(s.distanceFt),
-      y: getY(s.elevationInches!),
+      y: getY(getVisualElev(s)!),
     }));
 
     if (curveMode === 'curve') {
@@ -185,7 +201,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     return pts.reduce((acc, p, idx) => {
       return idx === 0 ? `M ${p.x.toFixed(1)} ${p.y.toFixed(1)}` : `${acc} L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
     }, '');
-  }, [measuredStations, curveMode, minY, maxY, minX, maxX, innerWidth]);
+  }, [measuredStations, curveMode, minY, maxY, minX, maxX, innerWidth, exaggerationMultiplier]);
 
   // Generate SVG path for target grade
   const targetPath = useMemo(() => {
@@ -259,7 +275,15 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 shadow-sm ring-1 ring-amber-400/50'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                 }`}
-                title={`Vertical Exaggeration ${scale}`}
+                title={
+                  scale === '1x'
+                    ? '1x True Scale: Real-world physical geometry (subtle dips)'
+                    : scale === '3x'
+                    ? '3x Gentle: Realistic smooth rail flex (Default)'
+                    : scale === '8x'
+                    ? '8x Noticeable: Magnify dips and humps 8x'
+                    : '15x Exaggerated: High magnification for fine 1/16" leveling'
+                }
               >
                 {scale}
               </button>
@@ -414,7 +438,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {stations.map(s => {
             const x = getX(s.distanceFt);
             const isMeasured = s.elevationInches !== null;
-            const y = isMeasured ? getY(s.elevationInches!) : padding.top + innerHeight / 2;
+            const y = isMeasured ? getY(getVisualElev(s)!) : padding.top + innerHeight / 2;
             const isSelected = selectedStationId === s.id;
 
             let dotFill = '#52525b'; // zinc-600 unmeasured
@@ -448,6 +472,19 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     stroke="#f59e0b"
                     strokeWidth="2.5"
                     className="animate-pulse"
+                  />
+                )}
+
+                {/* Turning Point (Benchmark) ring */}
+                {s.isTurningPoint && (
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={9}
+                    fill="none"
+                    stroke="#a855f7"
+                    strokeWidth="2"
+                    strokeDasharray="2,2"
                   />
                 )}
 

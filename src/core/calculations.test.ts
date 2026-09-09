@@ -147,4 +147,27 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(summary.maxLower).toBeCloseTo(0.125, 4);
     expect(summary.lengthFt).toBe(15);
   });
+
+  it('accurately adjusts elevations when laser is relocated with a datum offset (turning point)', () => {
+    // Setup: Station 0 and 50 are leveled with laser 1 (reading 14.0").
+    // Laser is moved forward: laser 2 is 2.5" higher, so reading on Station 50 with laser 2 is 16.5".
+    // Station 60 has reading 16.5" with laser 2 (which means physically same height as station 50).
+    const turningPointProject: TrackProject = {
+      ...baseProject,
+      stations: [
+        { id: '1', distanceFt: 0, readingInches: 14.0, datumOffsetInches: 0 },
+        { id: '2', distanceFt: 50, readingInches: 14.0, datumOffsetInches: 0, isTurningPoint: true },
+        // Laser 2 readings with datumOffsetInches = 2.5:
+        { id: '3', distanceFt: 60, readingInches: 16.5, datumOffsetInches: 2.5 },
+      ]
+    };
+
+    const calculated = calculateTrackProfile(turningPointProject);
+    // Effective reading for station 60 should be 16.5 - 2.5 = 14.0"
+    expect(calculated[2].effectiveReadingInches).toBeCloseTo(14.0, 4);
+    // Elevation should be 0 (identical to station 0 and 50), NOT -2.5"
+    expect(calculated[2].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].liftInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].action).toBe('ok');
+  });
 });
