@@ -291,7 +291,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>Import & Merge</span>
+            <span>Import CSV</span>
           </button>
 
           <button
@@ -442,11 +442,14 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                     <button
                       type="button"
                       onClick={handleConfirmReplace}
-                      className="p-3 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl text-xs font-bold transition flex flex-col text-left"
+                      className="p-3 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-black rounded-xl text-xs font-bold transition flex flex-col text-left shadow-sm active:scale-95"
                     >
-                      <span className="font-extrabold text-sm">Replace Active Track</span>
-                      <span className="text-[10px] font-normal text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        Overwrites current {currentProject.stations.length} stations completely
+                      <span className="font-extrabold text-sm flex items-center gap-1.5">
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Replace Active Track</span>
+                      </span>
+                      <span className="text-[10px] font-normal opacity-80 mt-0.5">
+                        Overwrites active track with these {pendingCsvStations.stations.length} stations
                       </span>
                     </button>
 
@@ -455,12 +458,12 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                       onClick={handleConfirmAppend}
                       className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl text-xs font-bold transition flex flex-col text-left shadow-sm active:scale-95"
                     >
-                      <span className="font-extrabold text-sm flex items-center gap-1">
+                      <span className="font-extrabold text-sm flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5 stroke-[2.5]" />
                         <span>Merge / Append to End</span>
                       </span>
                       <span className="text-[10px] font-semibold text-amber-950 mt-0.5">
-                        Continues after Station {lastDist} ft (+{lastDist} ft shift)
+                        Stitches after Station {lastDist} ft (+{lastDist} ft distance shift)
                       </span>
                     </button>
                   </div>
@@ -474,8 +477,8 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                       <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
                         Upload CSV File from Device
                       </h4>
-                      <p className="text-xs text-zinc-500">
-                        Supports standard CSVs from Track Level Companion, Excel, or Google Sheets
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        Choose a CSV to <strong>Replace</strong> your active track or <strong>Merge</strong> to extend it.
                       </p>
                     </div>
 
