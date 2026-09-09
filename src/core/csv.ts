@@ -182,9 +182,24 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
 }
 
 /**
- * Appends incoming stations to existing stations.
- * If shiftDistances is true, shifts incoming distances so that they continue seamlessly
- * after the existing track's last station without duplicate joint ties.
+ * Appends incoming stations to existing stations with distance shift and joint-tie handling.
+ * 
+ * NOTE: This function is preserved for future multi-crew/multi-file section merging.
+ * It is currently deactivated from the user-facing UI because Track Level Companion is designed
+ * for single-operator field use, where extending a track (both forward and before 0) is done
+ * directly on the live screen using the "Extend" buttons under the active laser setup.
+ * 
+ * Boundary considerations:
+ * - Joint tie: If Section A ends at 50 ft and Section B starts at 0 ft, Section B's 0 ft
+ *   station is merged into Section A's 50 ft station, and subsequent ties start at 55 ft.
+ * - Stations before 0: If merging sections with negative stationing (e.g. feathering),
+ *   the coordinate shift must account for negative origin offsets.
+ * 
+ * See `docs/MERGE_FEATURE.md` for full architectural documentation.
+ * 
+ * @param currentStations Existing track stations
+ * @param incomingStations Stations from CSV or saved profile to append
+ * @param shiftDistances If true, offsets incoming distanceFt by currentStations[last].distanceFt
  */
 export function appendStations(
   currentStations: StationPoint[],

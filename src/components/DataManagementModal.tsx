@@ -29,6 +29,11 @@ interface DataManagementModalProps {
 
 const STORAGE_KEY = 'track_level_companion_projects';
 
+// Feature flag: set to true if multi-crew CSV section merging is desired in the future.
+// Deactivated for single-operator field workflow where live "Extend" buttons are used.
+// See docs/MERGE_FEATURE.md for full architecture & documentation.
+const ENABLE_MERGE_FEATURE = false;
+
 export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   isOpen,
   onClose,
@@ -438,35 +443,55 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                   </div>
 
                   {/* Action Choices */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                    <button
-                      type="button"
-                      onClick={handleConfirmReplace}
-                      className="p-3 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-black rounded-xl text-xs font-bold transition flex flex-col text-left shadow-sm active:scale-95"
-                    >
-                      <span className="font-extrabold text-sm flex items-center gap-1.5">
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>Replace Active Track</span>
-                      </span>
-                      <span className="text-[10px] font-normal opacity-80 mt-0.5">
-                        Overwrites active track with these {pendingCsvStations.stations.length} stations
-                      </span>
-                    </button>
+                  {ENABLE_MERGE_FEATURE ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleConfirmReplace}
+                        className="p-3 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-black rounded-xl text-xs font-bold transition flex flex-col text-left shadow-sm active:scale-95"
+                      >
+                        <span className="font-extrabold text-sm flex items-center gap-1.5">
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Replace Active Track</span>
+                        </span>
+                        <span className="text-[10px] font-normal opacity-80 mt-0.5">
+                          Overwrites active track with these {pendingCsvStations.stations.length} stations
+                        </span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={handleConfirmAppend}
-                      className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl text-xs font-bold transition flex flex-col text-left shadow-sm active:scale-95"
-                    >
-                      <span className="font-extrabold text-sm flex items-center gap-1.5">
-                        <Layers className="w-3.5 h-3.5 stroke-[2.5]" />
-                        <span>Merge / Append to End</span>
-                      </span>
-                      <span className="text-[10px] font-semibold text-amber-950 mt-0.5">
-                        Stitches after Station {lastDist} ft (+{lastDist} ft distance shift)
-                      </span>
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        onClick={handleConfirmAppend}
+                        className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl text-xs font-bold transition flex flex-col text-left shadow-sm active:scale-95"
+                      >
+                        <span className="font-extrabold text-sm flex items-center gap-1.5">
+                          <Layers className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>Merge / Append to End</span>
+                        </span>
+                        <span className="text-[10px] font-semibold text-amber-950 mt-0.5">
+                          Stitches after Station {lastDist} ft (+{lastDist} ft distance shift)
+                        </span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setPendingCsvStations(null)}
+                        className="flex-1 py-2.5 px-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl transition"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleConfirmReplace}
+                        className="flex-1 py-2.5 px-3 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-xl transition shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>Load & Replace Track</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -478,7 +503,9 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                         Upload CSV File from Device
                       </h4>
                       <p className="text-xs text-zinc-500 mt-0.5">
-                        Choose a CSV to <strong>Replace</strong> your active track or <strong>Merge</strong> to extend it.
+                        {ENABLE_MERGE_FEATURE
+                          ? 'Choose a CSV to Replace your active track or Merge to extend it.'
+                          : 'Supports standard CSVs from Track Level Companion, Excel, or Google Sheets.'}
                       </p>
                     </div>
 
@@ -586,15 +613,17 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                           </div>
 
                           <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
-                            <button
-                              type="button"
-                              onClick={() => handleAppendSavedProject(p)}
-                              className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold rounded-lg transition text-[11px] flex items-center gap-1"
-                              title="Merge / Append stations from this track onto active track"
-                            >
-                              <Layers className="w-3 h-3" />
-                              <span>+ Merge</span>
-                            </button>
+                            {ENABLE_MERGE_FEATURE && (
+                              <button
+                                type="button"
+                                onClick={() => handleAppendSavedProject(p)}
+                                className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold rounded-lg transition text-[11px] flex items-center gap-1"
+                                title="Merge / Append stations from this track onto active track"
+                              >
+                                <Layers className="w-3 h-3" />
+                                <span>+ Merge</span>
+                              </button>
+                            )}
 
                             <button
                               type="button"
