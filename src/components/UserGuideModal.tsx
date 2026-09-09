@@ -12,9 +12,9 @@ import {
   RotateCcw,
   Sliders,
   Sun,
-  Lock,
   Download,
-  Play
+  Play,
+  Spline
 } from 'lucide-react';
 
 interface UserGuideModalProps {
@@ -26,8 +26,8 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
   const [currentStep, setCurrentStep] = useState<number>(0);
   // Interactive state for Animation 1: Rod & Laser
   const [interactiveDip, setInteractiveDip] = useState<'dip' | 'level' | 'hump'>('dip');
-  // Interactive state for Animation 2: Slope modes
-  const [activeSlopeDemo, setActiveSlopeDemo] = useState<'flat' | 'grade' | 'best_fit' | 'chord'>('flat');
+  // Interactive state for Animation 2: Slope modes (Grade % vs End-to-End)
+  const [activeSlopeDemo, setActiveSlopeDemo] = useState<'grade_percent' | 'end_to_end'>('grade_percent');
 
   if (!isOpen) return null;
 
@@ -40,7 +40,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
     },
     {
       id: 'slope-modes',
-      title: '2. The 4 Slope Modes',
+      title: '2. The 2 Target Slope Modes',
       shortTitle: 'Slope Modes',
       icon: Sliders,
     },
@@ -51,15 +51,15 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
       icon: RotateCcw,
     },
     {
-      id: 'extend-track',
-      title: '4. Extending & Feathering Before 0',
-      shortTitle: 'Extending',
+      id: 'extend-chart',
+      title: '4. Extending Track & Profile Chart',
+      shortTitle: 'Extend & Chart',
       icon: Layers,
     },
     {
       id: 'field-tips',
-      title: '5. Field Checklist, Keypad & Export',
-      shortTitle: 'Field Guide',
+      title: '5. Keypad, Checklist & Export',
+      shortTitle: 'Keypad & Export',
       icon: CheckCircle2,
     },
   ];
@@ -134,7 +134,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                   <div className="flex gap-1 bg-zinc-200 dark:bg-zinc-900 p-0.5 rounded-lg text-[11px] font-bold">
                     <button
                       onClick={() => setInteractiveDip('dip')}
-                      className={`px-2 py-1 rounded-md transition ${interactiveDip === 'dip' ? 'bg-amber-500 text-black shadow-sm' : 'text-zinc-500'}`}
+                      className={`px-2 py-1 rounded-md transition ${interactiveDip === 'dip' ? 'bg-sky-500 text-white shadow-sm' : 'text-zinc-500'}`}
                     >
                       Track Has Dip
                     </button>
@@ -146,7 +146,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     </button>
                     <button
                       onClick={() => setInteractiveDip('hump')}
-                      className={`px-2 py-1 rounded-md transition ${interactiveDip === 'hump' ? 'bg-blue-500 text-white shadow-sm' : 'text-zinc-500'}`}
+                      className={`px-2 py-1 rounded-md transition ${interactiveDip === 'hump' ? 'bg-amber-500 text-black shadow-sm' : 'text-zinc-500'}`}
                     >
                       Track Has Hump
                     </button>
@@ -196,7 +196,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     <text x="320" y="15" fill="#f59e0b" fontSize="9" fontWeight="bold">Station 15 (Target)</text>
                   </svg>
 
-                  {/* Overlay Result Badge */}
+                  {/* Overlay Result Badge - Colors matching actual app: Sky Blue = Lift, Amber = Lower */}
                   <div className="absolute right-3 top-3 bg-white/90 dark:bg-black/90 backdrop-blur border border-zinc-300 dark:border-zinc-700 p-2.5 rounded-xl shadow-lg text-center font-mono">
                     <span className="text-[10px] text-zinc-500 block uppercase font-bold">Rod Reading</span>
                     <span className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100">
@@ -204,9 +204,9 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     </span>
                     <div className={`mt-1 text-xs font-extrabold px-2 py-0.5 rounded-md flex items-center justify-center gap-1 ${
                       interactiveDip === 'dip'
-                        ? 'bg-amber-500 text-black'
+                        ? 'bg-sky-500 text-white'
                         : interactiveDip === 'hump'
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-amber-500 text-black'
                         : 'bg-emerald-600 text-white'
                     }`}>
                       {interactiveDip === 'dip' && <ArrowUp className="w-3 h-3 stroke-[3]" />}
@@ -219,14 +219,14 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                   </div>
                 </div>
 
-                {/* Explanation bullets */}
+                {/* Explanation bullets matching exact app color scheme */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-                    <strong className="text-amber-700 dark:text-amber-400 block">Big Number = Track is LOW</strong>
+                  <div className="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl">
+                    <strong className="text-sky-600 dark:text-sky-400 block">Big Number = Track is LOW (Sky Blue ▲)</strong>
                     When track sags, the rod sinks down, so the laser hits higher on the rod. The app tells you: <strong>LIFT</strong>.
                   </div>
-                  <div className="p-2.5 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-                    <strong className="text-blue-700 dark:text-blue-400 block">Small Number = Track is HIGH</strong>
+                  <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+                    <strong className="text-amber-600 dark:text-amber-400 block">Small Number = Track is HIGH (Amber ▼)</strong>
                     When track has a hump, the rod is pushed up, hitting lower on the rod. The app tells you: <strong>LOWER</strong>.
                   </div>
                 </div>
@@ -234,44 +234,58 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
             </div>
           )}
 
-          {/* ================= STEP 1: THE 4 SLOPE MODES ================= */}
+          {/* ================= STEP 1: THE 2 TARGET SLOPE MODES ================= */}
           {currentStep === 1 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100">
-                  The 4 Target Slope Modes
+                  The 2 Target Slope Modes
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-                  How does the app determine the target elevation for every tie? Choose the mode that fits your job:
+                  Choose between a continuous slope line or an anchor-based stringline in the alignment bar:
                 </p>
               </div>
 
-              {/* Mode Selector */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold">
-                {[
-                  { id: 'flat', label: '1. Benchmark (0%)', desc: 'Dead Level' },
-                  { id: 'grade', label: '2. Target Grade', desc: 'Climb / Fall %' },
-                  { id: 'best_fit', label: '3. Best Fit', desc: 'Smoothing' },
-                  { id: 'chord', label: '4. 2-Point Chord', desc: 'Start to End' },
-                ].map(m => (
-                  <button
-                    key={m.id}
-                    onClick={() => setActiveSlopeDemo(m.id as any)}
-                    className={`p-2.5 rounded-xl border text-left transition ${
-                      activeSlopeDemo === m.id
-                        ? 'bg-amber-500 text-black border-amber-500 shadow-sm'
-                        : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300'
-                    }`}
-                  >
-                    <span className="block font-extrabold">{m.label}</span>
-                    <span className="text-[10px] opacity-80 block">{m.desc}</span>
-                  </button>
-                ))}
+              {/* Mode Selector Toggle */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold">
+                <button
+                  onClick={() => setActiveSlopeDemo('grade_percent')}
+                  className={`p-3 rounded-xl border text-left transition ${
+                    activeSlopeDemo === 'grade_percent'
+                      ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 border-zinc-900 dark:border-zinc-700 shadow-sm'
+                      : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-sm">1. [ Grade % ] Mode</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-500 rounded font-mono">0.0%, 0.5%, 1.0%</span>
+                  </div>
+                  <span className="text-[11px] opacity-80 block mt-1">
+                    Projects a continuous pitch from Station 0. Includes 0.0% dead level benchmark.
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => setActiveSlopeDemo('end_to_end')}
+                  className={`p-3 rounded-xl border text-left transition ${
+                    activeSlopeDemo === 'end_to_end'
+                      ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 border-zinc-900 dark:border-zinc-700 shadow-sm'
+                      : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-sm">2. [ End-to-End ] Mode</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-500 rounded font-mono">ROOT 🔒 Anchors</span>
+                  </div>
+                  <span className="text-[11px] opacity-80 block mt-1">
+                    Connects start to end with straight chords, automatically anchoring through Locked Ties.
+                  </span>
+                </button>
               </div>
 
               {/* Visual Diagram for Selected Slope Mode */}
               <div className="p-4 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                <div className="h-36 bg-zinc-100 dark:bg-zinc-900 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 relative flex items-center justify-center">
+                <div className="h-40 bg-zinc-100 dark:bg-zinc-900 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 relative flex items-center justify-center">
                   <svg viewBox="0 0 450 140" className="w-full h-full p-2">
                     {/* Grid Lines */}
                     <line x1="40" y1="30" x2="420" y2="30" stroke="#3f3f46" strokeWidth="0.5" strokeDasharray="2 2" />
@@ -279,55 +293,50 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     <line x1="40" y1="110" x2="420" y2="110" stroke="#3f3f46" strokeWidth="0.5" strokeDasharray="2 2" />
 
                     {/* Measured Track (curved dip line) */}
-                    <path d="M 50 70 Q 150 120 250 85 T 400 60" stroke="#71717a" strokeWidth="2.5" fill="none" />
-                    <circle cx="50" cy="70" r="3.5" fill="#eab308" />
-                    <circle cx="150" cy="102" r="3.5" fill="#ef4444" />
-                    <circle cx="250" cy="85" r="3.5" fill="#ef4444" />
-                    <circle cx="400" cy="60" r="3.5" fill="#eab308" />
+                    <path d="M 50 70 Q 150 125 250 90 T 400 65" stroke="#71717a" strokeWidth="2.5" fill="none" />
+                    
+                    {/* Station markers */}
+                    <circle cx="50" cy="70" r="4" fill="#eab308" />
+                    <text x="45" y="60" fill="#eab308" fontSize="8" fontWeight="bold">0 ft</text>
 
-                    {/* Target Slope Line (Colored Dash) */}
-                    {activeSlopeDemo === 'flat' && (
-                      <line x1="40" y1="70" x2="420" y2="70" stroke="#10b981" strokeWidth="3" strokeDasharray="4 3" />
-                    )}
-                    {activeSlopeDemo === 'grade' && (
-                      <line x1="40" y1="100" x2="420" y2="40" stroke="#10b981" strokeWidth="3" strokeDasharray="4 3" />
-                    )}
-                    {activeSlopeDemo === 'best_fit' && (
-                      <line x1="40" y1="90" x2="420" y2="65" stroke="#10b981" strokeWidth="3" strokeDasharray="4 3" />
-                    )}
-                    {activeSlopeDemo === 'chord' && (
-                      <line x1="50" y1="70" x2="400" y2="60" stroke="#10b981" strokeWidth="3" strokeDasharray="4 3" />
+                    <circle cx="150" cy="107" r="4" fill="#38bdf8" />
+                    <text x="140" y="125" fill="#38bdf8" fontSize="8">Dip (Lift)</text>
+
+                    {/* Intermediate Station 25 ft - Demonstrates locked tie in End-to-End mode */}
+                    <circle cx="250" cy="90" r="4" fill={activeSlopeDemo === 'end_to_end' ? '#f59e0b' : '#38bdf8'} />
+                    {activeSlopeDemo === 'end_to_end' && (
+                      <g>
+                        <circle cx="250" cy="90" r="9" stroke="#f59e0b" strokeWidth="1.5" fill="none" />
+                        <text x="220" y="80" fill="#f59e0b" fontSize="8" fontWeight="bold">LOCKED ROOT 🔒</text>
+                      </g>
                     )}
 
-                    <text x="60" y="20" fill="#10b981" fontSize="10" fontWeight="bold">
-                      --- GREEN DASH: TARGET ELEVATION LINE
-                    </text>
-                    <text x="280" y="130" fill="#71717a" fontSize="9">
-                      — Gray Line: Measured Track
+                    <circle cx="400" cy="65" r="4" fill="#eab308" />
+                    <text x="390" y="55" fill="#eab308" fontSize="8" fontWeight="bold">50 ft</text>
+
+                    {/* Target Slope Line (Green Dash) */}
+                    {activeSlopeDemo === 'grade_percent' ? (
+                      <line x1="40" y1="70" x2="420" y2="70" stroke="#10b981" strokeWidth="3" strokeDasharray="6 3" />
+                    ) : (
+                      // End-to-End passes straight from 50 (70) to 250 (90) to 400 (65)
+                      <polyline points="50,70 250,90 400,65" stroke="#10b981" strokeWidth="3" strokeDasharray="6 3" fill="none" />
+                    )}
+
+                    <text x="60" y="20" fill="#10b981" fontSize="9" fontWeight="bold">
+                      --- GREEN DASH: TARGET LINE ({activeSlopeDemo === 'grade_percent' ? 'Grade % (0.0% Flat)' : 'End-to-End Chords via Root Anchor'})
                     </text>
                   </svg>
                 </div>
 
-                {/* Explanation of active mode */}
-                <div className="text-xs space-y-1.5">
-                  {activeSlopeDemo === 'flat' && (
-                    <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      <strong>Benchmark Mode (0.0%):</strong> Uses Station 0 as the reference elevation and keeps a dead-flat line across all ties. Best for yard tracks, sidings, and tangent track where no grade change is intended.
+                {/* Explanation */}
+                <div className="text-xs space-y-1.5 leading-relaxed">
+                  {activeSlopeDemo === 'grade_percent' ? (
+                    <p className="text-zinc-700 dark:text-zinc-300">
+                      <strong>Grade % Mode:</strong> Holds Station 0 as your benchmark. Choose <strong>0.0%</strong> for a dead-flat level line across yard tracks or tangent track, or enter a positive/negative slope (e.g. <strong>+0.50%</strong> for hills or drainage runoff).
                     </p>
-                  )}
-                  {activeSlopeDemo === 'grade' && (
-                    <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      <strong>Target Grade Mode:</strong> Enter a specific slope like <strong>+0.50%</strong> (1/2" rise per 100 ft) or <strong>-1.0%</strong>. The target line rises or falls automatically at that exact pitch.
-                    </p>
-                  )}
-                  {activeSlopeDemo === 'best_fit' && (
-                    <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      <strong>Best Fit (Smoothing):</strong> Uses statistical linear regression to find the natural average plane of your measured ties. It irons out dips and humps while minimizing total ballast lifting.
-                    </p>
-                  )}
-                  {activeSlopeDemo === 'chord' && (
-                    <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                      <strong>Two-Point Chord:</strong> Draws a straight stringline between Station 0 and your final tie. Perfect when tie-in elevations are already fixed at both ends (e.g. between two grade crossings).
+                  ) : (
+                    <p className="text-zinc-700 dark:text-zinc-300">
+                      <strong>End-to-End Mode:</strong> Stretches a straight stringline between your starting tie and ending tie. If you mark any tie with the <strong>Lock (🔒)</strong> button (e.g. over a tree root or bridge abutment), the grade line breaks cleanly at that tie, guaranteeing immovable obstacles are never forced to lift or lower.
                     </p>
                   )}
                 </div>
@@ -356,7 +365,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
-                        Pick a Solid Benchmark Tie (e.g. Station 25 ft)
+                        Pick a Benchmark Tie (e.g. Station 25 ft)
                       </h4>
                       <p className="text-xs text-zinc-500 mt-0.5">
                         Take your normal rod reading with <strong>Laser 1</strong> (e.g. <code>1' 2"</code>).
@@ -373,7 +382,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                         Move Laser Tripod & Re-Shoot the Same Tie
                       </h4>
                       <p className="text-xs text-zinc-500 mt-0.5">
-                        Set up the tripod further down the track. Place the rod back on Station 25 and shoot it with <strong>Laser 2</strong> (e.g. <code>1' 8"</code>).
+                        Set up the tripod further down the track. Place the rod back on Station 25 and read the beam on <strong>Laser 2</strong> (e.g. <code>1' 8"</code>).
                       </p>
                     </div>
                   </div>
@@ -384,30 +393,30 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     </div>
                     <div>
                       <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100">
-                        Tap "Move Laser" in the App
+                        Tap "Move Laser (Datum)" in the Toolbar
                       </h4>
                       <p className="text-xs text-zinc-500 mt-0.5">
-                        On Station 25, tap <strong>Move Laser</strong> and enter <code>1' 8"</code>.
+                        Tap the purple <strong>Move Laser (Datum)</strong> button in the checklist header, enter <code>1' 8"</code>, and tap <strong>Apply Laser Relocation</strong>.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Magic Result Box */}
-                <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-1.5 text-xs">
-                  <strong className="text-amber-800 dark:text-amber-300 flex items-center gap-1.5 font-bold">
+                {/* Result Box */}
+                <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl space-y-1.5 text-xs">
+                  <strong className="text-purple-800 dark:text-purple-300 flex items-center gap-1.5 font-bold">
                     <RotateCcw className="w-3.5 h-3.5" />
                     What the App Does Automatically:
                   </strong>
                   <ul className="list-disc list-inside text-zinc-700 dark:text-zinc-300 space-y-1 text-[11px]">
                     <li>
-                      <strong>All earlier stations convert to Laser 2 (+6"):</strong> Station 0 changes from <code>1' 2"</code> to <code>1' 8"</code>. If you walk back to Station 0 with your rod right now, <strong>the number on your phone matches your receiver!</strong>
+                      <strong>All earlier stations convert to Laser 2 (+6"):</strong> Station 0 updates from <code>1' 2"</code> to <code>1' 8"</code>. If you walk back to Station 0 with your rod right now, <strong>the number on your screen matches your rod receiver!</strong>
                     </li>
                     <li>
-                      <strong>Zero mental math:</strong> Enter future ties directly on the new laser without subtracting offsets.
+                      <strong>Zero mental math:</strong> Enter future ties directly on the active laser scale without subtracting offsets.
                     </li>
                     <li>
-                      <strong>Revert Button:</strong> If you made an entry typo on the turning point, tap <strong>"Revert Laser Move"</strong> at the top to undo.
+                      <strong>Revert Button:</strong> If you made an entry typo on the turning point, tap <strong>"Revert Laser Move"</strong> in the purple banner to undo.
                     </li>
                   </ul>
                 </div>
@@ -415,60 +424,66 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
             </div>
           )}
 
-          {/* ================= STEP 3: EXTENDING & BEFORE 0 ================= */}
+          {/* ================= STEP 3: EXTENDING & PROFILE CHART ================= */}
           {currentStep === 3 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100">
-                  Extending the Checklist & Feathering Before 0
+                  Extending Track & Profile Chart Controls
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
-                  Never restart a survey just because you need more ties. You can extend in both directions:
+                  Easily expand your survey in either direction and inspect the track profile:
                 </p>
               </div>
 
               <div className="space-y-3">
-                {/* Extending Forward */}
-                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-3">
-                  <div className="p-2 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0 mt-0.5">
-                    <ChevronRight className="w-4 h-4 stroke-[3]" />
-                  </div>
-                  <div className="text-xs">
-                    <h4 className="font-bold text-zinc-900 dark:text-zinc-100">
-                      Extending Forward (+25 ft / +50 ft)
-                    </h4>
-                    <p className="text-zinc-500 mt-0.5 leading-relaxed">
-                      At the bottom of the checklist, tap <strong>+25 ft</strong> or <strong>+50 ft</strong> to add the next batch of 5-foot stations. You can also tap <strong>+ Add Custom Station</strong> to drop an intermediate station (e.g. <code>12.5 ft</code> at an insulated joint).
-                    </p>
-                  </div>
-                </div>
-
-                {/* Extending Before 0 */}
+                {/* The + Extend Modal */}
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-3">
                   <div className="p-2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl shrink-0 mt-0.5">
-                    <ChevronLeft className="w-4 h-4 stroke-[3]" />
+                    <Layers className="w-4 h-4" />
                   </div>
-                  <div className="text-xs">
+                  <div className="text-xs space-y-1">
                     <h4 className="font-bold text-zinc-900 dark:text-zinc-100">
-                      Extending Before 0 (Feathering Runout)
+                      The "+ Extend" Button Modal
                     </h4>
-                    <p className="text-zinc-500 mt-0.5 leading-relaxed">
-                      If you need to taper the lift back into undisturbed track before your Station 0 benchmark, tap <strong>Extend Before 0 (-25 ft)</strong> at the top of the table. It inserts <code>-5 ft, -10 ft, -15 ft...</code> without changing the name of your physical Station 0 tie!
+                    <p className="text-zinc-500 leading-relaxed">
+                      Tap <strong>+ Extend</strong> in the checklist toolbar to add stations in bulk:
                     </p>
+                    <ul className="list-disc list-inside text-zinc-600 dark:text-zinc-400 space-y-0.5 text-[11px]">
+                      <li><strong>Ahead (Forward →):</strong> Appends new stations after the end of your track (+25', +50', +100').</li>
+                      <li><strong>Behind 0 (Backward ←):</strong> Inserts negative stations (<code>-5 ft, -10 ft...</code>) before Station 0 for feathering runouts into undisturbed track.</li>
+                    </ul>
                   </div>
                 </div>
 
-                {/* Locking Ties */}
-                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-3">
-                  <div className="p-2 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-xl shrink-0 mt-0.5">
-                    <Lock className="w-4 h-4" />
+                {/* Profile Chart Controls */}
+                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
+                  <h4 className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                    <Spline className="w-4 h-4 text-amber-500" />
+                    <span>Vertical Profile Chart Controls ("Gentle Graph")</span>
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Curve vs Straight</strong>
+                      <span className="text-zinc-500">Toggle smooth Fritsch-Carlson monotone spline vs point-to-point chords.</span>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Zoom (1x / 3x / 8x / 15x)</strong>
+                      <span className="text-zinc-500">1x is true scale. 3x is standard gentle view. 8x and 15x exaggerate micro-leveling.</span>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Fit vs Expand Width</strong>
+                      <span className="text-zinc-500">Expand width enables horizontal touch-scrolling for long track surveys.</span>
+                    </div>
                   </div>
-                  <div className="text-xs">
-                    <h4 className="font-bold text-zinc-900 dark:text-zinc-100">
-                      Locking Immovable Ties (🔒 Lock Button)
-                    </h4>
-                    <p className="text-zinc-500 mt-0.5 leading-relaxed">
-                      If a tie is over a bridge abutment, road crossing, or tree root and cannot be lifted or tamped, tap the <strong>Lock (🔒)</strong> icon. The app marks it fixed and will not instruct lifts on that tie.
+                </div>
+
+                {/* Custom Pt & Add Next */}
+                <div className="p-3 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100">Quick Toolbar Additions:</span>
+                    <p className="text-zinc-500 text-[11px]">
+                      Use <strong>+ Custom Pt</strong> for irregular stations (e.g. <code>12.5 ft</code> at an insulated joint) or <strong>Add Next</strong> for one-click tie append.
                     </p>
                   </div>
                 </div>
@@ -476,15 +491,15 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
             </div>
           )}
 
-          {/* ================= STEP 4: FIELD TIPS & EXPORT ================= */}
+          {/* ================= STEP 4: KEYPAD & EXPORT ================= */}
           {currentStep === 4 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100">
-                  Field Tips, Keypad & Backup
+                  Rapid Keypad, Mobile Cards & Export
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-                  Pro-tips to move fast when working trackside with your phone or iPad:
+                  Built specifically for rapid one-handed surveying with phone or tablet in the dirt:
                 </p>
               </div>
 
@@ -495,7 +510,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     ⚡ Rapid Fraction Keypad
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Tap any station to open the big-button fraction keypad. Tap <strong>Save & Next</strong> to automatically jump straight to the next tie down the line.
+                    Tap any station to open the keypad. Tap <strong>Next Station (→)</strong> to immediately save and auto-advance to the next tie down the line.
                   </p>
                 </div>
 
@@ -506,17 +521,17 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     Bright Sunlight Mode
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Working at high noon? Tap the Sun/Moon toggle in the top header for high-contrast sunlight mode to prevent glare on your screen.
+                    Working under intense glare? Tap the Sun/Moon toggle in the header for high-contrast sunlight mode.
                   </p>
                 </div>
 
-                {/* 1/16" vs 1/8" Resolution */}
+                {/* Zero Horizontal Scroll Mobile Cards */}
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block">
-                    🎯 Fraction Resolution
+                    📱 Mobile Card Layout
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    In settings, switch between <strong>1/8"</strong> (standard production track tamping) and <strong>1/16"</strong> (precision bridge/switch surveying).
+                    On phones, the checklist switches to stacked cards with zero horizontal scrolling. Easy to tap with gloves on.
                   </p>
                 </div>
 
@@ -527,14 +542,14 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     Universal CSV Export
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Tap <strong>Files / Export</strong> to download a CSV, copy to clipboard, or send via AirDrop/messaging directly from your phone.
+                    Tap <strong>Files / Export</strong> to download CSVs, use the native mobile share sheet (AirDrop/Files), or copy CSV text directly.
                   </p>
                 </div>
               </div>
 
-              {/* Complete Offline Support Note */}
+              {/* Offline Support */}
               <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-                ✓ <strong>100% Offline PWA:</strong> Track Level Companion runs completely offline in airplane mode. You can install it on your home screen and survey deep in cuts or tunnels with zero cell reception.
+                ✓ <strong>100% Offline PWA:</strong> Track Level Companion runs completely offline in airplane mode. Install it to your home screen and survey deep in rail cuts with zero cell reception.
               </div>
             </div>
           )}
