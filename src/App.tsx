@@ -250,27 +250,49 @@ export const App: React.FC = () => {
     setIsKeypadOpen(true);
   };
 
-  // Batch extend track by specified feet
-  const handleExtendTrack = (lengthFt: number, intervalFt: number) => {
-    const lastStation = project.stations[project.stations.length - 1];
-    const startDist = lastStation ? lastStation.distanceFt : 0;
+  // Batch extend track by specified feet (forward or backward)
+  const handleExtendTrack = (lengthFt: number, intervalFt: number, direction: 'forward' | 'backward' = 'forward') => {
     const interval = intervalFt > 0 ? intervalFt : project.stationIntervalFt;
     const count = Math.floor(lengthFt / interval);
 
-    const newStations: StationPoint[] = [];
-    for (let i = 1; i <= count; i++) {
-      newStations.push({
-        id: `station-${Date.now()}-${i}`,
-        distanceFt: startDist + i * interval,
-        readingInches: null,
-      });
-    }
+    if (direction === 'backward') {
+      const firstStation = project.stations[0];
+      const startDist = firstStation ? firstStation.distanceFt : 0;
+      const newStations: StationPoint[] = [];
 
-    if (newStations.length > 0) {
-      setProject(prev => ({
-        ...prev,
-        stations: [...prev.stations, ...newStations],
-      }));
+      for (let i = count; i >= 1; i--) {
+        newStations.push({
+          id: `station-${Date.now()}-neg-${i}`,
+          distanceFt: startDist - i * interval,
+          readingInches: null,
+        });
+      }
+
+      if (newStations.length > 0) {
+        setProject(prev => ({
+          ...prev,
+          stations: [...newStations, ...prev.stations],
+        }));
+      }
+    } else {
+      const lastStation = project.stations[project.stations.length - 1];
+      const startDist = lastStation ? lastStation.distanceFt : 0;
+      const newStations: StationPoint[] = [];
+
+      for (let i = 1; i <= count; i++) {
+        newStations.push({
+          id: `station-${Date.now()}-${i}`,
+          distanceFt: startDist + i * interval,
+          readingInches: null,
+        });
+      }
+
+      if (newStations.length > 0) {
+        setProject(prev => ({
+          ...prev,
+          stations: [...prev.stations, ...newStations],
+        }));
+      }
     }
   };
 

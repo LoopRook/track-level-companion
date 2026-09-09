@@ -13,7 +13,7 @@ interface ActionTableProps {
   onDeleteStation: (stationId: string) => void;
   onAddNextStation: () => void;
   onInsertCustomStation: () => void;
-  onExtendTrack?: (lengthFt: number, intervalFt: number) => void;
+  onExtendTrack?: (lengthFt: number, intervalFt: number, direction?: 'forward' | 'backward') => void;
   onSetTurningPoint?: (stationId: string, newReadingInches: number) => void;
   onResetDatum?: () => void;
   selectedStationId?: string | null;
@@ -37,12 +37,14 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
   const [extendLength, setExtendLength] = useState(50);
   const [extendInterval, setExtendInterval] = useState(5);
+  const [extendDirection, setExtendDirection] = useState<'forward' | 'backward'>('forward');
 
   const [turningPointStation, setTurningPointStation] = useState<CalculatedStation | null>(null);
   const [tpNewReadingStr, setTpNewReadingStr] = useState('');
   const [tpError, setTpError] = useState<string | null>(null);
 
   const lastDist = stations.length > 0 ? stations[stations.length - 1].distanceFt : 0;
+  const firstDist = stations.length > 0 ? stations[0].distanceFt : 0;
 
   const handleApplyTurningPoint = () => {
     if (!turningPointStation || !onSetTurningPoint) return;
@@ -574,9 +576,47 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   ))}
                 </div>
               </div>
+
+              <div>
+                <label className="text-xs text-zinc-500 font-medium block mb-1">Direction to extend:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setExtendDirection('forward')}
+                    className={`py-1.5 px-2.5 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-1 ${
+                      extendDirection === 'forward'
+                        ? 'bg-amber-500 text-black border-amber-500 shadow-sm'
+                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
+                    }`}
+                  >
+                    <span>Ahead (Forward &rarr;)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExtendDirection('backward')}
+                    className={`py-1.5 px-2.5 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-1 ${
+                      extendDirection === 'backward'
+                        ? 'bg-amber-500 text-black border-amber-500 shadow-sm'
+                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
+                    }`}
+                  >
+                    <span>Behind 0 (Backward &larr;)</span>
+                  </button>
+                </div>
+              </div>
+
               <p className="text-[11px] text-zinc-500 bg-zinc-50 dark:bg-zinc-950 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 font-mono">
-                Will create {Math.floor(extendLength / extendInterval)} blank stations ({lastDist + extendInterval}' to{' '}
-                {lastDist + extendLength}').
+                {extendDirection === 'forward' ? (
+                  <>
+                    Will create {Math.floor(extendLength / extendInterval)} blank stations ahead ({lastDist + extendInterval}' to{' '}
+                    {lastDist + extendLength}').
+                  </>
+                ) : (
+                  <>
+                    Will create {Math.floor(extendLength / extendInterval)} blank stations backwards (
+                    {firstDist - extendLength}' to {firstDist - extendInterval}').
+                  </>
+                )}
               </p>
             </div>
             <div className="flex gap-2 justify-end pt-2">
@@ -588,12 +628,12 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               </button>
               <button
                 onClick={() => {
-                  onExtendTrack?.(extendLength, extendInterval);
+                  onExtendTrack?.(extendLength, extendInterval, extendDirection);
                   setIsExtendModalOpen(false);
                 }}
                 className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-xl shadow-sm"
               >
-                Add {extendLength} Feet
+                Add {extendLength} Feet {extendDirection === 'forward' ? 'Ahead' : 'Before 0'}
               </button>
             </div>
           </div>
