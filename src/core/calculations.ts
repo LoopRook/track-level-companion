@@ -19,9 +19,10 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
   if (laserDatumMode === 'fixed_datum' && fixedDatumInches !== undefined && !isNaN(fixedDatumInches)) {
     datumReference = fixedDatumInches;
   } else if (validStationsWithReading.length > 0) {
-    // Relative to first valid station (normalized by any initial offset)
-    const first = validStationsWithReading[0];
-    datumReference = first.readingInches! - (first.datumOffsetInches || 0);
+    // Prefer station at distance 0 ft as the primary baseline; fallback to first valid station
+    const stationZero = validStationsWithReading.find(s => s.distanceFt === 0);
+    const datumStation = stationZero || validStationsWithReading[0];
+    datumReference = datumStation.readingInches! - (datumStation.datumOffsetInches || 0);
   }
 
   // Calculate actual elevation for each station
@@ -44,10 +45,11 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
       .filter(idx => idx !== -1);
 
     if (gradeMode === 'target_grade') {
-      // Rise in inches per foot of run = (grade% / 100) * 12
-      const firstIdx = validIndices[0];
-      const startX = stations[firstIdx].distanceFt;
-      const startY = elevations[firstIdx]!;
+      // Anchor target slope to Station 0 if measured, otherwise first valid station
+      const stationZero = stations.find(s => s.distanceFt === 0 && s.readingInches !== null && !isNaN(s.readingInches));
+      const refIdx = stationZero ? stations.indexOf(stationZero) : validIndices[0];
+      const startX = stations[refIdx].distanceFt;
+      const startY = elevations[refIdx]!;
       const slopeInchesPerFt = (targetGradePercent / 100) * 12;
 
       stations.forEach((s, i) => {

@@ -212,5 +212,38 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(calculated[3].liftInches).toBeCloseTo(0.25, 4);
     expect(calculated[3].action).toBe('lift');
   });
+
+  it('handles negative distance stations behind Station 0 maintaining baseline at Station 0', () => {
+    const negativeStationsProject: TrackProject = {
+      ...baseProject,
+      gradeMode: 'target_grade',
+      targetGradePercent: 0.0, // flat
+      stations: [
+        { id: 'neg-10', distanceFt: -10, readingInches: 14.0 },  // level with Station 0
+        { id: 'neg-5', distanceFt: -5, readingInches: 14.25 },   // 1/4" dip
+        { id: '0', distanceFt: 0, readingInches: 14.0 },         // Station 0 baseline
+        { id: '10', distanceFt: 10, readingInches: 14.0 },       // level with Station 0
+      ]
+    };
+
+    const calculated = calculateTrackProfile(negativeStationsProject);
+
+    // Station 0 must remain baseline Elevation 0.00"
+    expect(calculated[2].distanceFt).toBe(0);
+    expect(calculated[2].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].action).toBe('ok');
+
+    // Station -10 is physically same height as Station 0 (reading 14.0)
+    expect(calculated[0].distanceFt).toBe(-10);
+    expect(calculated[0].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[0].action).toBe('ok');
+
+    // Station -5 is 1/4" lower (reading 14.25)
+    expect(calculated[1].distanceFt).toBe(-5);
+    expect(calculated[1].elevationInches).toBeCloseTo(-0.25, 4);
+    expect(calculated[1].liftInches).toBeCloseTo(0.25, 4);
+    expect(calculated[1].action).toBe('lift');
+    expect(calculated[1].actionText).toBe('LIFT +1/4"');
+  });
 });
 

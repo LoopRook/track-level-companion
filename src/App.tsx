@@ -216,11 +216,11 @@ export const App: React.FC = () => {
 
   // Insert intermediate custom station (e.g. at bridge abutment or switch point)
   const handleInsertCustomStation = () => {
-    const input = prompt('Enter custom station distance along track (in feet):', '12.5');
+    const input = prompt('Enter station distance along track (in feet, e.g. -5, -10, 12.5):', '12.5');
     if (!input) return;
     const dist = parseFloat(input);
-    if (isNaN(dist) || dist < 0) {
-      alert('Please enter a valid positive number for distance.');
+    if (isNaN(dist)) {
+      alert('Please enter a valid number for distance.');
       return;
     }
 
