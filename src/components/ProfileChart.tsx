@@ -39,8 +39,13 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   const innerHeight = chartHeight - padding.top - padding.bottom;
 
   // Horizontal Extents (ft)
-  const minX = stations.length > 0 ? stations[0].distanceFt : 0;
-  const maxX = stations.length > 0 ? Math.max(stations[stations.length - 1].distanceFt, minX + 5) : 50;
+  const minX = stations.length > 0 && typeof stations[0]?.distanceFt === 'number' && !isNaN(stations[0].distanceFt)
+    ? stations[0].distanceFt
+    : 0;
+  const lastDist = stations.length > 0 && typeof stations[stations.length - 1]?.distanceFt === 'number' && !isNaN(stations[stations.length - 1].distanceFt)
+    ? stations[stations.length - 1].distanceFt
+    : minX + 10;
+  const maxX = Math.max(lastDist, minX + 5);
 
   // Vertical Extents (inches) - Calm & Softer by default
   const { minY, maxY, yTicks } = useMemo(() => {
@@ -50,9 +55,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       if (s.targetElevationInches !== null) vals.push(s.targetElevationInches);
     });
 
-    const rawMin = Math.min(...vals);
-    const rawMax = Math.max(...vals);
-    const actualSpan = rawMax - rawMin;
+    const validVals = vals.filter(v => typeof v === 'number' && !isNaN(v));
+    const rawMin = validVals.length > 0 ? Math.min(...validVals) : 0;
+    const rawMax = validVals.length > 0 ? Math.max(...validVals) : 0;
+    const actualSpan = Math.max(rawMax - rawMin, 0);
 
     // Minimum vertical window so small dips don't turn into huge mountains:
     // Gentle: at least 8 inches total span (calm, natural rail view)
@@ -69,12 +75,13 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     const calcMinY = center - span / 2;
     const calcMaxY = center + span / 2;
 
-    // Ticks
+    // Ticks with safety guard
     const step = span > 10 ? 2.0 : span > 4 ? 1.0 : 0.5;
     const ticks: { val: number; label: string }[] = [];
     const firstTick = Math.ceil(calcMinY / step) * step;
 
-    for (let v = firstTick; v <= calcMaxY; v += step) {
+    for (let v = firstTick; v <= calcMaxY + 0.001; v += step) {
+      if (ticks.length >= 30) break; // Safety guard against infinite loops
       ticks.push({
         val: v,
         label: formatMeasurement(v, 'inches_fraction', 16),

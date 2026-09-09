@@ -9,6 +9,19 @@
     <link rel="manifest" href="./manifest.json" />
     <link rel="apple-touch-icon" href="./icon-192.png" />
     <title>Track Level Companion</title>
+    <script>
+      // Unregister any stale service worker caches from previous build
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          for (var r of regs) { r.unregister(); }
+        });
+      }
+      if (window.caches) {
+        caches.keys().then(function(names) {
+          for (var n of names) { caches.delete(n); }
+        });
+      }
+    </script>
   </head>
   <body class="bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 min-h-screen antialiased selection:bg-amber-500 selection:text-black">
     <div id="root"></div>
