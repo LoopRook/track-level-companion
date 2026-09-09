@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CalculatedStation, UnitFormat } from '../core/types';
 import { formatFeetInches, formatMeasurement, parseMeasurement } from '../core/units';
-import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag } from 'lucide-react';
+import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock } from 'lucide-react';
 
 interface ActionTableProps {
   stations: CalculatedStation[];
@@ -9,6 +9,7 @@ interface ActionTableProps {
   fractionResolution: 16 | 8 | 32;
   onEditStation: (station: CalculatedStation) => void;
   onToggleComplete: (stationId: string) => void;
+  onToggleLock?: (stationId: string) => void;
   onDeleteStation: (stationId: string) => void;
   onAddNextStation: () => void;
   onInsertCustomStation: () => void;
@@ -23,6 +24,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   fractionResolution,
   onEditStation,
   onToggleComplete,
+  onToggleLock,
   onDeleteStation,
   onAddNextStation,
   onInsertCustomStation,
@@ -51,10 +53,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
     onSetTurningPoint(turningPointStation.id, parsed);
     setTurningPointStation(null);
   };
+
   return (
     <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors">
-      {/* Table Header */}
-      <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950">
+      {/* Header Toolbar */}
+      <div className="px-3 sm:px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-950">
         <div>
           <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm sm:text-base">
             Trackside Leveling Checklist
@@ -63,26 +66,26 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             Tap row to record reading or adjust shims
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {onExtendTrack && (
             <button
               onClick={() => setIsExtendModalOpen(true)}
-              className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1"
+              className="text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1"
               title="Add a 50ft or 100ft section of stations in one click"
             >
               <Layers className="w-3.5 h-3.5 text-amber-500" />
-              <span>+ Extend Track</span>
+              <span>+ Extend</span>
             </button>
           )}
           <button
             onClick={onInsertCustomStation}
-            className="text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            className="text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
           >
             + Custom Pt
           </button>
           <button
             onClick={onAddNextStation}
-            className="text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition flex items-center gap-1 shadow-sm active:scale-95"
+            className="text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition flex items-center gap-1 shadow-sm active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Add Next</span>
@@ -90,8 +93,196 @@ export const ActionTable: React.FC<ActionTableProps> = ({
         </div>
       </div>
 
-      {/* Table Content */}
-      <div className="overflow-x-auto">
+      {/* MOBILE LIST VIEW (md:hidden): ZERO horizontal scrolling, stacked field-friendly cards */}
+      <div className="divide-y divide-zinc-200 dark:divide-zinc-800/80 md:hidden">
+        {stations.map((s) => {
+          const isSelected = selectedStationId === s.id;
+          const isCompleted = !!s.completed;
+          const isLocked = !!s.isLocked;
+
+          return (
+            <div
+              key={s.id}
+              onClick={() => onEditStation(s)}
+              className={`p-3 transition-colors cursor-pointer ${
+                isSelected
+                  ? 'bg-amber-500/10 dark:bg-amber-500/15'
+                  : isCompleted
+                  ? 'bg-zinc-50/50 dark:bg-zinc-950/40 opacity-75'
+                  : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'
+              }`}
+            >
+              {/* Top Header Row: Completed Check, Station Distance & Badges, Quick Action Buttons */}
+              <div className="flex items-center justify-between gap-2 mb-2">
+                {/* Left: Complete Checkbox + Distance + Status Badges */}
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleComplete(s.id);
+                    }}
+                    className="p-1 -m-1 text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition"
+                    title={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    ) : (
+                      <Circle className="w-5 h-5" />
+                    )}
+                  </button>
+
+                  <span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100">
+                    {s.distanceFt} ft
+                  </span>
+
+                  {isLocked && (
+                    <span
+                      className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-1"
+                      title="Locked Tie / Control Point (over tree root or fixed structure)"
+                    >
+                      <Lock className="w-2.5 h-2.5" />
+                      <span>ROOT</span>
+                    </span>
+                  )}
+
+                  {s.isTurningPoint && (
+                    <span
+                      className="text-[10px] bg-purple-500/20 text-purple-600 dark:text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-500/30 flex items-center gap-0.5"
+                      title="Laser Relocation Benchmark (Turning Point)"
+                    >
+                      <Flag className="w-2.5 h-2.5" />
+                      <span>TP</span>
+                    </span>
+                  )}
+
+                  {s.datumOffsetInches ? (
+                    <span className="text-[10px] text-purple-500 font-mono" title="Laser datum offset applied">
+                      (adj)
+                    </span>
+                  ) : null}
+                </div>
+
+                {/* Right: Quick Action Buttons (Lock, TP, Edit, Delete) */}
+                <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {onToggleLock && (
+                    <button
+                      type="button"
+                      onClick={() => onToggleLock(s.id)}
+                      className={`p-1.5 rounded-lg border transition ${
+                        isLocked
+                          ? 'text-amber-500 bg-amber-500/15 border-amber-500/40'
+                          : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      }`}
+                      title={isLocked ? 'Unlock tie (allow normal lift/cut)' : 'Lock tie (fixed over root/structure)'}
+                    >
+                      {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                    </button>
+                  )}
+
+                  {onSetTurningPoint && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTurningPointStation(s);
+                        setTpNewReadingStr(s.readingInches !== null ? formatFeetInches(s.readingInches) : '');
+                        setTpError(null);
+                      }}
+                      className={`p-1.5 rounded-lg border transition ${
+                        s.isTurningPoint
+                          ? 'text-purple-500 bg-purple-500/15 border-purple-500/40'
+                          : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-purple-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      }`}
+                      title="Relocate Laser: Set Turning Point on this tie"
+                    >
+                      <Flag className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => onEditStation(s)}
+                    className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                    title="Edit measurement"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onDeleteStation(s.id)}
+                    className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                    title="Delete station"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Middle Row: Readings & Elevation */}
+              <div className="grid grid-cols-2 gap-2 py-1.5 px-2.5 bg-zinc-100/60 dark:bg-zinc-900/60 rounded-xl mb-2 text-xs">
+                <div>
+                  <span className="text-[10px] text-zinc-500 block uppercase font-semibold">Laser Reading</span>
+                  <div className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                    {s.readingInches !== null ? (
+                      formatFeetInches(s.readingInches, fractionResolution)
+                    ) : (
+                      <span className="text-amber-500 italic text-xs">Tap to Enter</span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-zinc-500 block uppercase font-semibold">Rel. Elevation</span>
+                  <div className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-300">
+                    {s.elevationInches !== null
+                      ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
+                      : '—'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Row: Full-width Track Action Banner */}
+              <div>
+                {isLocked ? (
+                  <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                    <Lock className="w-3.5 h-3.5 text-amber-500" />
+                    <span>LOCKED (ROOT / FIXED POINT - NO SHIM)</span>
+                  </div>
+                ) : (
+                  <>
+                    {s.action === 'ok' && (
+                      <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>ON GRADE ✓</span>
+                      </div>
+                    )}
+                    {s.action === 'lift' && (
+                      <div className="w-full py-1.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 bg-sky-500/20 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+                        <ArrowUpCircle className="w-4 h-4 text-sky-500" />
+                        <span>{s.actionText}</span>
+                      </div>
+                    )}
+                    {s.action === 'lower' && (
+                      <div className="w-full py-1.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                        <ArrowDownCircle className="w-4 h-4 text-amber-500" />
+                        <span>{s.actionText}</span>
+                      </div>
+                    )}
+                    {s.action === 'none' && (
+                      <div className="w-full py-1 px-3 rounded-xl text-xs text-center text-zinc-400 bg-zinc-100/50 dark:bg-zinc-900/50">
+                        Awaiting reading
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* DESKTOP TABLE VIEW (hidden md:block): full table layout with all columns */}
+      <div className="overflow-x-auto hidden md:block">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-500 bg-zinc-100/70 dark:bg-zinc-950 font-bold">
@@ -107,6 +298,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             {stations.map((s) => {
               const isSelected = selectedStationId === s.id;
               const isCompleted = !!s.completed;
+              const isLocked = !!s.isLocked;
 
               return (
                 <tr
@@ -140,10 +332,19 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     </button>
                   </td>
 
-                  {/* Station Distance & Turning Point Tag */}
+                  {/* Station Distance & Badges */}
                   <td className="py-3 px-3 font-mono font-bold text-zinc-900 dark:text-zinc-200">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span>{s.distanceFt} ft</span>
+                      {isLocked && (
+                        <span
+                          className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-0.5"
+                          title="Locked Tie / Control Point (over tree root or fixed structure)"
+                        >
+                          <Lock className="w-2.5 h-2.5" />
+                          <span>ROOT</span>
+                        </span>
+                      )}
                       {s.isTurningPoint && (
                         <span
                           className="text-[10px] bg-purple-500/20 text-purple-600 dark:text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-500/30 flex items-center gap-0.5"
@@ -185,26 +386,35 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
                   {/* Track Action Badge */}
                   <td className="py-3 px-3 text-center">
-                    {s.action === 'ok' && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        ON GRADE
-                      </span>
-                    )}
-                    {s.action === 'lift' && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30">
-                        <ArrowUpCircle className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
-                        {s.actionText}
-                      </span>
-                    )}
-                    {s.action === 'lower' && (
+                    {isLocked ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                        <ArrowDownCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                        {s.actionText}
+                        <Lock className="w-3.5 h-3.5 text-amber-500" />
+                        LOCKED (ROOT)
                       </span>
-                    )}
-                    {s.action === 'none' && (
-                      <span className="text-zinc-400 text-xs">—</span>
+                    ) : (
+                      <>
+                        {s.action === 'ok' && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            ON GRADE
+                          </span>
+                        )}
+                        {s.action === 'lift' && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+                            <ArrowUpCircle className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
+                            {s.actionText}
+                          </span>
+                        )}
+                        {s.action === 'lower' && (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                            <ArrowDownCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                            {s.actionText}
+                          </span>
+                        )}
+                        {s.action === 'none' && (
+                          <span className="text-zinc-400 text-xs">—</span>
+                        )}
+                      </>
                     )}
                   </td>
 
@@ -214,6 +424,19 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center justify-end gap-1">
+                      {onToggleLock && (
+                        <button
+                          onClick={() => onToggleLock(s.id)}
+                          className={`p-1.5 rounded transition ${
+                            isLocked
+                              ? 'text-amber-500 bg-amber-500/15 hover:bg-amber-500/25'
+                              : 'text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          }`}
+                          title={isLocked ? 'Unlock tie (allow normal lift/cut)' : 'Lock tie (fixed point / tree root)'}
+                        >
+                          {isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
+                        </button>
+                      )}
                       {onSetTurningPoint && (
                         <button
                           onClick={() => {

@@ -57,17 +57,42 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
       const firstIdx = validIndices[0];
       const lastIdx = validIndices[validIndices.length - 1];
 
-      const x0 = stations[firstIdx].distanceFt;
-      const y0 = elevations[firstIdx]!;
-      const x1 = stations[lastIdx].distanceFt;
-      const y1 = elevations[lastIdx]!;
+      // Identify control points: first station, any locked station (e.g. over a tree root), and last station
+      const lockedIndices = validIndices.filter(idx => stations[idx].isLocked);
+      const controlIndices = Array.from(new Set([firstIdx, ...lockedIndices, lastIdx]))
+        .sort((a, b) => stations[a].distanceFt - stations[b].distanceFt);
 
-      const dx = x1 - x0;
-      const slope = dx !== 0 ? (y1 - y0) / dx : 0;
+      if (controlIndices.length === 1) {
+        const singleY = elevations[controlIndices[0]]!;
+        stations.forEach((_, i) => { targetElevations[i] = singleY; });
+      } else {
+        // Interpolate straight grade lines between adjacent control points
+        for (let c = 0; c < controlIndices.length - 1; c++) {
+          const idxA = controlIndices[c];
+          const idxB = controlIndices[c + 1];
+          const xA = stations[idxA].distanceFt;
+          const yA = elevations[idxA]!;
+          const xB = stations[idxB].distanceFt;
+          const yB = elevations[idxB]!;
+          const dx = xB - xA;
+          const slope = dx !== 0 ? (yB - yA) / dx : 0;
 
-      stations.forEach((s, i) => {
-        targetElevations[i] = y0 + (s.distanceFt - x0) * slope;
-      });
+          const isFirstSegment = c === 0;
+          const isLastSegment = c === controlIndices.length - 2;
+
+          stations.forEach((s, i) => {
+            if (isFirstSegment && s.distanceFt <= xA) {
+              targetElevations[i] = yA + (s.distanceFt - xA) * slope;
+            }
+            if (s.distanceFt >= xA && s.distanceFt <= xB) {
+              targetElevations[i] = yA + (s.distanceFt - xA) * slope;
+            }
+            if (isLastSegment && s.distanceFt >= xB) {
+              targetElevations[i] = yB + (s.distanceFt - xB) * slope;
+            }
+          });
+        }
+      }
     } else if (gradeMode === 'best_fit') {
       // Ordinary Least Squares regression: y = m*x + b
       let sumX = 0;
@@ -124,16 +149,18 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
 
   return stations.map((s, i) => {
     const elev = elevations[i];
-    const target = targetElevations[i];
+    let target = targetElevations[i];
 
     let lift: number | null = null;
     let action: 'lift' | 'lower' | 'ok' | 'none' = 'none';
     let actionText = '—';
 
-    if (elev !== null && target !== null) {
-      // Lift required = Target - Actual
-      // If Target is higher than Actual, lift is positive (need to raise track)
-      // If Target is lower than Actual, lift is negative (need to lower track)
+    if (s.isLocked && elev !== null) {
+      target = elev;
+      lift = 0;
+      action = 'ok';
+      actionText = 'LOCKED 🔒';
+    } else if (elev !== null && target !== null) {
       lift = target - elev;
 
       if (Math.abs(lift) <= tolerance) {

@@ -144,43 +144,25 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <div className="flex rounded-lg bg-zinc-100 dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-800">
             <button
               onClick={() => onChangeProject({ gradeMode: 'target_grade' })}
-              className={`px-2.5 py-1 rounded-md font-bold transition ${
+              className={`px-3 py-1 rounded-md font-bold transition text-xs ${
                 project.gradeMode === 'target_grade'
                   ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 shadow-sm'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
+              title="Target a specific grade or slope across the section (e.g. 0.0% flat)"
             >
               Grade %
             </button>
             <button
               onClick={() => onChangeProject({ gradeMode: 'end_to_end' })}
-              className={`px-2.5 py-1 rounded-md font-bold transition ${
+              className={`px-3 py-1 rounded-md font-bold transition text-xs ${
                 project.gradeMode === 'end_to_end'
                   ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 shadow-sm'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
+              title="Connect fixed benchmark ends and any locked control points (e.g. over tree roots)"
             >
-              End-to-End
-            </button>
-            <button
-              onClick={() => onChangeProject({ gradeMode: 'best_fit' })}
-              className={`px-2.5 py-1 rounded-md font-bold transition ${
-                project.gradeMode === 'best_fit'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-              }`}
-            >
-              Best-Fit
-            </button>
-            <button
-              onClick={() => onChangeProject({ gradeMode: 'smooth_curve' })}
-              className={`px-2.5 py-1 rounded-md font-bold transition ${
-                project.gradeMode === 'smooth_curve'
-                  ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-              }`}
-            >
-              Curve
+              End-to-End (Fixed Points)
             </button>
           </div>
 

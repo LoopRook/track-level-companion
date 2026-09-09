@@ -319,6 +319,16 @@ export const App: React.FC = () => {
     }));
   };
 
+  // Toggle station locked control point (e.g. over tree root or fixed structure)
+  const handleToggleLock = (stationId: string) => {
+    setProject(prev => ({
+      ...prev,
+      stations: prev.stations.map(s =>
+        s.id === stationId ? { ...s, isLocked: !s.isLocked } : s
+      )
+    }));
+  };
+
   // Delete station
   const handleDeleteStation = (stationId: string) => {
     if (project.stations.length <= 1) {
@@ -360,7 +370,7 @@ export const App: React.FC = () => {
         { id: 'demo-20', distanceFt: 20, readingInches: 14.25 },  // 1/4" dip
         { id: 'demo-25', distanceFt: 25, readingInches: 14.0 },   // on grade
         { id: 'demo-30', distanceFt: 30, readingInches: 13.875 }, // 1/8" hump
-        { id: 'demo-35', distanceFt: 35, readingInches: 13.75 },  // 1/4" hump (bridge entry)
+        { id: 'demo-35', distanceFt: 35, readingInches: 13.75, isLocked: true },  // 1/4" hump (bridge entry / locked tie)
         { id: 'demo-40', distanceFt: 40, readingInches: 13.875 },
         { id: 'demo-45', distanceFt: 45, readingInches: 14.0 },
         { id: 'demo-50', distanceFt: 50, readingInches: 14.0 },
@@ -396,6 +406,7 @@ export const App: React.FC = () => {
         fractionResolution={project.fractionResolution}
         onEditStation={handleSelectStation}
         onToggleComplete={handleToggleComplete}
+        onToggleLock={handleToggleLock}
         onDeleteStation={handleDeleteStation}
         onAddNextStation={handleAddNextStation}
         onInsertCustomStation={handleInsertCustomStation}

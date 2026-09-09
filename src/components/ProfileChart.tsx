@@ -337,14 +337,22 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </div>
 
           <div className="flex items-center gap-2 font-sans font-bold">
-            {currentInspectStation.action === 'ok' && (
-              <span className="text-emerald-500 text-xs">✓ ON GRADE</span>
-            )}
-            {currentInspectStation.action === 'lift' && (
-              <span className="text-sky-500 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
-            )}
-            {currentInspectStation.action === 'lower' && (
-              <span className="text-amber-500 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
+            {currentInspectStation.isLocked ? (
+              <span className="text-amber-500 dark:text-amber-400 text-xs flex items-center gap-1">
+                🔒 LOCKED (ROOT)
+              </span>
+            ) : (
+              <>
+                {currentInspectStation.action === 'ok' && (
+                  <span className="text-emerald-500 text-xs">✓ ON GRADE</span>
+                )}
+                {currentInspectStation.action === 'lift' && (
+                  <span className="text-sky-500 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
+                )}
+                {currentInspectStation.action === 'lower' && (
+                  <span className="text-amber-500 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
+                )}
+              </>
             )}
             <button
               onClick={() => onSelectStation(currentInspectStation)}
@@ -490,6 +498,18 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     stroke="#a855f7"
                     strokeWidth="2"
                     strokeDasharray="2,2"
+                  />
+                )}
+
+                {/* Locked Tie (Root / Fixed Point) ring */}
+                {s.isLocked && (
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={9}
+                    fill="none"
+                    stroke="#f59e0b"
+                    strokeWidth="2"
                   />
                 )}
 

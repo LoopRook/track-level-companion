@@ -170,4 +170,47 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(calculated[2].liftInches).toBeCloseTo(0.0, 4);
     expect(calculated[2].action).toBe('ok');
   });
+
+  it('respects locked control points over tree roots and interpolates piecewise in end_to_end mode', () => {
+    // Station 0: baseline (elev = 0)
+    // Station 10: over a tree root (+0.5" hump), locked so we cannot lower it!
+    // Station 20: end benchmark (elev = 0)
+    // Station 5: intermediate point between 0 and root
+    // Station 15: intermediate point between root and 20
+    const lockedProject: TrackProject = {
+      ...baseProject,
+      gradeMode: 'end_to_end',
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 12.0 },    // elev = 0
+        { id: '5', distanceFt: 5, readingInches: 12.0 },    // elev = 0
+        { id: '10', distanceFt: 10, readingInches: 11.5, isLocked: true }, // elev = +0.5" (root hump)
+        { id: '15', distanceFt: 15, readingInches: 12.0 },  // elev = 0
+        { id: '20', distanceFt: 20, readingInches: 12.0 },  // elev = 0
+      ]
+    };
+
+    const calculated = calculateTrackProfile(lockedProject);
+
+    // Root station (10 ft) must be locked with 0 cut/lift and target = actual
+    expect(calculated[2].isLocked).toBe(true);
+    expect(calculated[2].elevationInches).toBeCloseTo(0.5, 4);
+    expect(calculated[2].targetElevationInches).toBeCloseTo(0.5, 4);
+    expect(calculated[2].liftInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].action).toBe('ok');
+    expect(calculated[2].actionText).toBe('LOCKED 🔒');
+
+    // Intermediate Station at 5 ft: connects 0 ft (elev 0) to 10 ft (elev 0.5)
+    // Target elevation at 5 ft should be +0.25"
+    expect(calculated[1].targetElevationInches).toBeCloseTo(0.25, 4);
+    // Since actual elevation is 0, lift needed is +0.25"
+    expect(calculated[1].liftInches).toBeCloseTo(0.25, 4);
+    expect(calculated[1].action).toBe('lift');
+
+    // Intermediate Station at 15 ft: connects 10 ft (elev 0.5) to 20 ft (elev 0)
+    // Target elevation at 15 ft should be +0.25"
+    expect(calculated[3].targetElevationInches).toBeCloseTo(0.25, 4);
+    expect(calculated[3].liftInches).toBeCloseTo(0.25, 4);
+    expect(calculated[3].action).toBe('lift');
+  });
 });
+

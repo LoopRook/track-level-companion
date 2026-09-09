@@ -10,6 +10,7 @@ export interface StationPoint {
   notes?: string;
   datumOffsetInches?: number; // Laser relocation offset (turning point shift)
   isTurningPoint?: boolean;   // Flag marking this station as a turning point / benchmark
+  isLocked?: boolean;         // Immovable control point (e.g. tree root, bridge, switch)
 }
 
 export interface CalculatedStation extends StationPoint {
