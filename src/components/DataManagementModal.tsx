@@ -136,27 +136,27 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors">
         {/* Header */}
-        <div className="bg-slate-800 text-white px-5 py-4 flex items-center justify-between border-b border-slate-700">
+        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-5 py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
-            <FolderOpen className="w-5 h-5 text-amber-400" />
-            <h2 className="text-lg font-bold">Track Profiles & Export</h2>
+            <FolderOpen className="w-5 h-5 text-amber-500" />
+            <h2 className="text-base sm:text-lg font-bold">Track Profiles & Export</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition"
+            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-5 overflow-y-auto space-y-6 text-sm">
+        <div className="p-5 overflow-y-auto space-y-5 text-sm">
           {/* Save Current Track */}
-          <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <div className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2.5">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
               Save Active Track Profile
             </label>
             <div className="flex gap-2">
@@ -165,13 +165,13 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
                 placeholder="Track Section Name"
-                className="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-200 outline-none"
+                className="flex-1 bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none"
               />
               <button
                 onClick={handleSaveCurrent}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl flex items-center gap-1.5 transition active:scale-95 text-xs shadow"
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-xl flex items-center gap-1.5 transition active:scale-95 text-xs shadow-sm"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-4 h-4 stroke-[2.5]" />
                 <span>Save</span>
               </button>
             </div>
@@ -179,23 +179,23 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
 
           {/* Export / Import */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
               CSV Export & Import (Sheets / Excel)
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={handleExportCSV}
-                className="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center gap-1 text-slate-800 dark:text-slate-200 transition active:scale-95 font-semibold text-xs"
+                className="p-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-1 text-zinc-800 dark:text-zinc-200 transition active:scale-95 font-semibold text-xs"
               >
-                <Download className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <Download className="w-5 h-5 text-emerald-500" />
                 <span>Export to CSV</span>
               </button>
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center gap-1 text-slate-800 dark:text-slate-200 transition active:scale-95 font-semibold text-xs"
+                className="p-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-1 text-zinc-800 dark:text-zinc-200 transition active:scale-95 font-semibold text-xs"
               >
-                <Upload className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <Upload className="w-5 h-5 text-amber-500" />
                 <span>Import CSV File</span>
               </button>
               <input
@@ -210,7 +210,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
 
           {/* Quick Presets / Demo Track */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
               Presets & Quick Start
             </label>
             <div className="flex gap-2">
@@ -231,7 +231,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                     onClose();
                   }
                 }}
-                className="py-2 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-red-100 dark:hover:bg-red-950/50 text-slate-700 dark:text-slate-300 hover:text-red-600 border border-slate-300 dark:border-slate-700 rounded-xl font-bold text-xs transition flex items-center gap-1"
+                className="py-2 px-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-red-100 dark:hover:bg-red-950/50 text-zinc-700 dark:text-zinc-300 hover:text-red-500 border border-zinc-200 dark:border-zinc-800 rounded-xl font-bold text-xs transition flex items-center gap-1"
                 title="Clear current track"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -243,20 +243,20 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
           {/* Saved Profiles List */}
           {savedProjects.length > 0 && (
             <div className="space-y-2">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                 Saved Tracks ({savedProjects.length})
               </label>
               <div className="space-y-1.5 max-h-40 overflow-y-auto">
                 {savedProjects.map((p) => (
                   <div
                     key={p.name}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs"
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs"
                   >
                     <div>
-                      <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                      <span className="font-bold text-zinc-800 dark:text-zinc-200 block">
                         {p.name}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-mono">
+                      <span className="text-[10px] text-zinc-500 font-mono">
                         {p.stations.length} stations • {p.date}
                       </span>
                     </div>
@@ -266,13 +266,13 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                           onLoadProject(p);
                           onClose();
                         }}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
+                        className="px-2.5 py-1 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-extrabold rounded-lg transition"
                       >
                         Load
                       </button>
                       <button
                         onClick={() => handleDeleteSaved(p.name)}
-                        className="p-1 text-slate-400 hover:text-red-500 rounded transition"
+                        className="p-1 text-zinc-400 hover:text-red-500 rounded transition"
                         title="Delete saved track"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -286,10 +286,10 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 text-right">
+        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 text-right">
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs hover:bg-slate-300 dark:hover:bg-slate-700 transition"
+            className="px-4 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold text-xs hover:bg-zinc-300 dark:hover:bg-zinc-800 transition"
           >
             Close
           </button>

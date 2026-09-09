@@ -8,24 +8,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        railroad: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617',
+        obsidian: {
+          DEFAULT: '#000000',
+          card: '#0a0a0c',
+          card2: '#121215',
+          border: '#27272a',
+          hover: '#18181b',
         },
         steel: {
-          blue: '#2563eb',
-          amber: '#d97706',
-          green: '#16a34a',
-          red: '#dc2626',
+          rail: '#f4f4f5',
+          amber: '#f59e0b',
+          green: '#10b981',
+          cyan: '#38bdf8',
+          red: '#ef4444',
         }
       },
       fontFamily: {

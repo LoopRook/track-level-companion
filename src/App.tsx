@@ -42,13 +42,13 @@ export const App: React.FC = () => {
     }
   });
 
-  // Dark mode (defaults to light for bright outdoor sun, but supports dark)
+  // Dark mode (defaults to true for pure black OLED theme)
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('track_level_dark_mode');
-      return saved === 'true';
+      return saved !== null ? saved === 'true' : true;
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -310,7 +310,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors p-3 sm:p-5 max-w-5xl mx-auto space-y-4">
+    <div className="min-h-screen bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2.5 sm:p-4 max-w-5xl mx-auto space-y-3">
       {/* Configuration & Header */}
       <StationConfig
         project={project}
