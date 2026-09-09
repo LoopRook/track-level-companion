@@ -1,6 +1,6 @@
 import React from 'react';
 import { UnitFormat, TrackProject } from '../core/types';
-import { Sliders, Sun, Moon } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass } from 'lucide-react';
 
 interface StationConfigProps {
   project: TrackProject;
@@ -33,8 +33,8 @@ export const StationConfig: React.FC<StationConfigProps> = ({
       {/* Top Navbar */}
       <header className="bg-white dark:bg-black text-zinc-900 dark:text-white rounded-2xl p-3.5 sm:p-4 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 transition-colors">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 dark:bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-lg shadow-sm">
-            🚂
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 dark:bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-500 shadow-sm">
+            <Compass className="w-5 h-5 stroke-[2.2]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -45,9 +45,6 @@ export const StationConfig: React.FC<StationConfigProps> = ({
                 className="bg-transparent font-extrabold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 rounded px-1.5 -ml-1.5 py-0.5 outline-none transition"
                 placeholder="Track Section Name"
               />
-              <span className="text-[11px] bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-0.5 rounded font-mono font-bold">
-                {project.gauge}
-              </span>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Track Level Companion • {summary.lengthFt} ft Section
@@ -141,10 +138,11 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <span className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">
             Target:
           </span>
-          <div className="flex rounded-lg bg-zinc-100 dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-800">
+          <div className="flex rounded-lg bg-zinc-100 dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-800 h-8 items-center">
             <button
+              type="button"
               onClick={() => onChangeProject({ gradeMode: 'target_grade' })}
-              className={`px-3 py-1 rounded-md font-bold transition text-xs ${
+              className={`h-full px-3 rounded-md font-bold transition text-xs flex items-center ${
                 project.gradeMode === 'target_grade'
                   ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 shadow-sm'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -154,40 +152,43 @@ export const StationConfig: React.FC<StationConfigProps> = ({
               Grade %
             </button>
             <button
+              type="button"
               onClick={() => onChangeProject({ gradeMode: 'end_to_end' })}
-              className={`px-3 py-1 rounded-md font-bold transition text-xs ${
+              className={`h-full px-3 rounded-md font-bold transition text-xs flex items-center ${
                 project.gradeMode === 'end_to_end'
                   ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 shadow-sm'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
               title="Connect fixed benchmark ends and any locked control points (e.g. over tree roots)"
             >
-              End-to-End (Fixed Points)
+              End-to-End
             </button>
           </div>
 
           {/* If Grade % is selected, show slope input */}
           {project.gradeMode === 'target_grade' && (
-            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 px-2 py-1 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <span className="text-zinc-500 font-medium">Slope:</span>
-              <input
-                type="number"
-                step="0.1"
-                value={project.targetGradePercent}
-                onChange={(e) => onChangeProject({ targetGradePercent: parseFloat(e.target.value) || 0 })}
-                className="w-12 font-mono font-bold bg-transparent text-zinc-900 dark:text-zinc-100 outline-none text-right"
-              />
-              <span className="font-bold text-zinc-500">%</span>
-              <div className="flex gap-1 ml-1">
+            <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 h-8">
+              <span className="text-zinc-500 font-medium text-xs">Slope:</span>
+              <div className="flex items-center">
+                <input
+                  type="number"
+                  step="0.1"
+                  value={project.targetGradePercent}
+                  onChange={(e) => onChangeProject({ targetGradePercent: parseFloat(e.target.value) || 0 })}
+                  className="w-11 font-mono font-bold bg-transparent text-zinc-900 dark:text-zinc-100 outline-none text-right text-xs"
+                />
+                <span className="font-bold text-zinc-500 ml-0.5 text-xs">%</span>
+              </div>
+              <div className="flex items-center gap-1 ml-1 pl-1.5 border-l border-zinc-200 dark:border-zinc-800">
                 {[0.0, 0.5, 1.0].map((g) => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => onChangeProject({ targetGradePercent: g })}
-                    className={`px-1.5 py-0.5 text-[10px] rounded ${
+                    className={`px-1.5 py-0.5 text-[10px] font-bold rounded transition ${
                       project.targetGradePercent === g
-                        ? 'bg-amber-500 text-black font-bold'
-                        : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                        ? 'bg-amber-500 text-black shadow-xs'
+                        : 'bg-zinc-200/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-700'
                     }`}
                   >
                     {g}%

@@ -309,6 +309,17 @@ export const App: React.FC = () => {
     }));
   };
 
+  // Reset all laser relocation / datum offsets
+  const handleResetDatum = () => {
+    setProject(prev => ({
+      ...prev,
+      stations: prev.stations.map(s => {
+        const { datumOffsetInches, isTurningPoint, ...rest } = s;
+        return rest;
+      })
+    }));
+  };
+
   // Toggle station leveled/completed
   const handleToggleComplete = (stationId: string) => {
     setProject(prev => ({
@@ -412,6 +423,7 @@ export const App: React.FC = () => {
         onInsertCustomStation={handleInsertCustomStation}
         onExtendTrack={handleExtendTrack}
         onSetTurningPoint={handleSetTurningPoint}
+        onResetDatum={handleResetDatum}
         selectedStationId={activeEditingStation?.id}
       />
 

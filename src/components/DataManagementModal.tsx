@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { TrackProject, StationPoint } from '../core/types';
-import { formatFeetInches } from '../core/units';
+import { exportTrackToCSV, parseTrackFromCSV, appendStations } from '../core/csv';
 import { X, Download, Upload, Trash2, FolderOpen, Save, FileSpreadsheet, RotateCcw } from 'lucide-react';
 
 interface DataManagementModalProps {
@@ -73,32 +73,22 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
 
   const [pendingCsvStations, setPendingCsvStations] = useState<StationPoint[] | null>(null);
 
-  // Export to CSV
+  // Export to CSV using robust core utility
   const handleExportCSV = () => {
-    const rows = [
-      ['Station (ft)', 'Laser Reading (in)', 'Laser Reading (ft/in)', 'Completed', 'Datum Offset (in)', 'Notes'],
-      ...currentProject.stations.map(s => [
-        s.distanceFt.toString(),
-        s.readingInches !== null ? s.readingInches.toFixed(4) : '',
-        s.readingInches !== null ? formatFeetInches(s.readingInches) : '',
-        s.completed ? 'YES' : 'NO',
-        s.datumOffsetInches ? s.datumOffsetInches.toFixed(4) : '',
-        s.notes || '',
-      ])
-    ];
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = exportTrackToCSV(currentProject);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', url);
     const safeName = currentProject.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     link.setAttribute('download', `${safeName}_${currentProject.date}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
-  // Import from CSV
+  // Import from CSV using robust parser
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -108,37 +98,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       const text = event.target?.result as string;
       if (!text) return;
 
-      const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-      if (lines.length < 2) return;
-
-      const newStations: StationPoint[] = [];
-      for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split(',');
-        const dist = parseFloat(parts[0]);
-        const reading = parts[1] ? parseFloat(parts[1]) : null;
-        let datumOffset: number | undefined = undefined;
-        let notes = '';
-
-        if (parts.length >= 6) {
-          const parsedOffset = parseFloat(parts[4]);
-          if (!isNaN(parsedOffset) && parsedOffset !== 0) datumOffset = parsedOffset;
-          notes = parts[5] || '';
-        } else {
-          notes = parts[4] || '';
-        }
-
-        if (!isNaN(dist)) {
-          newStations.push({
-            id: `station-${Date.now()}-${i}`,
-            distanceFt: dist,
-            readingInches: reading !== null && !isNaN(reading) ? reading : null,
-            completed: parts[3]?.toUpperCase() === 'YES',
-            datumOffsetInches: datumOffset,
-            isTurningPoint: !!datumOffset,
-            notes,
-          });
-        }
-      }
+      const newStations = parseTrackFromCSV(text);
 
       if (newStations.length > 0) {
         if (currentProject.stations.length > 0) {
@@ -172,32 +132,11 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   // Execute Append (Shift distances so imported track continues after current track)
   const handleConfirmAppend = (shiftDistances: boolean) => {
     if (!pendingCsvStations) return;
-    const currentStations = currentProject.stations;
-    const lastDist = currentStations.length > 0 ? currentStations[currentStations.length - 1].distanceFt : 0;
-
-    let appended: StationPoint[];
-    if (shiftDistances) {
-      const firstIncoming = pendingCsvStations[0]?.distanceFt ?? 0;
-      // If incoming starts at 0, shift so 0 becomes lastDist, or skip 0 if lastDist already exists
-      const shift = lastDist - (firstIncoming === 0 ? 0 : 0);
-
-      appended = pendingCsvStations
-        .filter(s => !(firstIncoming === 0 && s.distanceFt === 0)) // Avoid duplicate tie at joint
-        .map((s, idx) => ({
-          ...s,
-          id: `station-${Date.now()}-${idx}`,
-          distanceFt: s.distanceFt + shift,
-        }));
-    } else {
-      appended = pendingCsvStations.map((s, idx) => ({
-        ...s,
-        id: `station-${Date.now()}-${idx}`,
-      }));
-    }
+    const combined = appendStations(currentProject.stations, pendingCsvStations, shiftDistances);
 
     onLoadProject({
       ...currentProject,
-      stations: [...currentStations, ...appended],
+      stations: combined,
     });
     setPendingCsvStations(null);
     onClose();
@@ -205,22 +144,11 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
 
   // Append a saved project from localStorage to active project
   const handleAppendSavedProject = (saved: TrackProject) => {
-    const currentStations = currentProject.stations;
-    const lastDist = currentStations.length > 0 ? currentStations[currentStations.length - 1].distanceFt : 0;
-    const firstSavedDist = saved.stations[0]?.distanceFt ?? 0;
-
-    const shift = lastDist;
-    const stationsToAppend = saved.stations
-      .filter(s => !(firstSavedDist === 0 && s.distanceFt === 0)) // Avoid duplicate tie at joint
-      .map((s, idx) => ({
-        ...s,
-        id: `station-${Date.now()}-${idx}`,
-        distanceFt: s.distanceFt + shift,
-      }));
+    const combined = appendStations(currentProject.stations, saved.stations, true);
 
     onLoadProject({
       ...currentProject,
-      stations: [...currentStations, ...stationsToAppend],
+      stations: combined,
     });
     onClose();
   };

@@ -15,6 +15,7 @@ interface ActionTableProps {
   onInsertCustomStation: () => void;
   onExtendTrack?: (lengthFt: number, intervalFt: number) => void;
   onSetTurningPoint?: (stationId: string, newReadingInches: number) => void;
+  onResetDatum?: () => void;
   selectedStationId?: string | null;
 }
 
@@ -30,6 +31,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   onInsertCustomStation,
   onExtendTrack,
   onSetTurningPoint,
+  onResetDatum,
   selectedStationId,
 }) => {
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
@@ -67,6 +69,25 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+          {onSetTurningPoint && (
+            <button
+              type="button"
+              onClick={() => {
+                const measured = stations.filter(s => s.readingInches !== null);
+                const target = (measured.length > 0 ? measured[measured.length - 1] : stations[0]) || null;
+                if (target) {
+                  setTurningPointStation(target);
+                  setTpNewReadingStr(target.readingInches !== null ? formatFeetInches(target.readingInches) : '');
+                  setTpError(null);
+                }
+              }}
+              className="text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition flex items-center gap-1"
+              title="Pick up rotary laser and relocate forward: set turning point benchmark"
+            >
+              <Flag className="w-3.5 h-3.5 text-purple-500" />
+              <span>Move Laser (Datum)</span>
+            </button>
+          )}
           {onExtendTrack && (
             <button
               onClick={() => setIsExtendModalOpen(true)}
@@ -92,6 +113,29 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Active Laser Relocation / Datum Shift Banner */}
+      {stations.some(s => s.datumOffsetInches) && (
+        <div className="px-3 sm:px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 text-xs flex items-center justify-between gap-2 text-purple-700 dark:text-purple-300">
+          <div className="flex items-center gap-1.5">
+            <Flag className="w-3.5 h-3.5 shrink-0 text-purple-500" />
+            <span>
+              <strong>Laser Relocation Active:</strong> Datum offset applied at Station{' '}
+              {stations.find(s => s.isTurningPoint)?.distanceFt ?? '—'} ft (
+              {formatMeasurement(stations.find(s => s.datumOffsetInches)?.datumOffsetInches ?? 0, 'inches_fraction')} shift).
+            </span>
+          </div>
+          {onResetDatum && (
+            <button
+              type="button"
+              onClick={onResetDatum}
+              className="text-[11px] font-bold underline hover:text-purple-900 dark:hover:text-purple-100 shrink-0"
+            >
+              Reset Datum
+            </button>
+          )}
+        </div>
+      )}
 
       {/* MOBILE LIST VIEW (md:hidden): ZERO horizontal scrolling, stacked field-friendly cards */}
       <div className="divide-y divide-zinc-200 dark:divide-zinc-800/80 md:hidden">
@@ -562,32 +606,57 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
             <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Flag className="w-4 h-4 text-purple-500" />
-              <span>Relocate Laser (Turning Point at Station {turningPointStation.distanceFt} ft)</span>
+              <span>Relocate Laser (Datum Shift)</span>
             </h4>
             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              When moving the tripod forward or starting next weekend, take one reading on this tie with your{' '}
+              When moving the rotary laser tripod forward or continuing next weekend, take one reading on this benchmark tie with your{' '}
               <strong>new laser setup</strong>.
             </p>
-            <div className="space-y-2 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
-              <div className="flex justify-between items-center pb-1 border-b border-zinc-200 dark:border-zinc-800">
-                <span className="text-zinc-500">Old Laser Reading:</span>
-                <span className="font-bold text-zinc-900 dark:text-zinc-100">
-                  {turningPointStation.readingInches !== null
-                    ? formatFeetInches(turningPointStation.readingInches)
-                    : 'None recorded'}
-                </span>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-zinc-500 font-bold block mb-1">Benchmark Tie (Station):</label>
+                <select
+                  value={turningPointStation.id}
+                  onChange={(e) => {
+                    const found = stations.find(s => s.id === e.target.value);
+                    if (found) {
+                      setTurningPointStation(found);
+                      setTpNewReadingStr(found.readingInches !== null ? formatFeetInches(found.readingInches) : '');
+                      setTpError(null);
+                    }
+                  }}
+                  className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 outline-none font-mono"
+                >
+                  {stations.map(s => (
+                    <option key={s.id} value={s.id}>
+                      Station {s.distanceFt} ft {s.readingInches !== null ? `(Recorded: ${formatFeetInches(s.readingInches)})` : '(No reading)'}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="space-y-1.5 pt-1">
-                <label className="text-zinc-500 font-bold block">New Laser Reading on this tie:</label>
-                <input
-                  type="text"
-                  value={tpNewReadingStr}
-                  onChange={(e) => setTpNewReadingStr(e.target.value)}
-                  placeholder="e.g. 1' 4 3/8 or 16.5"
-                  className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none font-mono"
-                  autoFocus
-                />
-                {tpError && <p className="text-red-500 text-[11px] font-sans">{tpError}</p>}
+
+              <div className="space-y-2 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
+                <div className="flex justify-between items-center pb-1 border-b border-zinc-200 dark:border-zinc-800">
+                  <span className="text-zinc-500">Old Laser Reading:</span>
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                    {turningPointStation.readingInches !== null
+                      ? formatFeetInches(turningPointStation.readingInches)
+                      : 'None recorded'}
+                  </span>
+                </div>
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-zinc-500 font-bold block">New Laser Reading on this tie:</label>
+                  <input
+                    type="text"
+                    value={tpNewReadingStr}
+                    onChange={(e) => setTpNewReadingStr(e.target.value)}
+                    placeholder="e.g. 1' 4 3/8 or 16.5"
+                    className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none font-mono"
+                    autoFocus
+                  />
+                  {tpError && <p className="text-red-500 text-[11px] font-sans">{tpError}</p>}
+                </div>
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">
