@@ -1,7 +1,22 @@
 import React, { useState, useRef } from 'react';
 import { TrackProject, StationPoint } from '../core/types';
 import { exportTrackToCSV, parseTrackFromCSV, appendStations } from '../core/csv';
-import { X, Download, Upload, Trash2, FolderOpen, Save, FileSpreadsheet, RotateCcw } from 'lucide-react';
+import { formatFeetInches } from '../core/units';
+import {
+  X,
+  Download,
+  Upload,
+  Trash2,
+  FolderOpen,
+  Save,
+  FileSpreadsheet,
+  RotateCcw,
+  Copy,
+  Check,
+  FileText,
+  Layers,
+  AlertCircle
+} from 'lucide-react';
 
 interface DataManagementModalProps {
   isOpen: boolean;
@@ -22,6 +37,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   onResetProject,
   onLoadDemoTrack,
 }) => {
+  const [activeTab, setActiveTab] = useState<'export' | 'import' | 'saved'>('export');
   const [savedProjects, setSavedProjects] = useState<TrackProject[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -32,18 +48,30 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   });
 
   const [saveName, setSaveName] = useState(currentProject.name);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [pendingCsvStations, setPendingCsvStations] = useState<{ stations: StationPoint[]; sourceName: string } | null>(null);
+  const [pastedText, setPastedText] = useState('');
+  const [showRawCsv, setShowRawCsv] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
+  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+    setFeedback({ type, message });
+    setTimeout(() => setFeedback(null), 4500);
+  };
+
+  // Save current project to browser localStorage
   const handleSaveCurrent = () => {
+    const trimmedName = saveName.trim() || 'Untitled Track';
     const projectToSave: TrackProject = {
       ...currentProject,
-      name: saveName.trim() || 'Untitled Track',
+      name: trimmedName,
       date: new Date().toISOString().split('T')[0],
     };
 
-    const existingIdx = savedProjects.findIndex(p => p.name === projectToSave.name);
+    const existingIdx = savedProjects.findIndex(p => p.name.toLowerCase() === trimmedName.toLowerCase());
     let updated: TrackProject[];
     if (existingIdx >= 0) {
       updated = [...savedProjects];
@@ -55,40 +83,94 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
     setSavedProjects(updated);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      showNotification(`Saved "${trimmedName}" to browser storage!`);
     } catch (e) {
       console.error('Failed to save to localStorage', e);
+      showNotification('Could not save to storage.', 'error');
     }
     onLoadProject(projectToSave);
   };
 
+  // Delete saved profile
   const handleDeleteSaved = (name: string) => {
+    if (!confirm(`Delete saved profile "${name}"?`)) return;
     const updated = savedProjects.filter(p => p.name !== name);
     setSavedProjects(updated);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      showNotification(`Deleted "${name}".`);
     } catch (e) {
       console.error(e);
     }
   };
 
-  const [pendingCsvStations, setPendingCsvStations] = useState<StationPoint[] | null>(null);
+  // Export to CSV with native mobile share support & direct download
+  const handleExportCSV = async (targetProj: TrackProject = currentProject) => {
+    const csvContent = exportTrackToCSV(targetProj);
+    const safeName = targetProj.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const filename = `${safeName || 'track'}_${targetProj.date || new Date().toISOString().split('T')[0]}.csv`;
 
-  // Export to CSV using robust core utility
-  const handleExportCSV = () => {
-    const csvContent = exportTrackToCSV(currentProject);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    const safeName = currentProject.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    link.setAttribute('download', `${safeName}_${currentProject.date}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Attempt Native Share on mobile devices (iOS Safari / Android Chrome)
+    if (typeof navigator !== 'undefined' && navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+      try {
+        const file = new File([csvContent], filename, { type: 'text/csv' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: targetProj.name,
+          });
+          showNotification(`Shared "${filename}"!`);
+          return;
+        }
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+      }
+    }
+
+    // Standard download trigger
+    try {
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 500);
+      showNotification(`Downloaded "${filename}"!`);
+    } catch {
+      showNotification('Download failed. You can copy CSV text below.', 'error');
+    }
   };
 
-  // Import from CSV using robust parser
+  // Copy CSV to clipboard
+  const handleCopyCSV = async () => {
+    const csvContent = exportTrackToCSV(currentProject);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(csvContent);
+        showNotification('✓ Copied CSV data to clipboard!');
+        return;
+      }
+      throw new Error('Clipboard API not available');
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = csvContent;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showNotification('✓ Copied CSV data to clipboard!');
+    }
+  };
+
+  // Handle file input selection
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -96,257 +178,491 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
-      if (!text) return;
-
-      const newStations = parseTrackFromCSV(text);
-
-      if (newStations.length > 0) {
-        if (currentProject.stations.length > 0) {
-          // Ask user: Replace or Append?
-          setPendingCsvStations(newStations);
-        } else {
-          onLoadProject({
-            ...currentProject,
-            stations: newStations,
-          });
-          onClose();
-        }
+      if (!text) {
+        showNotification('File is empty.', 'error');
+        return;
       }
+      processIncomingCSV(text, file.name);
     };
     reader.readAsText(file);
-    // Reset file input so user can re-upload same file if needed
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // Execute Replace
+  // Process text from file or paste
+  const processIncomingCSV = (text: string, sourceName: string) => {
+    const stations = parseTrackFromCSV(text);
+    if (stations.length === 0) {
+      showNotification('Could not find any valid stations in this CSV. Please check formatting.', 'error');
+      return;
+    }
+
+    if (currentProject.stations.length === 0 || (currentProject.stations.length === 1 && currentProject.stations[0].readingInches === null)) {
+      // Direct load if current track is empty
+      onLoadProject({
+        ...currentProject,
+        name: sourceName.replace(/\.[^/.]+$/, ''),
+        stations,
+      });
+      showNotification(`✓ Loaded ${stations.length} stations!`);
+      onClose();
+    } else {
+      // Ask user to choose Replace or Merge
+      setPendingCsvStations({ stations, sourceName });
+    }
+  };
+
+  // Execute Replace with incoming
   const handleConfirmReplace = () => {
     if (!pendingCsvStations) return;
     onLoadProject({
       ...currentProject,
-      stations: pendingCsvStations,
+      stations: pendingCsvStations.stations,
     });
+    showNotification(`✓ Replaced track with ${pendingCsvStations.stations.length} stations.`);
     setPendingCsvStations(null);
     onClose();
   };
 
-  // Execute Append (Shift distances so imported track continues after current track)
-  const handleConfirmAppend = (shiftDistances: boolean) => {
+  // Execute Merge / Append with distance chain continuation
+  const handleConfirmAppend = () => {
     if (!pendingCsvStations) return;
-    const combined = appendStations(currentProject.stations, pendingCsvStations, shiftDistances);
-
+    const combined = appendStations(currentProject.stations, pendingCsvStations.stations, true);
     onLoadProject({
       ...currentProject,
       stations: combined,
     });
+    showNotification(`✓ Merged ${pendingCsvStations.stations.length} stations onto track (now ${combined.length} total).`);
     setPendingCsvStations(null);
     onClose();
   };
 
-  // Append a saved project from localStorage to active project
+  // Append a saved project from localStorage
   const handleAppendSavedProject = (saved: TrackProject) => {
     const combined = appendStations(currentProject.stations, saved.stations, true);
-
     onLoadProject({
       ...currentProject,
       stations: combined,
     });
+    showNotification(`✓ Merged "${saved.name}" onto track (now ${combined.length} stations).`);
     onClose();
   };
 
+  const lastDist = currentProject.stations.length > 0
+    ? currentProject.stations[currentProject.stations.length - 1].distanceFt
+    : 0;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4">
       <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors">
         {/* Header */}
-        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-5 py-4 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
+        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             <FolderOpen className="w-5 h-5 text-amber-500" />
-            <h2 className="text-base sm:text-lg font-bold">Track Profiles & Export</h2>
+            <h2 className="text-base sm:text-lg font-bold">Track Profiles & CSV</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-5 overflow-y-auto space-y-5 text-sm">
-          {/* Save Current Track */}
-          <div className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2.5">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-              Save Active Track Profile
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                placeholder="Track Section Name"
-                className="flex-1 bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none"
-              />
-              <button
-                onClick={handleSaveCurrent}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-xl flex items-center gap-1.5 transition active:scale-95 text-xs shadow-sm"
-              >
-                <Save className="w-4 h-4 stroke-[2.5]" />
-                <span>Save</span>
-              </button>
-            </div>
+        {/* Tab Navigation */}
+        <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 px-3 pt-2 gap-1 text-xs font-bold">
+          <button
+            onClick={() => { setActiveTab('export'); setPendingCsvStations(null); }}
+            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+              activeTab === 'export'
+                ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('import')}
+            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+              activeTab === 'import'
+                ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>Import & Merge</span>
+          </button>
+
+          <button
+            onClick={() => { setActiveTab('saved'); setPendingCsvStations(null); }}
+            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+              activeTab === 'saved'
+                ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+            }`}
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            <span>Saved Tracks ({savedProjects.length})</span>
+          </button>
+        </div>
+
+        {/* Global Feedback Banner */}
+        {feedback && (
+          <div
+            className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b ${
+              feedback.type === 'success'
+                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                : 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30'
+            }`}
+          >
+            {feedback.type === 'success' ? <Check className="w-4 h-4 text-emerald-500" /> : <AlertCircle className="w-4 h-4 text-red-500" />}
+            <span>{feedback.message}</span>
           </div>
+        )}
 
-          {/* Export / Import */}
-          <div className="space-y-2">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-              CSV Export & Import (Sheets / Excel)
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={handleExportCSV}
-                className="p-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-1 text-zinc-800 dark:text-zinc-200 transition active:scale-95 font-semibold text-xs"
-              >
-                <Download className="w-5 h-5 text-emerald-500" />
-                <span>Export to CSV</span>
-              </button>
-
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="p-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-1 text-zinc-800 dark:text-zinc-200 transition active:scale-95 font-semibold text-xs"
-              >
-                <Upload className="w-5 h-5 text-amber-500" />
-                <span>Import CSV File</span>
-              </button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept=".csv"
-                className="hidden"
-              />
-            </div>
-          </div>
-
-          {/* Quick Presets / Demo Track */}
-          <div className="space-y-2">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-              Presets & Quick Start
-            </label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  onLoadDemoTrack();
-                  onClose();
-                }}
-                className="flex-1 py-2 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span>Load Sample 50ft Track (with Dip)</span>
-              </button>
-              <button
-                onClick={() => {
-                  if (confirm('Clear all stations and start fresh?')) {
-                    onResetProject();
-                    onClose();
-                  }
-                }}
-                className="py-2 px-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-red-100 dark:hover:bg-red-950/50 text-zinc-700 dark:text-zinc-300 hover:text-red-500 border border-zinc-200 dark:border-zinc-800 rounded-xl font-bold text-xs transition flex items-center gap-1"
-                title="Clear current track"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Reset</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Pending CSV Import Resolution Card */}
-          {pendingCsvStations && (
-            <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                  CSV Ready: {pendingCsvStations.length} Stations Found
+        {/* Content Body */}
+        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-sm flex-1">
+          {/* TAB 1: EXPORT CSV */}
+          {activeTab === 'export' && (
+            <div className="space-y-4">
+              {/* Active Profile Card */}
+              <div className="p-3.5 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
+                  Active Track Profile
                 </span>
+                <h3 className="font-extrabold text-base text-zinc-900 dark:text-zinc-100 mt-0.5">
+                  {currentProject.name}
+                </h3>
+                <p className="text-xs text-zinc-500 font-mono mt-1">
+                  {currentProject.stations.length} stations • {lastDist} ft total length • Date: {currentProject.date}
+                </p>
+              </div>
+
+              {/* Export Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
-                  onClick={() => setPendingCsvStations(null)}
-                  className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 text-xs"
+                  type="button"
+                  onClick={() => handleExportCSV(currentProject)}
+                  className="p-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl flex items-center justify-center gap-2 font-bold text-xs shadow-sm transition active:scale-95"
                 >
-                  Cancel
+                  <Download className="w-4 h-4 stroke-[2.5]" />
+                  <span>Download .CSV File</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCopyCSV}
+                  className="p-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95"
+                >
+                  <Copy className="w-4 h-4 text-amber-500" />
+                  <span>Copy CSV to Clipboard</span>
                 </button>
               </div>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-300">
-                Your current active track has {currentProject.stations.length} stations (ending at{' '}
-                {currentProject.stations[currentProject.stations.length - 1]?.distanceFt ?? 0} ft).
-                How would you like to apply this CSV?
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                <button
-                  onClick={handleConfirmReplace}
-                  className="py-2 px-3 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-lg text-xs font-bold transition text-left flex flex-col"
-                >
-                  <span>Replace Track</span>
-                  <span className="text-[10px] font-normal text-zinc-500">
-                    Overwrites all current stations
-                  </span>
-                </button>
-                <button
-                  onClick={() => handleConfirmAppend(true)}
-                  className="py-2 px-3 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-xs font-bold transition text-left flex flex-col shadow-sm"
-                >
-                  <span>Append to End</span>
-                  <span className="text-[10px] font-normal text-amber-950">
-                    Continue distances (+{currentProject.stations[currentProject.stations.length - 1]?.distanceFt ?? 0} ft)
-                  </span>
-                </button>
+
+              {/* Raw CSV Text Toggle & Box */}
+              <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setShowRawCsv(!showRawCsv)}
+                    className="text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>{showRawCsv ? 'Hide Raw CSV' : 'View / Copy Raw CSV Text'}</span>
+                  </button>
+                  {showRawCsv && (
+                    <button
+                      type="button"
+                      onClick={handleCopyCSV}
+                      className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:underline"
+                    >
+                      Copy All
+                    </button>
+                  )}
+                </div>
+
+                {showRawCsv && (
+                  <textarea
+                    readOnly
+                    value={exportTrackToCSV(currentProject)}
+                    rows={6}
+                    className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 font-mono text-[11px] text-zinc-800 dark:text-zinc-200 outline-none select-all"
+                  />
+                )}
               </div>
             </div>
           )}
 
-          {/* Saved Profiles List */}
-          {savedProjects.length > 0 && (
-            <div className="space-y-2">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                Saved Tracks ({savedProjects.length})
-              </label>
-              <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                {savedProjects.map((p) => (
-                  <div
-                    key={p.name}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs"
-                  >
-                    <div>
-                      <span className="font-bold text-zinc-800 dark:text-zinc-200 block">
-                        {p.name}
-                      </span>
-                      <span className="text-[10px] text-zinc-500 font-mono">
-                        {p.stations.length} stations • {p.date}
+          {/* TAB 2: IMPORT & MERGE */}
+          {activeTab === 'import' && (
+            <div className="space-y-4">
+              {/* Pending CSV Confirmation Card (Shows prominently when file/text parsed) */}
+              {pendingCsvStations ? (
+                <div className="p-4 bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl space-y-3 shadow-md">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Layers className="w-4 h-4 text-amber-500" />
+                      <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                        CSV Ready: {pendingCsvStations.stations.length} Stations Found
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setPendingCsvStations(null)}
+                      className="text-xs font-bold text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                    Source: <strong>{pendingCsvStations.sourceName}</strong> ({pendingCsvStations.stations[0]?.distanceFt ?? 0} ft to {pendingCsvStations.stations[pendingCsvStations.stations.length - 1]?.distanceFt ?? 0} ft).
+                    <br />
+                    Your active track currently has <strong>{currentProject.stations.length} stations</strong> (ending at {lastDist} ft).
+                  </p>
+
+                  {/* Incoming Stations Preview */}
+                  <div className="bg-white dark:bg-black p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-[11px] font-mono space-y-1 max-h-24 overflow-y-auto">
+                    {pendingCsvStations.stations.slice(0, 4).map((s, idx) => (
+                      <div key={idx} className="flex justify-between text-zinc-600 dark:text-zinc-400">
+                        <span>Station {s.distanceFt} ft</span>
+                        <span>{s.readingInches !== null ? formatFeetInches(s.readingInches) : 'Need Reading'}</span>
+                      </div>
+                    ))}
+                    {pendingCsvStations.stations.length > 4 && (
+                      <div className="text-[10px] text-zinc-400 italic">
+                        + {pendingCsvStations.stations.length - 4} more stations...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Choices */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleConfirmReplace}
+                      className="p-3 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl text-xs font-bold transition flex flex-col text-left"
+                    >
+                      <span className="font-extrabold text-sm">Replace Active Track</span>
+                      <span className="text-[10px] font-normal text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        Overwrites current {currentProject.stations.length} stations completely
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleConfirmAppend}
+                      className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl text-xs font-bold transition flex flex-col text-left shadow-sm active:scale-95"
+                    >
+                      <span className="font-extrabold text-sm flex items-center gap-1">
+                        <Layers className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>Merge / Append to End</span>
+                      </span>
+                      <span className="text-[10px] font-semibold text-amber-950 mt-0.5">
+                        Continues after Station {lastDist} ft (+{lastDist} ft shift)
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* File Upload Option */}
+                  <div className="p-4 bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-center space-y-2.5">
+                    <Upload className="w-8 h-8 text-amber-500 mx-auto" />
+                    <div>
+                      <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                        Upload CSV File from Device
+                      </h4>
+                      <p className="text-xs text-zinc-500">
+                        Supports standard CSVs from Track Level Companion, Excel, or Google Sheets
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-xl shadow-sm transition active:scale-95"
+                    >
+                      Choose .CSV File
+                    </button>
+
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileUpload}
+                      accept=".csv,text/csv,text/plain"
+                      className="hidden"
+                    />
+                  </div>
+
+                  {/* Or Paste CSV Text Option */}
+                  <div className="p-3.5 bg-zinc-50 dark:bg-zinc-950 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 block">
+                      Or Paste CSV / Spreadsheet Text
+                    </label>
+                    <textarea
+                      value={pastedText}
+                      onChange={(e) => setPastedText(e.target.value)}
+                      placeholder="Paste columns from Excel, Google Sheets, or CSV file here..."
+                      rows={3}
+                      className="w-full bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl p-2.5 font-mono text-xs text-zinc-900 dark:text-zinc-100 outline-none"
+                    />
+                    <div className="flex justify-end">
                       <button
-                        onClick={() => handleAppendSavedProject(p)}
-                        className="px-2 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 font-bold rounded-lg transition text-[11px]"
-                        title="Append stations from this track to current track"
-                      >
-                        + Append
-                      </button>
-                      <button
+                        type="button"
+                        disabled={!pastedText.trim()}
                         onClick={() => {
-                          onLoadProject(p);
-                          onClose();
+                          processIncomingCSV(pastedText, 'Pasted Track');
+                          setPastedText('');
                         }}
-                        className="px-2.5 py-1 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-extrabold rounded-lg transition"
+                        className="px-3.5 py-1.5 bg-zinc-900 dark:bg-zinc-100 disabled:opacity-40 text-white dark:text-black font-bold text-xs rounded-lg transition"
                       >
-                        Load
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSaved(p.name)}
-                        className="p-1 text-zinc-400 hover:text-red-500 rounded transition"
-                        title="Delete saved track"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        Parse & Import Pasted Text
                       </button>
                     </div>
                   </div>
-                ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: SAVED PROFILES */}
+          {activeTab === 'saved' && (
+            <div className="space-y-4">
+              {/* Save Current Track */}
+              <div className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  Save Active Track to Browser Storage
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={saveName}
+                    onChange={(e) => setSaveName(e.target.value)}
+                    placeholder="Track Section Name"
+                    className="flex-1 bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-900 dark:text-zinc-100 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveCurrent}
+                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-xl flex items-center gap-1.5 transition active:scale-95 text-xs shadow-sm"
+                  >
+                    <Save className="w-4 h-4 stroke-[2.5]" />
+                    <span>Save</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Saved Profiles List */}
+              <div className="space-y-2">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  Saved Track Profiles ({savedProjects.length})
+                </label>
+
+                {savedProjects.length === 0 ? (
+                  <div className="p-4 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 text-center text-xs text-zinc-400">
+                    No saved tracks in browser storage yet. Enter a name above and tap Save.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {savedProjects.map((p) => {
+                      const pLen = p.stations.length > 0 ? p.stations[p.stations.length - 1].distanceFt : 0;
+                      return (
+                        <div
+                          key={p.name}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 gap-2 text-xs"
+                        >
+                          <div>
+                            <span className="font-bold text-zinc-900 dark:text-zinc-100 block text-sm">
+                              {p.name}
+                            </span>
+                            <span className="text-[11px] text-zinc-500 font-mono">
+                              {p.stations.length} stations • {pLen} ft • {p.date}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={() => handleAppendSavedProject(p)}
+                              className="px-2.5 py-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 font-bold rounded-lg transition text-[11px] flex items-center gap-1"
+                              title="Merge / Append stations from this track onto active track"
+                            >
+                              <Layers className="w-3 h-3" />
+                              <span>+ Merge</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                onLoadProject(p);
+                                showNotification(`Loaded "${p.name}".`);
+                                onClose();
+                              }}
+                              className="px-2.5 py-1 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-extrabold rounded-lg transition text-[11px]"
+                            >
+                              Load
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleExportCSV(p)}
+                              className="p-1.5 text-zinc-400 hover:text-emerald-500 rounded-lg border border-zinc-200 dark:border-zinc-800 transition"
+                              title="Download CSV for this saved track"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteSaved(p.name)}
+                              className="p-1.5 text-zinc-400 hover:text-red-500 rounded-lg border border-zinc-200 dark:border-zinc-800 transition"
+                              title="Delete saved track"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Presets */}
+              <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  Quick Presets & Track Reset
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onLoadDemoTrack();
+                      onClose();
+                    }}
+                    className="flex-1 py-2 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>Load Demo 50ft Track (with Dip)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('Clear all stations and start a new fresh track?')) {
+                        onResetProject();
+                        onClose();
+                      }
+                    }}
+                    className="py-2 px-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-red-100 dark:hover:bg-red-950/50 text-zinc-700 dark:text-zinc-300 hover:text-red-500 border border-zinc-200 dark:border-zinc-800 rounded-xl font-bold text-xs transition flex items-center gap-1"
+                    title="Clear current track"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span>Reset Track</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -355,6 +671,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         {/* Footer */}
         <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 text-right">
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold text-xs hover:bg-zinc-300 dark:hover:bg-zinc-800 transition"
           >

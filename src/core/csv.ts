@@ -1,17 +1,18 @@
 import { TrackProject, StationPoint } from './types';
-import { formatFeetInches } from './units';
+import { formatFeetInches, parseMeasurement } from './units';
 
 function escapeCSV(val: string): string {
-  if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+  if (val.includes(',') || val.includes('"') || val.includes('\n') || val.includes('\t') || val.includes(';')) {
     return `"${val.replace(/"/g, '""')}"`;
   }
   return val;
 }
 
 /**
- * Splits a CSV line following RFC 4180 rules (handles escaped double-quotes).
+ * Splits a CSV/TSV line following RFC 4180 rules (handles escaped double-quotes and auto-detects delimiter).
  */
-export function splitCSVLine(line: string): string[] {
+export function splitCSVLine(line: string, delimiter?: string): string[] {
+  const delim = delimiter || (line.includes('\t') ? '\t' : (line.includes(';') && !line.includes(',') ? ';' : ','));
   const result: string[] = [];
   let current = '';
   let inQuotes = false;
@@ -30,7 +31,7 @@ export function splitCSVLine(line: string): string[] {
         continue;
       }
     }
-    if (char === ',' && !inQuotes) {
+    if (char === delim && !inQuotes) {
       result.push(current.trim());
       current = '';
       i++;
@@ -72,45 +73,95 @@ export function exportTrackToCSV(project: TrackProject): string {
 
 /**
  * Parses track stations from CSV text.
- * Backwards compatible with legacy 5-column and 6-column formats.
+ * Highly robust: handles dynamic column orders, decimal/fraction formats, and headerless data.
  */
 export function parseTrackFromCSV(csvText: string): StationPoint[] {
+  if (!csvText || typeof csvText !== 'string') return [];
   const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
-  if (lines.length < 2) return [];
+  if (lines.length === 0) return [];
 
   const stations: StationPoint[] = [];
 
+  // Determine delimiter from first non-empty line
+  const sampleLine = lines[0];
+  const delim = sampleLine.includes('\t') ? '\t' : (sampleLine.includes(';') && !sampleLine.includes(',') ? ';' : ',');
+
+  const firstParts = splitCSVLine(lines[0], delim);
+  // Check if first line is a header row (first element is non-numeric)
+  const firstIsHeader = isNaN(parseFloat(firstParts[0]));
+
+  let distIdx = 0;
+  let readingInIdx = 1;
+  let readingFtInIdx = 2;
+  let completedIdx = 3;
+  let offsetIdx = 4;
+  let lockedIdx = 5;
+  let notesIdx = 6;
+
+  let startIndex = 0;
+
+  if (firstIsHeader) {
+    startIndex = 1;
+    firstParts.forEach((header, idx) => {
+      const h = header.toLowerCase();
+      if (h.includes('datum') || h.includes('offset') || h.includes('shift')) {
+        offsetIdx = idx;
+      } else if (h.includes('station') || h.includes('dist') || h.includes('chainage') || h === 'ft' || h === 'feet' || h === 'distance (ft)') {
+        distIdx = idx;
+      } else if (h.includes('(ft/in)') || h.includes('ft/in') || h.includes('fraction') || h.includes('feet/in')) {
+        readingFtInIdx = idx;
+      } else if (h.includes('reading (in)') || h.includes('laser (in)') || (h.includes('reading') && h.includes('(in)')) || h.includes('decimal')) {
+        readingInIdx = idx;
+      } else if (h.includes('reading') || h.includes('laser') || h.includes('rod')) {
+        readingInIdx = idx;
+      } else if (h.includes('complete') || h.includes('done') || h.includes('status')) {
+        completedIdx = idx;
+      } else if (h.includes('lock') || h.includes('root') || h.includes('fixed')) {
+        lockedIdx = idx;
+      } else if (h.includes('note') || h.includes('comment')) {
+        notesIdx = idx;
+      }
+    });
+  }
+
   let prevDatumOffset: number | undefined = undefined;
 
-  for (let i = 1; i < lines.length; i++) {
-    const parts = splitCSVLine(lines[i]);
+  for (let i = startIndex; i < lines.length; i++) {
+    const parts = splitCSVLine(lines[i], delim);
+    if (parts.length === 0) continue;
 
-    const dist = parseFloat(parts[0]);
+    const rawDist = parts[distIdx];
+    if (rawDist === undefined || rawDist === '') continue;
+    const dist = parseFloat(rawDist);
     if (isNaN(dist)) continue;
 
-    const rawReading = parts[1] ? parseFloat(parts[1]) : null;
-    const reading = rawReading !== null && !isNaN(rawReading) ? rawReading : null;
-    const completed = parts[3]?.toUpperCase() === 'YES';
+    // Robust measurement parsing: check readingInIdx first, then readingFtInIdx
+    let reading: number | null = null;
+    const readingInStr = parts[readingInIdx];
+    const readingFtInStr = parts[readingFtInIdx];
+
+    if (readingInStr && readingInStr.trim() !== '') {
+      const parsed = parseMeasurement(readingInStr);
+      if (parsed !== null && !isNaN(parsed)) reading = parsed;
+    }
+    if (reading === null && readingFtInStr && readingFtInStr.trim() !== '') {
+      const parsed = parseMeasurement(readingFtInStr);
+      if (parsed !== null && !isNaN(parsed)) reading = parsed;
+    }
+
+    const completedStr = parts[completedIdx]?.toUpperCase();
+    const completed = completedStr === 'YES' || completedStr === 'TRUE' || completedStr === '1';
 
     let datumOffset: number | undefined = undefined;
-    let isLocked = false;
-    let notes = '';
-
-    if (parts.length >= 7) {
-      // Modern 7-column: Dist, ReadingIn, ReadingFtIn, Completed, DatumOffset, Locked, Notes
-      const parsedOffset = parseFloat(parts[4]);
+    if (parts[offsetIdx] && parts[offsetIdx].trim() !== '') {
+      const parsedOffset = parseFloat(parts[offsetIdx]);
       if (!isNaN(parsedOffset) && parsedOffset !== 0) datumOffset = parsedOffset;
-      isLocked = parts[5]?.toUpperCase() === 'YES';
-      notes = parts[6] || '';
-    } else if (parts.length === 6) {
-      // 6-column: Dist, ReadingIn, ReadingFtIn, Completed, DatumOffset, Notes
-      const parsedOffset = parseFloat(parts[4]);
-      if (!isNaN(parsedOffset) && parsedOffset !== 0) datumOffset = parsedOffset;
-      notes = parts[5] || '';
-    } else if (parts.length >= 5) {
-      // 5-column legacy: Dist, ReadingIn, ReadingFtIn, Completed, Notes
-      notes = parts[4] || '';
     }
+
+    const lockedStr = parts[lockedIdx]?.toUpperCase();
+    const isLocked = lockedStr === 'YES' || lockedStr === 'TRUE' || lockedStr === '1';
+
+    const notes = parts[notesIdx] || '';
 
     const isTurningPoint = datumOffset !== undefined && datumOffset !== 0 && datumOffset !== prevDatumOffset;
     prevDatumOffset = datumOffset;
@@ -133,7 +184,7 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
 /**
  * Appends incoming stations to existing stations.
  * If shiftDistances is true, shifts incoming distances so that they continue seamlessly
- * after the existing track's last station.
+ * after the existing track's last station without duplicate joint ties.
  */
 export function appendStations(
   currentStations: StationPoint[],
@@ -144,33 +195,37 @@ export function appendStations(
   if (currentStations.length === 0) return [...incomingStations];
 
   const lastDist = currentStations[currentStations.length - 1].distanceFt;
+  const lastStation = currentStations[currentStations.length - 1];
 
-  let processedIncoming: StationPoint[];
+  let baseStations = [...currentStations];
+  let incomingToProcess = incomingStations;
 
   if (shiftDistances) {
-    const firstIncomingDist = incomingStations[0].distanceFt;
-    // If incoming starts at 0 and current already has a reading at lastDist,
-    // avoid duplicate tie at joint
-    const hasExistingLastReading = currentStations[currentStations.length - 1].readingInches !== null;
-
-    const filtered = incomingStations.filter(s => {
-      if (firstIncomingDist === 0 && s.distanceFt === 0 && hasExistingLastReading) {
-        return false;
+    const firstIncoming = incomingStations[0];
+    if (firstIncoming.distanceFt === 0) {
+      if (lastStation.readingInches === null && firstIncoming.readingInches !== null) {
+        baseStations[baseStations.length - 1] = {
+          ...lastStation,
+          readingInches: firstIncoming.readingInches,
+          completed: firstIncoming.completed ?? lastStation.completed,
+          notes: firstIncoming.notes || lastStation.notes,
+        };
       }
-      return true;
-    });
+      incomingToProcess = incomingStations.slice(1);
+    }
 
-    processedIncoming = filtered.map((s, idx) => ({
+    const shiftedIncoming = incomingToProcess.map((s, idx) => ({
       ...s,
       id: `station-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
       distanceFt: s.distanceFt + lastDist,
     }));
+
+    return [...baseStations, ...shiftedIncoming];
   } else {
-    processedIncoming = incomingStations.map((s, idx) => ({
+    const processedIncoming = incomingStations.map((s, idx) => ({
       ...s,
       id: `station-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
     }));
+    return [...currentStations, ...processedIncoming];
   }
-
-  return [...currentStations, ...processedIncoming];
 }

@@ -111,4 +111,37 @@ describe('CSV Import, Export & Combine Operations', () => {
     expect(combined[3].readingInches).toBeCloseTo(13.75, 4);
     expect(combined[4].readingInches).toBeCloseTo(14.0, 4);
   });
+
+  it('parses feet/inches fractions directly from CSV readings', () => {
+    const fractionalCSV = `Station,Reading (ft/in),Notes
+0,"1' 4 3/8""",Start tie
+5,"1' 2 1/4""",Dip tie
+10,"14 1/2""",Half inch tie`;
+
+    const parsed = parseTrackFromCSV(fractionalCSV);
+    expect(parsed.length).toBe(3);
+    expect(parsed[0].readingInches).toBeCloseTo(16.375, 4);
+    expect(parsed[1].readingInches).toBeCloseTo(14.25, 4);
+    expect(parsed[2].readingInches).toBeCloseTo(14.5, 4);
+  });
+
+  it('parses tab-delimited (TSV) pasted from Google Sheets or Excel', () => {
+    const tsv = `Station\tLaser Reading\tNotes\n0\t14.25\tStart\n5\t14.5\tDip`;
+    const parsed = parseTrackFromCSV(tsv);
+    expect(parsed.length).toBe(2);
+    expect(parsed[0].distanceFt).toBe(0);
+    expect(parsed[0].readingInches).toBeCloseTo(14.25, 4);
+    expect(parsed[1].distanceFt).toBe(5);
+    expect(parsed[1].readingInches).toBeCloseTo(14.5, 4);
+  });
+
+  it('parses headerless CSV data rows directly', () => {
+    const rawData = `0, 14.0, "1' 2", YES\n5, 14.25, "1' 2 1/4", NO`;
+    const parsed = parseTrackFromCSV(rawData);
+    expect(parsed.length).toBe(2);
+    expect(parsed[0].distanceFt).toBe(0);
+    expect(parsed[0].readingInches).toBeCloseTo(14.0, 4);
+    expect(parsed[1].distanceFt).toBe(5);
+    expect(parsed[1].readingInches).toBeCloseTo(14.25, 4);
+  });
 });
