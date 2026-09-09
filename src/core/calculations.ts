@@ -15,37 +15,53 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
   // Since reading is measured DOWN from laser plane: elevation = datum - effectiveReading.
   const validStationsWithReading = stations.filter(s => s.readingInches !== null && !isNaN(s.readingInches));
 
+  const tpStations = stations.filter(s => s.isTurningPoint);
+  const stationZero = validStationsWithReading.find(s => s.distanceFt === 0) || validStationsWithReading[0];
+
+  // In the Unified Active Laser workflow, when laser is moved, all previously measured stations
+  // (including Station 0) are converted by +delta to the active laser scale.
+  // We detect this if Station 0 has a recorded datumOffsetInches matching a turning point.
+  const isUnifiedScale = tpStations.length > 0 &&
+    stationZero !== undefined &&
+    stationZero.datumOffsetInches !== undefined &&
+    stationZero.datumOffsetInches !== 0;
+
   // Dynamically compute cumulative datum offsets across turning point benchmarks
   let runningCumulativeShift = 0;
   const appliedOffsets: number[] = [];
 
   for (let i = 0; i < stations.length; i++) {
     const s = stations[i];
-    if (s.isTurningPoint) {
-      // Determine the step delta introduced at this turning point
-      let stepDelta = 0;
-      if (s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0) {
-        stepDelta = s.datumOffsetInches;
-      } else if (s.tpNewReadingInches !== undefined && s.tpOldReadingInches !== undefined) {
-        stepDelta = s.tpNewReadingInches - s.tpOldReadingInches;
-      } else if (s.tpNewReadingInches !== undefined && s.readingInches !== null && !isNaN(s.readingInches)) {
-        stepDelta = s.tpNewReadingInches - s.readingInches;
-      }
-      runningCumulativeShift += stepDelta;
-
-      // If the turning point station's readingInches has been updated to the new Laser 2 reading,
-      // it is in the new laser zone and should use runningCumulativeShift.
-      // If readingInches is still the old Laser 1 reading, it uses the prior shift.
-      if (s.tpOldReadingInches !== undefined && s.readingInches !== null && Math.abs(s.readingInches - s.tpOldReadingInches) > 1e-4) {
-        appliedOffsets.push(runningCumulativeShift);
-      } else {
-        appliedOffsets.push(runningCumulativeShift - stepDelta);
-      }
+    if (isUnifiedScale) {
+      // In unified active scale, all readings are already on the current active laser's scale!
+      appliedOffsets.push(0);
     } else {
-      // If a turning point has been established, propagate runningCumulativeShift.
-      // Otherwise, fallback to any explicitly pre-set datumOffsetInches on the station.
-      const offset = runningCumulativeShift !== 0 ? runningCumulativeShift : (s.datumOffsetInches || 0);
-      appliedOffsets.push(offset);
+      if (s.isTurningPoint) {
+        // Determine the step delta introduced at this turning point
+        let stepDelta = 0;
+        if (s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0) {
+          stepDelta = s.datumOffsetInches;
+        } else if (s.tpNewReadingInches !== undefined && s.tpOldReadingInches !== undefined) {
+          stepDelta = s.tpNewReadingInches - s.tpOldReadingInches;
+        } else if (s.tpNewReadingInches !== undefined && s.readingInches !== null && !isNaN(s.readingInches)) {
+          stepDelta = s.tpNewReadingInches - s.readingInches;
+        }
+        runningCumulativeShift += stepDelta;
+
+        // If the turning point station's readingInches has been updated to the new Laser 2 reading,
+        // it is in the new laser zone and should use runningCumulativeShift.
+        // If readingInches is still the old Laser 1 reading, it uses the prior shift.
+        if (s.tpOldReadingInches !== undefined && s.readingInches !== null && Math.abs(s.readingInches - s.tpOldReadingInches) > 1e-4) {
+          appliedOffsets.push(runningCumulativeShift);
+        } else {
+          appliedOffsets.push(runningCumulativeShift - stepDelta);
+        }
+      } else {
+        // If a turning point has been established, propagate runningCumulativeShift.
+        // Otherwise, fallback to any explicitly pre-set datumOffsetInches on the station.
+        const offset = runningCumulativeShift !== 0 ? runningCumulativeShift : (s.datumOffsetInches || 0);
+        appliedOffsets.push(offset);
+      }
     }
   }
 
@@ -54,7 +70,6 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
     datumReference = fixedDatumInches;
   } else if (validStationsWithReading.length > 0) {
     // Prefer station at distance 0 ft as the primary baseline; fallback to first valid station
-    const stationZero = validStationsWithReading.find(s => s.distanceFt === 0);
     const datumStation = stationZero || validStationsWithReading[0];
     const datumIdx = stations.indexOf(datumStation);
     const datumOffset = datumIdx >= 0 ? appliedOffsets[datumIdx] : (datumStation.datumOffsetInches || 0);
@@ -217,9 +232,9 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
 
     return {
       ...s,
-      datumOffsetInches: appliedOffsets[i] !== 0 ? appliedOffsets[i] : s.datumOffsetInches,
+      datumOffsetInches: isUnifiedScale ? s.datumOffsetInches : (appliedOffsets[i] !== 0 ? appliedOffsets[i] : s.datumOffsetInches),
       effectiveReadingInches: effectiveReadings[i],
-      appliedDatumOffsetInches: appliedOffsets[i],
+      appliedDatumOffsetInches: isUnifiedScale ? (s.datumOffsetInches || 0) : appliedOffsets[i],
       elevationInches: elev,
       targetElevationInches: target,
       liftInches: lift,

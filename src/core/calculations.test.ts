@@ -378,5 +378,65 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(calculated[2].elevationInches).toBeCloseTo(0.0, 4);
     expect(calculated[2].action).toBe('ok');
   });
+
+  it('correctly handles the Unified Active Laser Relocation workflow where prior ties convert to current laser scale', () => {
+    // Setup 1 (Laser 1):
+    // Station 0: 14.0" (1' 2") -> baseline elev = 0
+    // Station 5: 14.25" (1' 2 1/4") -> 1/4" dip
+    // Station 25: 14.0" (1' 2") -> level
+    // Laser is relocated: Tripod is set up 6" higher.
+    // Benchmark backsight on Station 25 reads 20.0" (1' 8").
+    // Under the unified workflow, stations 0, 5, 25 are converted by +6.0":
+    // Station 0 becomes 20.0" (1' 8"), Station 5 becomes 20.25" (1' 8 1/4"), Station 25 becomes 20.0" (1' 8").
+    // Station 30 is subsequently measured with Laser 2 as 20.25" (1' 8 1/4").
+    const unifiedProject: TrackProject = {
+      ...baseProject,
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 20.0, datumOffsetInches: 6.0 },
+        { id: '5', distanceFt: 5, readingInches: 20.25, datumOffsetInches: 6.0 },
+        {
+          id: '25',
+          distanceFt: 25,
+          readingInches: 20.0,
+          datumOffsetInches: 6.0,
+          isTurningPoint: true,
+          tpOldReadingInches: 14.0,
+          tpNewReadingInches: 20.0,
+        },
+        { id: '30', distanceFt: 30, readingInches: 20.25 }, // shot directly under Laser 2
+        { id: '35', distanceFt: 35, readingInches: null },  // unmeasured
+      ]
+    };
+
+    const calculated = calculateTrackProfile(unifiedProject);
+
+    // 1. Station 0 reads 20.0" (1' 8") matching the physical rod receiver under Laser 2
+    expect(calculated[0].readingInches).toBe(20.0);
+    expect(calculated[0].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[0].action).toBe('ok');
+
+    // 2. Station 5 reads 20.25" (1' 8 1/4") and retains its exact 1/4" dip
+    expect(calculated[1].readingInches).toBe(20.25);
+    expect(calculated[1].elevationInches).toBeCloseTo(-0.25, 4);
+    expect(calculated[1].liftInches).toBeCloseTo(0.25, 4);
+    expect(calculated[1].action).toBe('lift');
+    expect(calculated[1].actionText).toBe('LIFT +1/4"');
+
+    // 3. Station 25 benchmark tie is ON GRADE
+    expect(calculated[2].readingInches).toBe(20.0);
+    expect(calculated[2].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].action).toBe('ok');
+
+    // 4. Station 30 measured with Laser 2 needs +1/4" lift, completely consistent with stations 0 & 25
+    expect(calculated[3].readingInches).toBe(20.25);
+    expect(calculated[3].elevationInches).toBeCloseTo(-0.25, 4);
+    expect(calculated[3].liftInches).toBeCloseTo(0.25, 4);
+    expect(calculated[3].action).toBe('lift');
+    expect(calculated[3].actionText).toBe('LIFT +1/4"');
+
+    // 5. Unmeasured station 35 is clean
+    expect(calculated[4].readingInches).toBeNull();
+    expect(calculated[4].elevationInches).toBeNull();
+  });
 });
 

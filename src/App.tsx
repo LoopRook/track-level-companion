@@ -126,22 +126,6 @@ export const App: React.FC = () => {
 
     let nextStation: StationPoint;
 
-    // Helper to calculate active cumulative datum offset
-    const getActiveDatumOffset = (stations: StationPoint[], distanceFt?: number): number => {
-      let shift = 0;
-      for (const s of stations) {
-        if (distanceFt !== undefined && s.distanceFt > distanceFt) break;
-        if (s.isTurningPoint) {
-          if (s.tpNewReadingInches !== undefined && s.readingInches !== null) {
-            shift += (s.tpNewReadingInches - s.readingInches);
-          } else if (s.datumOffsetInches) {
-            shift += s.datumOffsetInches;
-          }
-        }
-      }
-      return shift;
-    };
-
     if (currentIdx >= 0 && currentIdx < updatedStations.length - 1) {
       // Advance to existing next station
       nextStation = updatedStations[currentIdx + 1];
@@ -149,12 +133,10 @@ export const App: React.FC = () => {
       // Create next station at standard interval
       const lastDist = activeEditingStation.distanceFt;
       const newDist = lastDist + project.stationIntervalFt;
-      const activeOffset = getActiveDatumOffset(updatedStations);
       nextStation = {
         id: `station-${Date.now()}`,
         distanceFt: newDist,
         readingInches: null,
-        datumOffsetInches: activeOffset !== 0 ? activeOffset : undefined,
       };
       updatedStations.push(nextStation);
     }
@@ -203,33 +185,15 @@ export const App: React.FC = () => {
     }
   };
 
-  // Helper to calculate active cumulative datum offset
-  const getActiveOffsetAt = (distanceFt?: number): number => {
-    let shift = 0;
-    for (const s of project.stations) {
-      if (distanceFt !== undefined && s.distanceFt > distanceFt) break;
-      if (s.isTurningPoint) {
-        if (s.tpNewReadingInches !== undefined && s.readingInches !== null) {
-          shift += (s.tpNewReadingInches - s.readingInches);
-        } else if (s.datumOffsetInches) {
-          shift += s.datumOffsetInches;
-        }
-      }
-    }
-    return shift;
-  };
-
   // Add next station at end
   const handleAddNextStation = () => {
     const lastStation = project.stations[project.stations.length - 1];
     const newDist = lastStation ? lastStation.distanceFt + project.stationIntervalFt : 0;
-    const activeOffset = getActiveOffsetAt();
 
     const newStation: StationPoint = {
       id: `station-${Date.now()}`,
       distanceFt: newDist,
       readingInches: null,
-      datumOffsetInches: activeOffset !== 0 ? activeOffset : undefined,
     };
 
     setProject(prev => ({
@@ -260,12 +224,10 @@ export const App: React.FC = () => {
       return;
     }
 
-    const activeOffset = getActiveOffsetAt(dist);
     const newStation: StationPoint = {
       id: `station-${Date.now()}`,
       distanceFt: dist,
       readingInches: null,
-      datumOffsetInches: activeOffset !== 0 ? activeOffset : undefined,
     };
 
     // Insert and keep sorted by distance
@@ -315,7 +277,6 @@ export const App: React.FC = () => {
     } else {
       const lastStation = project.stations[project.stations.length - 1];
       const startDist = lastStation ? lastStation.distanceFt : 0;
-      const activeOffset = getActiveOffsetAt();
       const newStations: StationPoint[] = [];
 
       for (let i = 1; i <= count; i++) {
@@ -323,7 +284,6 @@ export const App: React.FC = () => {
           id: `station-${Date.now()}-${i}`,
           distanceFt: startDist + i * interval,
           readingInches: null,
-          datumOffsetInches: activeOffset !== 0 ? activeOffset : undefined,
         });
       }
 
@@ -337,6 +297,7 @@ export const App: React.FC = () => {
   };
 
   // Set turning point / laser relocation datum shift
+  // Converts all previously recorded stations to the new active laser's scale!
   const handleSetTurningPoint = (stationId: string, newReadingInches: number) => {
     const targetIdx = project.stations.findIndex(s => s.id === stationId);
     if (targetIdx === -1) return;
@@ -344,26 +305,27 @@ export const App: React.FC = () => {
     const targetStation = project.stations[targetIdx];
     if (targetStation.readingInches === null) return;
 
-    // Laser height difference: New Laser Reading - Old Laser Reading
-    // (If new reading is higher, laser is higher, so readings on subsequent ties are bigger by delta)
-    const oldReading = targetStation.tpOldReadingInches ?? targetStation.readingInches;
+    // Laser height difference: New Laser Reading - Old Laser Reading on benchmark tie
+    const oldReading = targetStation.readingInches;
     const delta = newReadingInches - oldReading;
 
-    const updatedStations = project.stations.map((s, idx) => {
-      if (s.id === stationId) {
+    const updatedStations = project.stations.map((s) => {
+      if (s.readingInches !== null) {
+        // All previously measured ties convert directly to the active laser's scale!
+        const updatedReading = s.readingInches + delta;
+        if (s.id === stationId) {
+          return {
+            ...s,
+            isTurningPoint: true,
+            tpOldReadingInches: oldReading,
+            tpNewReadingInches: newReadingInches,
+            readingInches: updatedReading,
+            datumOffsetInches: (s.datumOffsetInches || 0) + delta,
+          };
+        }
         return {
           ...s,
-          isTurningPoint: true,
-          tpOldReadingInches: oldReading,
-          tpNewReadingInches: newReadingInches,
-          readingInches: newReadingInches, // Update tie reading directly to new Laser 2 reading!
-          datumOffsetInches: delta,
-        };
-      }
-      if (idx > targetIdx) {
-        // Adjust datum offset for all subsequent stations
-        return {
-          ...s,
+          readingInches: updatedReading,
           datumOffsetInches: (s.datumOffsetInches || 0) + delta,
         };
       }
@@ -372,22 +334,30 @@ export const App: React.FC = () => {
 
     setProject(prev => ({
       ...prev,
+      fixedDatumInches: prev.fixedDatumInches !== undefined ? prev.fixedDatumInches + delta : undefined,
       stations: updatedStations,
     }));
   };
 
-  // Reset all laser relocation / datum offsets
+  // Reset all laser relocation / datum offsets and restore original readings
   const handleResetDatum = () => {
-    setProject(prev => ({
-      ...prev,
-      stations: prev.stations.map(s => {
-        const { datumOffsetInches, isTurningPoint, tpOldReadingInches, tpNewReadingInches, ...rest } = s;
-        return {
-          ...rest,
-          readingInches: s.tpOldReadingInches !== undefined ? s.tpOldReadingInches : s.readingInches,
-        };
-      })
-    }));
+    setProject(prev => {
+      const tpStation = prev.stations.find(s => s.isTurningPoint);
+      const delta = tpStation?.datumOffsetInches ?? 0;
+
+      return {
+        ...prev,
+        fixedDatumInches: prev.fixedDatumInches !== undefined ? prev.fixedDatumInches - delta : undefined,
+        stations: prev.stations.map(s => {
+          const shift = s.datumOffsetInches || 0;
+          const { datumOffsetInches, isTurningPoint, tpOldReadingInches, tpNewReadingInches, ...rest } = s;
+          return {
+            ...rest,
+            readingInches: s.readingInches !== null ? s.readingInches - shift : null,
+          };
+        })
+      };
+    });
   };
 
   // Toggle station leveled/completed
