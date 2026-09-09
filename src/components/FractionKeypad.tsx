@@ -142,7 +142,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
           {datumOffsetInches !== undefined && datumOffsetInches !== 0 && currentComputedInches !== null && (
             <div className="mt-2 text-xs font-mono text-purple-700 dark:text-purple-300 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
-              Adj: <strong>{formatFeetInches(currentComputedInches - datumOffsetInches)}</strong> ({datumOffsetInches > 0 ? `-${formatInchesFraction(datumOffsetInches)}` : `+${formatInchesFraction(Math.abs(datumOffsetInches))}`} datum)
+              Normalized: <strong>{formatFeetInches(currentComputedInches - datumOffsetInches)}</strong> ({datumOffsetInches >= 0 ? '+' : ''}{formatInchesFraction(datumOffsetInches)} shift)
             </div>
           )}
 

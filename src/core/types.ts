@@ -10,7 +10,8 @@ export interface StationPoint {
   notes?: string;
   datumOffsetInches?: number; // Laser relocation offset (turning point shift)
   isTurningPoint?: boolean;   // Flag marking this station as a turning point / benchmark
-  tpNewReadingInches?: number; // Laser 2 reading on this turning point tie
+  tpOldReadingInches?: number; // Laser 1 reading on this turning point tie before relocation
+  tpNewReadingInches?: number; // Laser 2 reading on this turning point tie after relocation
   isLocked?: boolean;         // Immovable control point (e.g. tree root, bridge, switch)
 }
 

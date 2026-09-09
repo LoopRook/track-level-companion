@@ -338,5 +338,45 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(calculated[3].effectiveReadingInches).toBeCloseTo(12.0, 4);
     expect(calculated[4].effectiveReadingInches).toBeCloseTo(12.0, 4);
   });
+
+  it('correctly normalizes a turning point tie whose reading is updated to the new backsight reading', () => {
+    // Station 0: 14.0" (Laser 1)
+    // Station 25: measured at 14.0" with Laser 1. Moved laser, now reads 20.0" (1' 8").
+    // The tie's readingInches is updated to 20.0", with datumOffsetInches = 6.0 and tpOldReadingInches = 14.0.
+    // Station 30: measured with Laser 2 as 20.0" (1' 8").
+    const updatedTpProject: TrackProject = {
+      ...baseProject,
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 14.0 },
+        {
+          id: '25',
+          distanceFt: 25,
+          readingInches: 20.0,
+          isTurningPoint: true,
+          datumOffsetInches: 6.0,
+          tpOldReadingInches: 14.0,
+          tpNewReadingInches: 20.0,
+        },
+        { id: '30', distanceFt: 30, readingInches: 20.0 },
+        { id: '35', distanceFt: 35, readingInches: null },
+      ]
+    };
+
+    const calculated = calculateTrackProfile(updatedTpProject);
+
+    // Station 25 should be ON GRADE, effective reading 14.0", elevation 0.0"
+    expect(calculated[1].readingInches).toBe(20.0);
+    expect(calculated[1].appliedDatumOffsetInches).toBe(6.0);
+    expect(calculated[1].effectiveReadingInches).toBeCloseTo(14.0, 4);
+    expect(calculated[1].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[1].action).toBe('ok');
+
+    // Station 30 should also be ON GRADE, effective reading 14.0", elevation 0.0"
+    expect(calculated[2].readingInches).toBe(20.0);
+    expect(calculated[2].appliedDatumOffsetInches).toBe(6.0);
+    expect(calculated[2].effectiveReadingInches).toBeCloseTo(14.0, 4);
+    expect(calculated[2].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].action).toBe('ok');
+  });
 });
 

@@ -218,15 +218,6 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       <span>TP</span>
                     </span>
                   )}
-
-                  {activeOffset !== 0 && !s.isTurningPoint ? (
-                    <span
-                      className="text-[10px] text-purple-600 dark:text-purple-400 font-mono bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20"
-                      title="Laser datum offset applied"
-                    >
-                      {activeOffset > 0 ? `-${formatMeasurement(activeOffset, 'inches_fraction', fractionResolution)}` : `+${formatMeasurement(Math.abs(activeOffset), 'inches_fraction', fractionResolution)}`}
-                    </span>
-                  ) : null}
                 </div>
 
                 {/* Right: Quick Action Buttons (Lock, TP, Edit, Delete) */}
@@ -293,16 +284,17 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   </span>
                   {s.isTurningPoint ? (
                     <div className="font-mono text-xs">
-                      <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1">
+                      <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                         <span>{s.readingInches !== null ? formatFeetInches(s.readingInches, fractionResolution) : '—'}</span>
-                        <span className="text-[10px] text-zinc-400 font-sans font-normal">(Laser 1)</span>
+                        <span className="text-[10px] bg-purple-500/15 text-purple-700 dark:text-purple-300 px-1 py-0.2 rounded font-sans font-semibold">
+                          Laser 2 backsight
+                        </span>
                       </div>
-                      {s.tpNewReadingInches !== undefined && (
-                        <div className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1 mt-0.5">
-                          <span>➔ New: {formatFeetInches(s.tpNewReadingInches, fractionResolution)}</span>
-                          <span className="text-[10px] bg-purple-500/15 px-1 py-0.2 rounded font-mono">
-                            {s.tpNewReadingInches >= (s.readingInches ?? 0) ? '+' : ''}
-                            {formatMeasurement(s.tpNewReadingInches - (s.readingInches ?? 0), 'inches_fraction', fractionResolution)}
+                      {s.tpOldReadingInches !== undefined && (
+                        <div className="text-[11px] text-zinc-500 font-sans mt-0.5">
+                          Laser 1 was: {formatFeetInches(s.tpOldReadingInches, fractionResolution)}{' '}
+                          <span className="font-mono">
+                            ({(s.datumOffsetInches ?? 0) >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches ?? 0, 'inches_fraction', fractionResolution)} shift)
                           </span>
                         </div>
                       )}
@@ -311,27 +303,17 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     <div>
                       <div className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100">
                         {s.readingInches !== null ? (
-                          <span className="flex items-baseline gap-1">
-                            <span>{formatFeetInches(s.readingInches, fractionResolution)}</span>
-                            {activeOffset !== 0 && (
-                              <span className="text-[10px] text-zinc-400 font-sans font-normal">(rod)</span>
-                            )}
-                          </span>
+                          formatFeetInches(s.readingInches, fractionResolution)
                         ) : (
                           <span className="text-amber-500 italic text-xs">Tap to Enter</span>
                         )}
                       </div>
                       {activeOffset !== 0 && s.readingInches !== null && (
                         <div className="text-[11px] font-mono text-purple-600 dark:text-purple-400 mt-0.5">
-                          Adj: <strong>{formatFeetInches(s.effectiveReadingInches ?? (s.readingInches - activeOffset), fractionResolution)}</strong>{' '}
+                          Norm: <strong>{formatFeetInches(s.effectiveReadingInches ?? (s.readingInches - activeOffset), fractionResolution)}</strong>{' '}
                           <span className="text-[10px] text-purple-500/80 font-sans">
-                            ({activeOffset > 0 ? `-${formatMeasurement(activeOffset, 'inches_fraction', fractionResolution)}` : `+${formatMeasurement(Math.abs(activeOffset), 'inches_fraction', fractionResolution)}`} datum)
+                            ({activeOffset >= 0 ? '+' : ''}{formatMeasurement(activeOffset, 'inches_fraction', fractionResolution)} shift)
                           </span>
-                        </div>
-                      )}
-                      {activeOffset !== 0 && s.readingInches === null && (
-                        <div className="text-[10px] text-purple-600 dark:text-purple-400 font-mono mt-0.5">
-                          ({activeOffset > 0 ? `-${formatMeasurement(activeOffset, 'inches_fraction', fractionResolution)}` : `+${formatMeasurement(Math.abs(activeOffset), 'inches_fraction', fractionResolution)}`} datum active)
                         </div>
                       )}
                     </div>
@@ -461,14 +443,6 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                           <span>TP</span>
                         </span>
                       )}
-                      {activeOffset !== 0 && !s.isTurningPoint && (
-                        <span
-                          className="text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono px-1.5 py-0.5 rounded border border-purple-500/20"
-                          title="Laser datum offset applied"
-                        >
-                          {activeOffset > 0 ? `-${formatMeasurement(activeOffset, 'inches_fraction', fractionResolution)}` : `+${formatMeasurement(Math.abs(activeOffset), 'inches_fraction', fractionResolution)}`}
-                        </span>
-                      )}
                     </div>
                   </td>
 
@@ -480,14 +454,15 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                           <span className="text-zinc-900 dark:text-zinc-100 font-bold">
                             {s.readingInches !== null ? formatFeetInches(s.readingInches, fractionResolution) : '—'}
                           </span>
-                          <span className="text-[10px] text-zinc-400 font-sans font-normal">(Laser 1)</span>
+                          <span className="text-[10px] bg-purple-500/15 text-purple-700 dark:text-purple-300 px-1 py-0.2 rounded font-sans font-semibold">
+                            Laser 2 backsight
+                          </span>
                         </div>
-                        {s.tpNewReadingInches !== undefined && (
-                          <div className="flex items-center gap-1 text-[11px] text-purple-600 dark:text-purple-400 font-semibold">
-                            <span>➔ New: {formatFeetInches(s.tpNewReadingInches, fractionResolution)}</span>
-                            <span className="text-[10px] bg-purple-500/15 text-purple-700 dark:text-purple-300 px-1 py-0.2 rounded font-mono">
-                              {s.tpNewReadingInches >= (s.readingInches ?? 0) ? '+' : ''}
-                              {formatMeasurement(s.tpNewReadingInches - (s.readingInches ?? 0), 'inches_fraction', fractionResolution)}
+                        {s.tpOldReadingInches !== undefined && (
+                          <div className="text-[11px] text-zinc-500 font-sans">
+                            Laser 1 was: {formatFeetInches(s.tpOldReadingInches, fractionResolution)}{' '}
+                            <span className="font-mono">
+                              ({(s.datumOffsetInches ?? 0) >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches ?? 0, 'inches_fraction', fractionResolution)} shift)
                             </span>
                           </div>
                         )}
@@ -495,30 +470,22 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     ) : activeOffset !== 0 ? (
                       s.readingInches !== null ? (
                         <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                              {formatFeetInches(s.readingInches, fractionResolution)}
-                            </span>
-                            <span className="text-[10px] text-zinc-400 font-sans font-normal">(rod)</span>
+                          <div className="text-zinc-900 dark:text-zinc-100 font-semibold">
+                            {formatFeetInches(s.readingInches, fractionResolution)}
                           </div>
                           <div className="text-[11px] font-mono text-purple-600 dark:text-purple-400 flex items-center gap-1">
                             <span>
-                              Adj: <strong>{formatFeetInches(s.effectiveReadingInches ?? (s.readingInches - activeOffset), fractionResolution)}</strong>
+                              Norm: <strong>{formatFeetInches(s.effectiveReadingInches ?? (s.readingInches - activeOffset), fractionResolution)}</strong>
                             </span>
                             <span className="text-[10px] text-purple-500/80 font-sans">
-                              ({activeOffset > 0 ? `-${formatMeasurement(activeOffset, 'inches_fraction', fractionResolution)}` : `+${formatMeasurement(Math.abs(activeOffset), 'inches_fraction', fractionResolution)}`} datum)
+                              ({activeOffset >= 0 ? '+' : ''}{formatMeasurement(activeOffset, 'inches_fraction', fractionResolution)} shift)
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-zinc-400 text-xs italic bg-zinc-100 dark:bg-zinc-900 px-2 py-0.5 rounded w-fit">
-                            Need Reading
-                          </span>
-                          <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono">
-                            ({activeOffset > 0 ? `-${formatMeasurement(activeOffset, 'inches_fraction', fractionResolution)}` : `+${formatMeasurement(Math.abs(activeOffset), 'inches_fraction', fractionResolution)}`} datum active)
-                          </span>
-                        </div>
+                        <span className="text-zinc-400 text-xs italic bg-zinc-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
+                          Need Reading
+                        </span>
                       )
                     ) : s.readingInches !== null ? (
                       <span className="text-zinc-900 dark:text-zinc-100 font-semibold">

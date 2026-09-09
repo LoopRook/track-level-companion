@@ -22,17 +22,25 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
   for (let i = 0; i < stations.length; i++) {
     const s = stations[i];
     if (s.isTurningPoint) {
-      // The turning point tie itself was measured with the prior laser setup.
-      appliedOffsets.push(runningCumulativeShift);
-
-      // Now determine the step delta introduced by the new laser setup at this turning point
+      // Determine the step delta introduced at this turning point
       let stepDelta = 0;
-      if (s.tpNewReadingInches !== undefined && s.readingInches !== null && !isNaN(s.readingInches)) {
-        stepDelta = s.tpNewReadingInches - s.readingInches;
-      } else if (s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0) {
+      if (s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0) {
         stepDelta = s.datumOffsetInches;
+      } else if (s.tpNewReadingInches !== undefined && s.tpOldReadingInches !== undefined) {
+        stepDelta = s.tpNewReadingInches - s.tpOldReadingInches;
+      } else if (s.tpNewReadingInches !== undefined && s.readingInches !== null && !isNaN(s.readingInches)) {
+        stepDelta = s.tpNewReadingInches - s.readingInches;
       }
       runningCumulativeShift += stepDelta;
+
+      // If the turning point station's readingInches has been updated to the new Laser 2 reading,
+      // it is in the new laser zone and should use runningCumulativeShift.
+      // If readingInches is still the old Laser 1 reading, it uses the prior shift.
+      if (s.tpOldReadingInches !== undefined && s.readingInches !== null && Math.abs(s.readingInches - s.tpOldReadingInches) > 1e-4) {
+        appliedOffsets.push(runningCumulativeShift);
+      } else {
+        appliedOffsets.push(runningCumulativeShift - stepDelta);
+      }
     } else {
       // If a turning point has been established, propagate runningCumulativeShift.
       // Otherwise, fallback to any explicitly pre-set datumOffsetInches on the station.

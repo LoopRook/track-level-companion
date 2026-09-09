@@ -346,14 +346,17 @@ export const App: React.FC = () => {
 
     // Laser height difference: New Laser Reading - Old Laser Reading
     // (If new reading is higher, laser is higher, so readings on subsequent ties are bigger by delta)
-    const delta = newReadingInches - targetStation.readingInches;
+    const oldReading = targetStation.tpOldReadingInches ?? targetStation.readingInches;
+    const delta = newReadingInches - oldReading;
 
     const updatedStations = project.stations.map((s, idx) => {
       if (s.id === stationId) {
         return {
           ...s,
           isTurningPoint: true,
+          tpOldReadingInches: oldReading,
           tpNewReadingInches: newReadingInches,
+          readingInches: newReadingInches, // Update tie reading directly to new Laser 2 reading!
           datumOffsetInches: delta,
         };
       }
@@ -378,8 +381,11 @@ export const App: React.FC = () => {
     setProject(prev => ({
       ...prev,
       stations: prev.stations.map(s => {
-        const { datumOffsetInches, isTurningPoint, tpNewReadingInches, ...rest } = s;
-        return rest;
+        const { datumOffsetInches, isTurningPoint, tpOldReadingInches, tpNewReadingInches, ...rest } = s;
+        return {
+          ...rest,
+          readingInches: s.tpOldReadingInches !== undefined ? s.tpOldReadingInches : s.readingInches,
+        };
       })
     }));
   };
