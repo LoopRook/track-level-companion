@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { CalculatedStation, GradeMode } from '../core/types';
 import { formatFeetInches, formatMeasurement } from '../core/units';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Spline, TrendingUp, Maximize2, Minimize2 } from 'lucide-react';
 
 interface ProfileChartProps {
   stations: CalculatedStation[];
@@ -11,15 +11,75 @@ interface ProfileChartProps {
   selectedStationId?: string | null;
 }
 
-type ViewScale = 'gentle' | 'medium' | 'magnified';
+type ZoomScale = '1x' | '3x' | '8x' | '15x';
+
+/**
+ * Fritsch-Carlson Monotone Cubic Spline
+ * Guaranteed to pass through every station point smoothly without overshoot/fake waves.
+ */
+function getSmoothSplinePath(points: { x: number; y: number }[]): string {
+  const n = points.length;
+  if (n === 0) return '';
+  if (n === 1) return `M ${points[0].x} ${points[0].y}`;
+  if (n === 2) return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y}`;
+
+  const dxs: number[] = [];
+  const dys: number[] = [];
+  const slopes: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    const dx = points[i + 1].x - points[i].x;
+    const dy = points[i + 1].y - points[i].y;
+    dxs.push(dx);
+    dys.push(dy);
+    slopes.push(dx === 0 ? 0 : dy / dx);
+  }
+
+  const m: number[] = new Array(n).fill(0);
+  m[0] = slopes[0];
+  m[n - 1] = slopes[n - 2];
+  for (let i = 1; i < n - 1; i++) {
+    m[i] = (slopes[i - 1] + slopes[i]) / 2;
+  }
+
+  for (let i = 0; i < n - 1; i++) {
+    if (Math.abs(slopes[i]) < 1e-9) {
+      m[i] = 0;
+      m[i + 1] = 0;
+    } else {
+      const alpha = m[i] / slopes[i];
+      const beta = m[i + 1] / slopes[i];
+      const dist = alpha * alpha + beta * beta;
+      if (dist > 9) {
+        const tau = 3 / Math.sqrt(dist);
+        m[i] = tau * alpha * slopes[i];
+        m[i + 1] = tau * beta * slopes[i];
+      }
+    }
+  }
+
+  let path = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < n - 1; i++) {
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const dx = dxs[i] / 3;
+    const cp1x = p1.x + dx;
+    const cp1y = p1.y + m[i] * dx;
+    const cp2x = p2.x - dx;
+    const cp2y = p2.y - m[i + 1] * dx;
+    path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+  return path;
+}
 
 export const ProfileChart: React.FC<ProfileChartProps> = ({
   stations,
   onSelectStation,
   selectedStationId,
 }) => {
-  // Gentle is default as requested ("softer, less all over the place")
-  const [viewScale, setViewScale] = useState<ViewScale>('gentle');
+  // Style: 'curve' (gentle smooth curve) vs 'straight' (point-to-point chords)
+  const [curveMode, setCurveMode] = useState<'curve' | 'straight'>('curve');
+  // Zoom: '3x' is default gentle view, 8x/15x are exaggerated
+  const [zoomScale, setZoomScale] = useState<ZoomScale>('3x');
   const [isScrollable, setIsScrollable] = useState<boolean>(false);
   const [activeStation, setActiveStation] = useState<CalculatedStation | null>(null);
 
@@ -30,11 +90,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
   // Dimensions
   const baseWidth = 850;
-  const chartHeight = 240;
-  const padding = { top: 30, right: 35, bottom: 40, left: 60 };
+  const chartHeight = 250;
+  const padding = { top: 35, right: 35, bottom: 40, left: 60 };
 
-  // If scrollable is toggled on mobile, expand width
-  const effectiveWidth = isScrollable ? Math.max(baseWidth, stations.length * 55) : baseWidth;
+  // Width
+  const effectiveWidth = isScrollable ? Math.max(baseWidth, stations.length * 60) : baseWidth;
   const innerWidth = effectiveWidth - padding.left - padding.right;
   const innerHeight = chartHeight - padding.top - padding.bottom;
 
@@ -47,12 +107,12 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     : minX + 10;
   const maxX = Math.max(lastDist, minX + 5);
 
-  // Vertical Extents (inches) - Calm & Softer by default
+  // Vertical Extents (inches) - controlled clearly by zoomScale
   const { minY, maxY, yTicks } = useMemo(() => {
     const vals: number[] = [0];
     measuredStations.forEach(s => {
-      if (s.elevationInches !== null) vals.push(s.elevationInches);
-      if (s.targetElevationInches !== null) vals.push(s.targetElevationInches);
+      if (s.elevationInches !== null && !isNaN(s.elevationInches)) vals.push(s.elevationInches);
+      if (s.targetElevationInches !== null && !isNaN(s.targetElevationInches)) vals.push(s.targetElevationInches);
     });
 
     const validVals = vals.filter(v => typeof v === 'number' && !isNaN(v));
@@ -60,14 +120,16 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     const rawMax = validVals.length > 0 ? Math.max(...validVals) : 0;
     const actualSpan = Math.max(rawMax - rawMin, 0);
 
-    // Minimum vertical window so small dips don't turn into huge mountains:
-    // Gentle: at least 8 inches total span (calm, natural rail view)
-    // Medium: at least 4 inches total span
-    // Magnified: at least 1.5 inches total span (exaggerated for finding tiny bumps)
-    let minWindow = 8.0;
-    if (viewScale === 'gentle') minWindow = 8.0;
-    else if (viewScale === 'medium') minWindow = 4.0;
-    else if (viewScale === 'magnified') minWindow = 1.5;
+    // Zoom scale options:
+    // 1x Flat: at least 16" window (very gentle, true perspective)
+    // 3x Gentle: at least 6" window (balanced, realistic rail view) -> DEFAULT
+    // 8x Noticeable: at least 2.5" window (clearly shows every 1/4" dip)
+    // 15x Zoom: at least 1.0" window (intense magnification for 1/16" bumps)
+    let minWindow = 6.0;
+    if (zoomScale === '1x') minWindow = 16.0;
+    else if (zoomScale === '3x') minWindow = 6.0;
+    else if (zoomScale === '8x') minWindow = 2.5;
+    else if (zoomScale === '15x') minWindow = 1.0;
 
     const span = Math.max(actualSpan * 1.3, minWindow);
     const center = (rawMax + rawMin) / 2;
@@ -75,13 +137,13 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     const calcMinY = center - span / 2;
     const calcMaxY = center + span / 2;
 
-    // Ticks with safety guard
-    const step = span > 10 ? 2.0 : span > 4 ? 1.0 : 0.5;
+    // Ticks
+    const step = span > 10 ? 2.0 : span > 3 ? 1.0 : 0.5;
     const ticks: { val: number; label: string }[] = [];
     const firstTick = Math.ceil(calcMinY / step) * step;
 
     for (let v = firstTick; v <= calcMaxY + 0.001; v += step) {
-      if (ticks.length >= 30) break; // Safety guard against infinite loops
+      if (ticks.length >= 30) break;
       ticks.push({
         val: v,
         label: formatMeasurement(v, 'inches_fraction', 16),
@@ -93,7 +155,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       maxY: calcMaxY,
       yTicks: ticks,
     };
-  }, [measuredStations, viewScale]);
+  }, [measuredStations, zoomScale]);
 
   // Coordinate transforms
   const getX = (distFt: number) => {
@@ -107,22 +169,30 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   };
 
   // Generate SVG path for actual rail profile
-  // Using direct clean chords with gentle fillets prevents unnatural overshoot waves
   const actualPath = useMemo(() => {
     if (measuredStations.length < 2) return '';
-    return measuredStations.reduce((acc, s, idx) => {
-      const x = getX(s.distanceFt);
-      const y = getY(s.elevationInches!);
-      return idx === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`;
+
+    const pts = measuredStations.map(s => ({
+      x: getX(s.distanceFt),
+      y: getY(s.elevationInches!),
+    }));
+
+    if (curveMode === 'curve') {
+      return getSmoothSplinePath(pts);
+    }
+
+    // Straight chord lines
+    return pts.reduce((acc, p, idx) => {
+      return idx === 0 ? `M ${p.x.toFixed(1)} ${p.y.toFixed(1)}` : `${acc} L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
     }, '');
-  }, [measuredStations, minY, maxY, minX, maxX, innerWidth]);
+  }, [measuredStations, curveMode, minY, maxY, minX, maxX, innerWidth]);
 
   // Generate SVG path for target grade
   const targetPath = useMemo(() => {
     if (measuredStations.length < 2) return '';
     return measuredStations.reduce((acc, s, idx) => {
-      const x = getX(s.distanceFt);
-      const y = getY(s.targetElevationInches!);
+      const x = getX(s.distanceFt).toFixed(1);
+      const y = getY(s.targetElevationInches!).toFixed(1);
       return idx === 0 ? `M ${x} ${y}` : `${acc} L ${x} ${y}`;
     }, '');
   }, [measuredStations, minY, maxY, minX, maxX, innerWidth]);
@@ -133,9 +203,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   return (
     <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors">
       {/* Header Toolbar */}
-      <div className="px-3.5 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2 bg-zinc-50 dark:bg-zinc-950">
+      <div className="px-3.5 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-950">
+        {/* Title and Shot Counter */}
         <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
           <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
             Track Vertical Profile
           </h3>
@@ -144,67 +215,87 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </span>
         </div>
 
-        {/* View Scale Controls */}
-        <div className="flex items-center gap-2 text-xs">
+        {/* Action Controls Toolbar */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Curve vs Straight Toggle */}
           <div className="flex items-center bg-zinc-200/80 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-300 dark:border-zinc-800">
-            <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold px-1.5 hidden sm:inline">
-              Vertical:
-            </span>
             <button
-              onClick={() => setViewScale('gentle')}
-              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition ${
-                viewScale === 'gentle'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 font-bold shadow-sm'
+              onClick={() => setCurveMode('curve')}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold transition active:scale-95 ${
+                curveMode === 'curve'
+                  ? 'bg-amber-500 text-black shadow-sm'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
-              title="Calm natural track profile (soft, non-jarring)"
+              title="Smooth gentle curve connecting stations"
             >
-              Gentle
+              <Spline className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Curve</span>
             </button>
             <button
-              onClick={() => setViewScale('medium')}
-              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition ${
-                viewScale === 'medium'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 font-bold shadow-sm'
+              onClick={() => setCurveMode('straight')}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold transition active:scale-95 ${
+                curveMode === 'straight'
+                  ? 'bg-amber-500 text-black shadow-sm'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
               }`}
-              title="Standard view"
+              title="Straight point-to-point lines"
             >
-              Medium
-            </button>
-            <button
-              onClick={() => setViewScale('magnified')}
-              className={`px-2 py-0.5 rounded text-[11px] font-semibold transition ${
-                viewScale === 'magnified'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 font-bold shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-              }`}
-              title="Magnified vertical scale to see micro dips"
-            >
-              Magnified
+              <TrendingUp className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Straight</span>
             </button>
           </div>
 
-          {/* Scrollable / Fit Toggle */}
+          {/* Vertical Zoom Sensitivity Buttons */}
+          <div className="flex items-center bg-zinc-200/80 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-300 dark:border-zinc-800">
+            <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold px-1.5 hidden md:inline">
+              Vert:
+            </span>
+            {(['1x', '3x', '8x', '15x'] as ZoomScale[]).map(scale => (
+              <button
+                key={scale}
+                onClick={() => setZoomScale(scale)}
+                className={`px-2 py-1 rounded font-mono text-xs font-bold transition active:scale-95 ${
+                  zoomScale === scale
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 shadow-sm ring-1 ring-amber-400/50'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                }`}
+                title={`Vertical Exaggeration ${scale}`}
+              >
+                {scale}
+              </button>
+            ))}
+          </div>
+
+          {/* Expand / Fit Width Toggle */}
           <button
             onClick={() => setIsScrollable(!isScrollable)}
-            className="p-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 transition"
-            title={isScrollable ? 'Fit track to screen' : 'Expand track for horizontal scrolling'}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition"
+            title={isScrollable ? 'Fit entire track to screen' : 'Expand track for wide horizontal scrolling'}
           >
-            {isScrollable ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            {isScrollable ? (
+              <>
+                <Minimize2 className="w-3 h-3" />
+                <span className="text-[11px] hidden sm:inline">Fit</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="w-3 h-3" />
+                <span className="text-[11px] hidden sm:inline">Expand</span>
+              </>
+            )}
           </button>
         </div>
       </div>
 
       {/* Selected Station Banner / Active Readout */}
       {currentInspectStation && (
-        <div className="px-3.5 py-1.5 bg-zinc-100 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800/80 flex flex-wrap items-center justify-between text-xs font-mono gap-2">
+        <div className="px-3.5 py-2 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-xs font-mono gap-2">
           <div className="flex items-center gap-2">
             <span className="font-bold text-amber-500 dark:text-amber-400">
               Station {currentInspectStation.distanceFt} ft
             </span>
             <span className="text-zinc-400">|</span>
-            <span className="text-zinc-600 dark:text-zinc-300">
+            <span className="text-zinc-700 dark:text-zinc-300">
               Reading:{' '}
               {currentInspectStation.readingInches !== null
                 ? formatFeetInches(currentInspectStation.readingInches)
@@ -228,7 +319,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             )}
             <button
               onClick={() => onSelectStation(currentInspectStation)}
-              className="text-[11px] underline text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 ml-2"
+              className="text-[11px] underline text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 ml-1.5"
             >
               Edit
             </button>
@@ -257,7 +348,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   className={
                     isZero
                       ? 'stroke-zinc-400 dark:stroke-zinc-600 stroke-[1.5]'
-                      : 'stroke-zinc-200 dark:stroke-zinc-800/80 stroke-1 stroke-dasharray-2'
+                      : 'stroke-zinc-200 dark:stroke-zinc-800/80 stroke-1'
                   }
                   strokeDasharray={isZero ? undefined : '3,3'}
                 />
@@ -313,7 +404,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             <path
               d={actualPath}
               fill="none"
-              className="stroke-zinc-900 dark:stroke-white stroke-[3]"
+              className="stroke-zinc-900 dark:stroke-white stroke-[3.5]"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -326,7 +417,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             const y = isMeasured ? getY(s.elevationInches!) : padding.top + innerHeight / 2;
             const isSelected = selectedStationId === s.id;
 
-            let dotFill = '#52525b'; // zinc-600
+            let dotFill = '#52525b'; // zinc-600 unmeasured
             if (isMeasured) {
               if (s.action === 'ok') dotFill = '#10b981'; // green
               else if (s.action === 'lift') dotFill = '#38bdf8'; // sky blue
@@ -336,7 +427,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             return (
               <g
                 key={s.id}
-                className="cursor-pointer transition-transform hover:scale-125"
+                className="cursor-pointer transition-transform hover:scale-125 active:scale-95"
                 onClick={() => {
                   setActiveStation(s);
                   onSelectStation(s);
@@ -345,14 +436,14 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 onMouseLeave={() => setActiveStation(null)}
               >
                 {/* Generous touch target */}
-                <circle cx={x} cy={y} r={16} fill="transparent" />
+                <circle cx={x} cy={y} r={17} fill="transparent" />
 
                 {/* Selection indicator ring */}
                 {isSelected && (
                   <circle
                     cx={x}
                     cy={y}
-                    r={9}
+                    r={10}
                     fill="none"
                     stroke="#f59e0b"
                     strokeWidth="2.5"
@@ -364,7 +455,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 <circle
                   cx={x}
                   cy={y}
-                  r={isMeasured ? (isSelected ? 6 : 5) : 3.5}
+                  r={isMeasured ? (isSelected ? 6.5 : 5.5) : 3.5}
                   fill={dotFill}
                   stroke={isSelected ? '#f59e0b' : '#000000'}
                   strokeWidth="1.5"
@@ -390,7 +481,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <span className="w-2.5 h-0.5 bg-zinc-900 dark:bg-white rounded"></span>
-            <span>Rail Head</span>
+            <span>Rail Head ({curveMode === 'curve' ? 'Smooth Curve' : 'Straight Chords'})</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="w-2.5 h-0.5 border-t border-dashed border-emerald-500"></span>
