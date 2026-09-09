@@ -88,9 +88,18 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     return stations.filter(s => s.elevationInches !== null && s.targetElevationInches !== null);
   }, [stations]);
 
-  // Dimensions
+  // Chart Height adapts to give more physical headroom as zoom increases
+  const chartHeight = useMemo(() => {
+    switch (zoomScale) {
+      case '1x': return 240;
+      case '3x': return 265;
+      case '8x': return 300;
+      case '15x': return 340;
+      default: return 265;
+    }
+  }, [zoomScale]);
+
   const baseWidth = 850;
-  const chartHeight = 250;
   const padding = { top: 35, right: 35, bottom: 40, left: 60 };
 
   // Width
@@ -107,35 +116,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     : minX + 10;
   const maxX = Math.max(lastDist, minX + 5);
 
-  // Zoom Multiplier: magnifies dips & humps relative to target grade
-  const exaggerationMultiplier: number = useMemo(() => {
-    switch (zoomScale) {
-      case '1x': return 1.0;
-      case '3x': return 3.0;
-      case '8x': return 8.0;
-      case '15x': return 15.0;
-      default: return 3.0;
-    }
-  }, [zoomScale]);
-
-  // Helper to compute exaggerated visual elevation for smooth curve and markers
-  const getVisualElev = (s: CalculatedStation): number | null => {
-    if (s.elevationInches === null || isNaN(s.elevationInches)) return null;
-    if (s.targetElevationInches !== null && !isNaN(s.targetElevationInches)) {
-      const diff = s.elevationInches - s.targetElevationInches;
-      return s.targetElevationInches + diff * exaggerationMultiplier;
-    }
-    const base = measuredStations[0]?.elevationInches ?? 0;
-    const diff = s.elevationInches - base;
-    return base + diff * exaggerationMultiplier;
-  };
-
-  // Vertical Extents (inches) - fits visual curve comfortably without clipping
+  // Vertical Extents (inches) - direct window scaling to make height differences noticeably taller
   const { minY, maxY, yTicks } = useMemo(() => {
     const vals: number[] = [0];
     measuredStations.forEach(s => {
-      const vElev = getVisualElev(s);
-      if (vElev !== null && !isNaN(vElev)) vals.push(vElev);
+      if (s.elevationInches !== null && !isNaN(s.elevationInches)) vals.push(s.elevationInches);
       if (s.targetElevationInches !== null && !isNaN(s.targetElevationInches)) {
         vals.push(s.targetElevationInches);
       }
@@ -144,17 +129,37 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     const validVals = vals.filter(v => typeof v === 'number' && !isNaN(v));
     const rawMin = validVals.length > 0 ? Math.min(...validVals) : 0;
     const rawMax = validVals.length > 0 ? Math.max(...validVals) : 0;
-    const actualSpan = Math.max(rawMax - rawMin, 0);
-
-    // Provide at least 3.0" minimum visual window and 30% margin
-    const span = Math.max(actualSpan * 1.35, 3.0);
+    const actualSpan = Math.max(rawMax - rawMin, 0.0625);
     const center = (rawMax + rawMin) / 2;
 
+    // Window span tuning:
+    // 1x: Takes ~25% of height (very gentle, flat perspective)
+    // 3x: Takes ~50% of height (realistic, gentle rail view)
+    // 8x: Takes ~75% of height (clearly prominent height differences)
+    // 15x: Takes ~93% of height (maximum magnification of every bump & slope)
+    let spanMultiplier = 2.0;
+    let minSpan = 6.0;
+
+    if (zoomScale === '1x') {
+      spanMultiplier = 4.0;
+      minSpan = 16.0;
+    } else if (zoomScale === '3x') {
+      spanMultiplier = 2.0;
+      minSpan = 6.0;
+    } else if (zoomScale === '8x') {
+      spanMultiplier = 1.33;
+      minSpan = 1.75;
+    } else if (zoomScale === '15x') {
+      spanMultiplier = 1.08;
+      minSpan = 0.5;
+    }
+
+    const span = Math.max(actualSpan * spanMultiplier, minSpan);
     const calcMinY = center - span / 2;
     const calcMaxY = center + span / 2;
 
     // Ticks
-    const step = span > 14 ? 2.0 : span > 4 ? 1.0 : 0.5;
+    const step = span > 16 ? 4.0 : span > 7 ? 2.0 : span > 3 ? 1.0 : span > 1.2 ? 0.5 : 0.25;
     const ticks: { val: number; label: string }[] = [];
     const firstTick = Math.ceil(calcMinY / step) * step;
 
@@ -171,7 +176,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       maxY: calcMaxY,
       yTicks: ticks,
     };
-  }, [measuredStations, exaggerationMultiplier]);
+  }, [measuredStations, zoomScale]);
 
   // Coordinate transforms
   const getX = (distFt: number) => {
@@ -184,13 +189,13 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     return padding.top + innerHeight - ((elevInches - minY) / (maxY - minY)) * innerHeight;
   };
 
-  // Generate SVG path for actual rail profile (using visual exaggerated points)
+  // Generate SVG path for actual rail profile
   const actualPath = useMemo(() => {
     if (measuredStations.length < 2) return '';
 
     const pts = measuredStations.map(s => ({
       x: getX(s.distanceFt),
-      y: getY(getVisualElev(s)!),
+      y: getY(s.elevationInches!),
     }));
 
     if (curveMode === 'curve') {
@@ -201,7 +206,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     return pts.reduce((acc, p, idx) => {
       return idx === 0 ? `M ${p.x.toFixed(1)} ${p.y.toFixed(1)}` : `${acc} L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
     }, '');
-  }, [measuredStations, curveMode, minY, maxY, minX, maxX, innerWidth, exaggerationMultiplier]);
+  }, [measuredStations, curveMode, minY, maxY, minX, maxX, innerWidth]);
 
   // Generate SVG path for target grade
   const targetPath = useMemo(() => {
@@ -438,7 +443,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {stations.map(s => {
             const x = getX(s.distanceFt);
             const isMeasured = s.elevationInches !== null;
-            const y = isMeasured ? getY(getVisualElev(s)!) : padding.top + innerHeight / 2;
+            const y = isMeasured ? getY(s.elevationInches!) : padding.top + innerHeight / 2;
             const isSelected = selectedStationId === s.id;
 
             let dotFill = '#52525b'; // zinc-600 unmeasured
