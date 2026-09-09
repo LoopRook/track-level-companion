@@ -196,7 +196,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     <text x="320" y="15" fill="#f59e0b" fontSize="9" fontWeight="bold">Station 15 (Target)</text>
                   </svg>
 
-                  {/* Overlay Result Badge - Colors matching actual app: Sky Blue = Lift, Amber = Lower */}
+                  {/* Overlay Result Badge */}
                   <div className="absolute right-3 top-3 bg-white/90 dark:bg-black/90 backdrop-blur border border-zinc-300 dark:border-zinc-700 p-2.5 rounded-xl shadow-lg text-center font-mono">
                     <span className="text-[10px] text-zinc-500 block uppercase font-bold">Rod Reading</span>
                     <span className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100">
@@ -219,15 +219,15 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                   </div>
                 </div>
 
-                {/* Explanation bullets matching exact app color scheme */}
+                {/* Explanation bullets */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <div className="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl">
-                    <strong className="text-sky-600 dark:text-sky-400 block">Big Number = Track is LOW (Sky Blue ▲)</strong>
-                    When track sags, the rod sinks down, so the laser hits higher on the rod. The app tells you: <strong>LIFT</strong>.
+                    <strong className="text-sky-600 dark:text-sky-400 block">Higher Rod Reading = Track is LOW</strong>
+                    When track sags, the rod sinks down, so the laser hits higher on the rod's tape. The app tells you: <strong>LIFT</strong>.
                   </div>
                   <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-                    <strong className="text-amber-600 dark:text-amber-400 block">Small Number = Track is HIGH (Amber ▼)</strong>
-                    When track has a hump, the rod is pushed up, hitting lower on the rod. The app tells you: <strong>LOWER</strong>.
+                    <strong className="text-amber-600 dark:text-amber-400 block">Lower Rod Reading = Track is HIGH</strong>
+                    When track has a hump, the rod is pushed up, hitting lower on the rod's tape. The app tells you: <strong>LOWER</strong>.
                   </div>
                 </div>
               </div>
@@ -258,10 +258,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-extrabold text-sm">1. [ Grade % ] Mode</span>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-500 rounded font-mono">0.0%, 0.5%, 1.0%</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-500 rounded font-mono">0.0%, 0.5%, 1.0%, 1.5%</span>
                   </div>
                   <span className="text-[11px] opacity-80 block mt-1">
-                    Projects a continuous pitch from Station 0. Includes 0.0% dead level benchmark.
+                    Projects a continuous pitch from Station 0. Includes dead-flat 0.0% benchmark.
                   </span>
                 </button>
 
@@ -275,7 +275,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-extrabold text-sm">2. [ End-to-End ] Mode</span>
-                    <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-500 rounded font-mono">ROOT 🔒 Anchors</span>
+                    <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-500 rounded font-mono">LOCKED 🔒 Anchors</span>
                   </div>
                   <span className="text-[11px] opacity-80 block mt-1">
                     Connects start to end with straight chords, automatically anchoring through Locked Ties.
@@ -307,7 +307,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     {activeSlopeDemo === 'end_to_end' && (
                       <g>
                         <circle cx="250" cy="90" r="9" stroke="#f59e0b" strokeWidth="1.5" fill="none" />
-                        <text x="220" y="80" fill="#f59e0b" fontSize="8" fontWeight="bold">LOCKED ROOT 🔒</text>
+                        <text x="230" y="80" fill="#f59e0b" fontSize="8" fontWeight="bold">LOCKED 🔒</text>
                       </g>
                     )}
 
@@ -318,12 +318,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     {activeSlopeDemo === 'grade_percent' ? (
                       <line x1="40" y1="70" x2="420" y2="70" stroke="#10b981" strokeWidth="3" strokeDasharray="6 3" />
                     ) : (
-                      // End-to-End passes straight from 50 (70) to 250 (90) to 400 (65)
                       <polyline points="50,70 250,90 400,65" stroke="#10b981" strokeWidth="3" strokeDasharray="6 3" fill="none" />
                     )}
 
                     <text x="60" y="20" fill="#10b981" fontSize="9" fontWeight="bold">
-                      --- GREEN DASH: TARGET LINE ({activeSlopeDemo === 'grade_percent' ? 'Grade % (0.0% Flat)' : 'End-to-End Chords via Root Anchor'})
+                      --- GREEN DASH: TARGET LINE ({activeSlopeDemo === 'grade_percent' ? 'Grade % (0.0% Flat)' : 'End-to-End Chords via Locked Anchor'})
                     </text>
                   </svg>
                 </div>
@@ -332,11 +331,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 <div className="text-xs space-y-1.5 leading-relaxed">
                   {activeSlopeDemo === 'grade_percent' ? (
                     <p className="text-zinc-700 dark:text-zinc-300">
-                      <strong>Grade % Mode:</strong> Holds Station 0 as your benchmark. Choose <strong>0.0%</strong> for a dead-flat level line across yard tracks or tangent track, or enter a positive/negative slope (e.g. <strong>+0.50%</strong> for hills or drainage runoff).
+                      <strong>Grade % Mode:</strong> Holds Station 0 as your benchmark. Tap <strong>0.0%</strong> for a dead-flat line across yard tracks, or choose <strong>0.5%</strong>, <strong>1.0%</strong>, or <strong>1.5%</strong>. You can also tap directly into the slope box to type any custom grade (e.g. <code>0.25%</code>, <code>-0.75%</code>).
                     </p>
                   ) : (
                     <p className="text-zinc-700 dark:text-zinc-300">
-                      <strong>End-to-End Mode:</strong> Stretches a straight stringline between your starting tie and ending tie. If you mark any tie with the <strong>Lock (🔒)</strong> button (e.g. over a tree root or bridge abutment), the grade line breaks cleanly at that tie, guaranteeing immovable obstacles are never forced to lift or lower.
+                      <strong>End-to-End Mode:</strong> Stretches straight chords between your starting tie and ending tie, anchoring through any intermediate <strong>Locked Ties (🔒)</strong>. If a locked obstacle sits higher than your endpoints, it will form a summit; to smooth out a steep transition, expand your survey further down the line with <strong>+ Extend</strong> to feather the grade across more ties.
                     </p>
                   )}
                 </div>

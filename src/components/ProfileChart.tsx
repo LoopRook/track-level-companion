@@ -339,7 +339,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           <div className="flex items-center gap-2 font-sans font-bold">
             {currentInspectStation.isLocked ? (
               <span className="text-amber-500 dark:text-amber-400 text-xs flex items-center gap-1">
-                🔒 LOCKED (ROOT)
+                🔒 LOCKED
               </span>
             ) : (
               <>

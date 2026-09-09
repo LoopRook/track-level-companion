@@ -196,10 +196,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {isLocked && (
                     <span
                       className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-1"
-                      title="Locked Tie / Control Point (over tree root or fixed structure)"
+                      title="Locked Tie / Control Point"
                     >
                       <Lock className="w-2.5 h-2.5" />
-                      <span>ROOT</span>
+                      <span>LOCKED</span>
                     </span>
                   )}
 
@@ -326,7 +326,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 {isLocked ? (
                   <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                     <Lock className="w-3.5 h-3.5 text-amber-500" />
-                    <span>LOCKED (ROOT / FIXED POINT - NO SHIM)</span>
+                    <span>LOCKED</span>
                   </div>
                 ) : (
                   <>
@@ -419,10 +419,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       {isLocked && (
                         <span
                           className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-0.5"
-                          title="Locked Tie / Control Point (over tree root or fixed structure)"
+                          title="Locked Tie / Control Point"
                         >
                           <Lock className="w-2.5 h-2.5" />
-                          <span>ROOT</span>
+                          <span>LOCKED</span>
                         </span>
                       )}
                       {s.isTurningPoint && (
@@ -497,7 +497,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     {isLocked ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
                         <Lock className="w-3.5 h-3.5 text-amber-500" />
-                        LOCKED (ROOT)
+                        LOCKED
                       </span>
                     ) : (
                       <>

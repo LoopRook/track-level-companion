@@ -194,7 +194,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
                 <span className="font-bold text-zinc-500 ml-0.5 text-xs">%</span>
               </div>
               <div className="flex items-center gap-1 ml-1 pl-1.5 border-l border-zinc-200 dark:border-zinc-800">
-                {[0.0, 0.5, 1.0].map((g) => (
+                {[0.0, 0.5, 1.0, 1.5].map((g) => (
                   <button
                     key={g}
                     type="button"

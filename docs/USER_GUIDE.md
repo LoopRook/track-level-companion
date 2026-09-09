@@ -13,16 +13,14 @@ $$\text{Elevation} = \text{Datum Reference Reading} - \text{Laser Reading}$$
 ### The Rule to Remember:
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│  BIG NUMBER ON ROD   ──>  Track is DIPPING in dirt  ──>  APP: LIFT     │
-│                           (Sky Blue Badge ▲)                           │
-│                                                                        │
-│  SMALL NUMBER ON ROD ──>  Track has a HUMP / HIGH   ──>  APP: LOWER    │
-│                           (Amber Badge ▼)                              │
+│  HIGHER ROD READING (e.g. 1' 4 1/2")  ──>  Track is LOW   ──>  LIFT    │
+│  LOWER ROD READING  (e.g. 1' 0 1/2")  ──>  Track is HIGH  ──>  LOWER   │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **When track sags:** The rail drops $\to$ the rod drops $\to$ the laser hits higher up on the measurement face (e.g. `1' 4 1/2"` instead of `1' 2"`). The app tells you: **`LIFT 2 1/2"`** (Sky Blue).
-- **When track humps:** The rail rises $\to$ the rod is pushed up $\to$ the laser hits lower down on the rod (e.g. `1' 0 1/2"`). The app tells you: **`LOWER 1 1/2"`** (Amber).
+Because the grade rod measures downward from the laser plane to the rail head:
+- **When track sags (Low):** The rail drops, the rod drops with it, and the laser beam strikes **higher** on the rod's measurement face (e.g. `1' 4 1/2"` instead of benchmark `1' 2"`). The app calculates that the track needs to come up: **`LIFT 2 1/2"`**.
+- **When track humps (High):** The rail rises, pushing the rod up, so the laser strikes **lower** on the rod's measurement face (e.g. `1' 0 1/2"`). The app calculates that the rail is high: **`LOWER 1 1/2"`**.
 
 The app handles all inversions automatically, eliminating mental math errors in the field.
 
@@ -50,10 +48,10 @@ The app handles all inversions automatically, eliminating mental math errors in 
 
 ### Step 4: Jacking & Tamping (Checklist Actions)
 1. Check the **Track Action** column/banner on your checklist:
-   - **`ON GRADE ✓`** (Emerald Green): Within tolerance (1/16"). Do not touch.
-   - **`LIFT 3/8"`** (Sky Blue): Jack tie up by 3/8" and tamp ballast underneath.
-   - **`LOWER 1/4"`** (Amber): Rail is high. Knock down ballast or avoid lifting adjacent ties.
-   - **`LOCKED (ROOT)`** (Amber with Lock): Immovable control tie (no lifting instructed).
+   - **`ON GRADE ✓`**: Within tolerance (1/16"). Do not touch.
+   - **`LIFT 3/8"`**: Jack tie up by 3/8" and tamp ballast underneath.
+   - **`LOWER 1/4"`**: Rail is high. Knock down ballast or avoid lifting adjacent ties.
+   - **`LOCKED`**: Immovable control tie (no lifting or shimming instructed).
 2. Tap the **Circle / Checkmark** to mark a tie as leveled as you finish it.
 3. Tap the **Lock (🔒)** icon on any tie that cannot be moved (e.g. over a tree root, bridge abutment, or road crossing).
 
@@ -66,20 +64,23 @@ In the alignment bar, choose between two target modes:
 ```
 ┌─────────────────┬────────────────────────────────────────────────────────┐
 │  [ Grade % ]    │  Holds Station 0 and projects a continuous slope line.  │
-│                 │  Quick presets: 0.0% (Flat), 0.5%, 1.0%, or custom.     │
+│                 │  Quick presets: 0.0% (Flat), 0.5%, 1.0%, 1.5%, custom. │
 ├─────────────────┼────────────────────────────────────────────────────────┤
 │  [ End-to-End ] │  Connects start and end ties with straight chords,     │
-│                 │  automatically anchored to any Locked Ties (ROOT 🔒).   │
+│                 │  automatically anchored to any Locked Ties (LOCKED 🔒). │
 └─────────────────┴────────────────────────────────────────────────────────┘
 ```
 
 ### Mode 1: `Grade %` (Target Grade)
 - **Dead Level Benchmark (`0.0%`):** Holds Station 0's elevation flat across the entire section. Best for yard tracks, sidings, and tangent track where no grade change is intended.
-- **Inclined Grade (`+0.5%`, `+1.0%`, or negative):** Enters a continuous pitch in percent (e.g. `+0.50%` = 1/2" rise per 100 ft) for hills, ramps, or drainage runoff.
+- **Quick Presets:** One-tap buttons for **`0.0%`**, **`0.5%`**, **`1.0%`**, and **`1.5%`**.
+- **Type Any Custom Grade:** Tap directly into the slope percentage input box to type any custom slope (e.g. `0.25%`, `-0.75%`, `2.0%`).
 
 ### Mode 2: `End-to-End` (Stringline with Locked Control Ties)
 - Draws a straight chord between Station 0 and your final surveyed tie.
-- **Locked Ties as Anchors (ROOT):** If intermediate ties are marked with **Lock (🔒)** (e.g. over a tree root or bridge abutment), the grade line breaks into straight segments passing directly through each locked tie, ensuring unmovable points are never forced to lift or lower.
+- **Locked Ties as Anchors:** If intermediate ties are marked with **Lock (🔒)** (e.g. over a tree root or bridge abutment), the grade line breaks into straight segments passing directly through each locked tie, ensuring unmovable points are never forced to lift or lower.
+- **Handling High Locked Points:**
+  If an unmovable locked point sits higher than your start and end ties, the grade line will rise to it and slope back down, forming a summit. If this creates too sharp of a peak over a short distance (e.g. a 25 ft stretch), expand your survey further down the line (e.g. to 50 or 75 ft) using **`+ Extend`**. This gives the track enough room to feather the rise and fall naturally across more ties, or you can switch to **`Grade %`** to lift the adjoining track up to the high point.
 
 ---
 

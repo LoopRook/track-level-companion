@@ -26,10 +26,10 @@ Located in `src/components/StationConfig.tsx`.
 #### Alignment Bar (Target Slope Controls):
 - **Grade Mode Toggle Group:** Exactly two buttons:
   - **`[ Grade % ]` (`target_grade`):** Projects a slope line from Station 0.
-  - **`[ End-to-End ]` (`end_to_end`):** Piecewise straight chords between the first station, any locked control points (ROOT), and the last station.
+  - **`[ End-to-End ]` (`end_to_end`):** Piecewise straight chords between the first station, any locked control points (LOCKED 🔒), and the last station.
 - **Slope Controls (Visible when `Grade %` is active):**
-  - Number input (`<input type="number" step="0.1">`) bound to `project.targetGradePercent`.
-  - Quick Preset Buttons: **`0.0%`** (dead level benchmark), **`0.5%`**, and **`1.0%`**.
+  - Number input (`<input type="number" step="0.1">`) bound to `project.targetGradePercent`. User can type any custom percentage.
+  - Quick Preset Buttons: **`0.0%`** (dead level benchmark), **`0.5%`**, **`1.0%`**, and **`1.5%`**.
 - **Station Interval Dropdown:** Options for `1 ft (fine)`, `2 ft`, `5 ft (standard)`, `10 ft`.
 - **Units Dropdown:** Options for `Ft, In & 1/16"`, `Inches & 1/16"`, `Decimal In`, `Metric (mm)`.
 
@@ -63,7 +63,7 @@ Located in `src/components/ProfileChart.tsx`.
 - **Sky Blue Dots:** Low spots requiring LIFT.
 - **Amber Dots:** High spots requiring LOWER.
 - **Green Dots:** On Grade ties.
-- **Amber Ring / Lock Icon:** Locked Control Ties (ROOT).
+- **Amber Ring / Lock Icon:** Locked Control Ties (LOCKED 🔒).
 - **Purple Ring / Flag Icon:** Turning Point Benchmarks (TP).
 
 ---
@@ -91,13 +91,13 @@ Located in `src/components/ActionTable.tsx`.
   - **`Behind 0 (Backward ←)`:** Inserts negative stations (`-5'`, `-10'`, `-15'`) before Station 0 for taper runout feathering.
 
 #### Row Actions & Layouts:
-- **Mobile Card View (`md:hidden`):** Zero horizontal scroll. Large touch-friendly cards showing distance, `ROOT` & `TP` badges, laser reading, relative elevation, full-width status pill, and action icons (Lock, TP, Edit, Delete).
+- **Mobile Card View (`md:hidden`):** Zero horizontal scroll. Large touch-friendly cards showing distance, `LOCKED` & `TP` badges, laser reading, relative elevation, full-width status pill, and action icons (Lock, TP, Edit, Delete).
 - **Desktop Table View (`hidden md:block`):** 6-column tabular layout (Status checkbox, Station, Laser Reading, Relative Elev, Track Action pill, Actions).
 - **Status Pills:**
   - **`ON GRADE ✓`:** Emerald Green (`bg-emerald-500/20 text-emerald-600 dark:text-emerald-400`).
   - **`LIFT +X"`:** Sky Blue (`bg-sky-500/20 text-sky-600 dark:text-sky-400`).
   - **`LOWER -X"`:** Amber (`bg-amber-500/20 text-amber-600 dark:text-amber-400`).
-  - **`LOCKED (ROOT)`:** Amber with `<Lock />` icon (`bg-amber-500/20 text-amber-600 dark:text-amber-400`).
+  - **`LOCKED`:** Amber with `<Lock />` icon (`bg-amber-500/20 text-amber-600 dark:text-amber-400`).
 
 ---
 
