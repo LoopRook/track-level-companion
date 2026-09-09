@@ -6,6 +6,7 @@ interface FractionKeypadProps {
   isOpen: boolean;
   stationDistanceFt: number;
   currentReadingInches: number | null;
+  datumOffsetInches?: number;
   onSave: (valInches: number | null) => void;
   onSaveAndNext?: (valInches: number | null) => void;
   onSaveAndPrev?: (valInches: number | null) => void;
@@ -35,6 +36,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   isOpen,
   stationDistanceFt,
   currentReadingInches,
+  datumOffsetInches,
   onSave,
   onSaveAndNext,
   onSaveAndPrev,
@@ -137,6 +139,12 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
               <span className="text-zinc-500 italic">No measurement</span>
             )}
           </div>
+
+          {datumOffsetInches !== undefined && datumOffsetInches !== 0 && currentComputedInches !== null && (
+            <div className="mt-2 text-xs font-mono text-purple-700 dark:text-purple-300 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
+              Adj: <strong>{formatFeetInches(currentComputedInches - datumOffsetInches)}</strong> ({datumOffsetInches > 0 ? `-${formatInchesFraction(datumOffsetInches)}` : `+${formatInchesFraction(Math.abs(datumOffsetInches))}`} datum)
+            </div>
+          )}
 
           {/* Quick +/- Nudge Toolbar */}
           <div className="flex items-center gap-1.5 mt-3 w-full justify-center">

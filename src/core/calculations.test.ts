@@ -245,5 +245,98 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(calculated[1].action).toBe('lift');
     expect(calculated[1].actionText).toBe('LIFT +1/4"');
   });
+
+  it('dynamically propagates datum shift to subsequent stations when tpNewReadingInches is recorded on a benchmark', () => {
+    // Scenario:
+    // Station 0: reading 12.0" (Laser 1) -> baseline elev = 0
+    // Station 25: reading 12.0" (Laser 1) -> physical elev = 0
+    // Laser is moved. On Station 25, backsight with Laser 2 is 14.5" (Laser 2 is 2.5" higher).
+    // Stations 30 and 35 are added afterwards with NO pre-stamped datumOffsetInches!
+    // Station 30 reads 14.5" with Laser 2 (physically level with Station 25).
+    // Station 35 reads 14.75" with Laser 2 (physically 1/4" lower dip).
+    const dynamicTpProject: TrackProject = {
+      ...baseProject,
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 12.0 },
+        {
+          id: '25',
+          distanceFt: 25,
+          readingInches: 12.0,
+          isTurningPoint: true,
+          tpNewReadingInches: 14.5, // 2.5" shift
+        },
+        { id: '30', distanceFt: 30, readingInches: 14.5 }, // no datumOffsetInches
+        { id: '35', distanceFt: 35, readingInches: 14.75 }, // no datumOffsetInches
+        { id: '40', distanceFt: 40, readingInches: null },  // unmeasured station
+      ]
+    };
+
+    const calculated = calculateTrackProfile(dynamicTpProject);
+
+    // Turning point tie at 25 ft retains Laser 1 baseline reading (effective = 12.0, elev = 0)
+    expect(calculated[1].appliedDatumOffsetInches).toBeCloseTo(0.0, 4);
+    expect(calculated[1].effectiveReadingInches).toBeCloseTo(12.0, 4);
+    expect(calculated[1].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[1].action).toBe('ok');
+
+    // Station 30 inherits +2.5" datum offset dynamically!
+    expect(calculated[2].appliedDatumOffsetInches).toBeCloseTo(2.5, 4);
+    expect(calculated[2].effectiveReadingInches).toBeCloseTo(12.0, 4); // 14.5 - 2.5 = 12.0
+    expect(calculated[2].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].action).toBe('ok');
+
+    // Station 35 inherits +2.5" datum offset dynamically!
+    expect(calculated[3].appliedDatumOffsetInches).toBeCloseTo(2.5, 4);
+    expect(calculated[3].effectiveReadingInches).toBeCloseTo(12.25, 4); // 14.75 - 2.5 = 12.25
+    expect(calculated[3].elevationInches).toBeCloseTo(-0.25, 4);
+    expect(calculated[3].liftInches).toBeCloseTo(0.25, 4);
+    expect(calculated[3].action).toBe('lift');
+    expect(calculated[3].actionText).toBe('LIFT +1/4"');
+
+    // Unmeasured Station 40 also has the active offset ready
+    expect(calculated[4].appliedDatumOffsetInches).toBeCloseTo(2.5, 4);
+    expect(calculated[4].effectiveReadingInches).toBeNull();
+  });
+
+  it('chains multiple turning points seamlessly across consecutive laser relocations', () => {
+    // Setup 1 (Laser 1): 0ft (12"), 20ft (12")
+    // TP 1 at 20ft: Laser 2 reads 15.0" (+3.0" shift)
+    // Setup 2 (Laser 2): 30ft (15.0"), 40ft (15.0")
+    // TP 2 at 40ft: Laser 3 reads 17.5" (+2.5" shift -> total +5.5" shift)
+    // Setup 3 (Laser 3): 50ft (17.5")
+    const multiTpProject: TrackProject = {
+      ...baseProject,
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 12.0 },
+        { id: '20', distanceFt: 20, readingInches: 12.0, isTurningPoint: true, tpNewReadingInches: 15.0 },
+        { id: '30', distanceFt: 30, readingInches: 15.0 },
+        { id: '40', distanceFt: 40, readingInches: 15.0, isTurningPoint: true, tpNewReadingInches: 17.5 },
+        { id: '50', distanceFt: 50, readingInches: 17.5 },
+      ]
+    };
+
+    const calculated = calculateTrackProfile(multiTpProject);
+
+    // All stations are physically level (elev = 0)
+    expect(calculated[0].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[1].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[3].elevationInches).toBeCloseTo(0.0, 4);
+    expect(calculated[4].elevationInches).toBeCloseTo(0.0, 4);
+
+    // Offsets:
+    expect(calculated[0].appliedDatumOffsetInches).toBeCloseTo(0.0, 4);
+    expect(calculated[1].appliedDatumOffsetInches).toBeCloseTo(0.0, 4);
+    expect(calculated[2].appliedDatumOffsetInches).toBeCloseTo(3.0, 4);
+    expect(calculated[3].appliedDatumOffsetInches).toBeCloseTo(3.0, 4);
+    expect(calculated[4].appliedDatumOffsetInches).toBeCloseTo(5.5, 4);
+
+    // Effective readings normalized to Laser 1:
+    expect(calculated[0].effectiveReadingInches).toBeCloseTo(12.0, 4);
+    expect(calculated[1].effectiveReadingInches).toBeCloseTo(12.0, 4);
+    expect(calculated[2].effectiveReadingInches).toBeCloseTo(12.0, 4);
+    expect(calculated[3].effectiveReadingInches).toBeCloseTo(12.0, 4);
+    expect(calculated[4].effectiveReadingInches).toBeCloseTo(12.0, 4);
+  });
 });
 

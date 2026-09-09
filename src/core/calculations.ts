@@ -15,6 +15,32 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
   // Since reading is measured DOWN from laser plane: elevation = datum - effectiveReading.
   const validStationsWithReading = stations.filter(s => s.readingInches !== null && !isNaN(s.readingInches));
 
+  // Dynamically compute cumulative datum offsets across turning point benchmarks
+  let runningCumulativeShift = 0;
+  const appliedOffsets: number[] = [];
+
+  for (let i = 0; i < stations.length; i++) {
+    const s = stations[i];
+    if (s.isTurningPoint) {
+      // The turning point tie itself was measured with the prior laser setup.
+      appliedOffsets.push(runningCumulativeShift);
+
+      // Now determine the step delta introduced by the new laser setup at this turning point
+      let stepDelta = 0;
+      if (s.tpNewReadingInches !== undefined && s.readingInches !== null && !isNaN(s.readingInches)) {
+        stepDelta = s.tpNewReadingInches - s.readingInches;
+      } else if (s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0) {
+        stepDelta = s.datumOffsetInches;
+      }
+      runningCumulativeShift += stepDelta;
+    } else {
+      // If a turning point has been established, propagate runningCumulativeShift.
+      // Otherwise, fallback to any explicitly pre-set datumOffsetInches on the station.
+      const offset = runningCumulativeShift !== 0 ? runningCumulativeShift : (s.datumOffsetInches || 0);
+      appliedOffsets.push(offset);
+    }
+  }
+
   let datumReference = 0;
   if (laserDatumMode === 'fixed_datum' && fixedDatumInches !== undefined && !isNaN(fixedDatumInches)) {
     datumReference = fixedDatumInches;
@@ -22,13 +48,15 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
     // Prefer station at distance 0 ft as the primary baseline; fallback to first valid station
     const stationZero = validStationsWithReading.find(s => s.distanceFt === 0);
     const datumStation = stationZero || validStationsWithReading[0];
-    datumReference = datumStation.readingInches! - (datumStation.datumOffsetInches || 0);
+    const datumIdx = stations.indexOf(datumStation);
+    const datumOffset = datumIdx >= 0 ? appliedOffsets[datumIdx] : (datumStation.datumOffsetInches || 0);
+    datumReference = datumStation.readingInches! - datumOffset;
   }
 
   // Calculate actual elevation for each station
-  const effectiveReadings: (number | null)[] = stations.map(s => {
+  const effectiveReadings: (number | null)[] = stations.map((s, i) => {
     if (s.readingInches === null || isNaN(s.readingInches)) return null;
-    return s.readingInches - (s.datumOffsetInches || 0);
+    return s.readingInches - appliedOffsets[i];
   });
 
   const elevations: (number | null)[] = effectiveReadings.map(eff => {
@@ -181,7 +209,9 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
 
     return {
       ...s,
+      datumOffsetInches: appliedOffsets[i] !== 0 ? appliedOffsets[i] : s.datumOffsetInches,
       effectiveReadingInches: effectiveReadings[i],
+      appliedDatumOffsetInches: appliedOffsets[i],
       elevationInches: elev,
       targetElevationInches: target,
       liftInches: lift,

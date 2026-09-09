@@ -80,6 +80,8 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
 
   const stations: StationPoint[] = [];
 
+  let prevDatumOffset: number | undefined = undefined;
+
   for (let i = 1; i < lines.length; i++) {
     const parts = splitCSVLine(lines[i]);
 
@@ -110,13 +112,16 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
       notes = parts[4] || '';
     }
 
+    const isTurningPoint = datumOffset !== undefined && datumOffset !== 0 && datumOffset !== prevDatumOffset;
+    prevDatumOffset = datumOffset;
+
     stations.push({
       id: `station-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
       distanceFt: dist,
       readingInches: reading,
       completed,
       datumOffsetInches: datumOffset,
-      isTurningPoint: datumOffset !== undefined && datumOffset !== 0,
+      isTurningPoint,
       isLocked,
       notes,
     });

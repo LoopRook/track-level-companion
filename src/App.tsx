@@ -126,6 +126,22 @@ export const App: React.FC = () => {
 
     let nextStation: StationPoint;
 
+    // Helper to calculate active cumulative datum offset
+    const getActiveDatumOffset = (stations: StationPoint[], distanceFt?: number): number => {
+      let shift = 0;
+      for (const s of stations) {
+        if (distanceFt !== undefined && s.distanceFt > distanceFt) break;
+        if (s.isTurningPoint) {
+          if (s.tpNewReadingInches !== undefined && s.readingInches !== null) {
+            shift += (s.tpNewReadingInches - s.readingInches);
+          } else if (s.datumOffsetInches) {
+            shift += s.datumOffsetInches;
+          }
+        }
+      }
+      return shift;
+    };
+
     if (currentIdx >= 0 && currentIdx < updatedStations.length - 1) {
       // Advance to existing next station
       nextStation = updatedStations[currentIdx + 1];
@@ -133,10 +149,12 @@ export const App: React.FC = () => {
       // Create next station at standard interval
       const lastDist = activeEditingStation.distanceFt;
       const newDist = lastDist + project.stationIntervalFt;
+      const activeOffset = getActiveDatumOffset(updatedStations);
       nextStation = {
         id: `station-${Date.now()}`,
         distanceFt: newDist,
         readingInches: null,
+        datumOffsetInches: activeOffset !== 0 ? activeOffset : undefined,
       };
       updatedStations.push(nextStation);
     }
@@ -185,15 +203,33 @@ export const App: React.FC = () => {
     }
   };
 
+  // Helper to calculate active cumulative datum offset
+  const getActiveOffsetAt = (distanceFt?: number): number => {
+    let shift = 0;
+    for (const s of project.stations) {
+      if (distanceFt !== undefined && s.distanceFt > distanceFt) break;
+      if (s.isTurningPoint) {
+        if (s.tpNewReadingInches !== undefined && s.readingInches !== null) {
+          shift += (s.tpNewReadingInches - s.readingInches);
+        } else if (s.datumOffsetInches) {
+          shift += s.datumOffsetInches;
+        }
+      }
+    }
+    return shift;
+  };
+
   // Add next station at end
   const handleAddNextStation = () => {
     const lastStation = project.stations[project.stations.length - 1];
     const newDist = lastStation ? lastStation.distanceFt + project.stationIntervalFt : 0;
+    const activeOffset = getActiveOffsetAt();
 
     const newStation: StationPoint = {
       id: `station-${Date.now()}`,
       distanceFt: newDist,
       readingInches: null,
+      datumOffsetInches: activeOffset !== 0 ? activeOffset : undefined,
     };
 
     setProject(prev => ({
@@ -224,10 +260,12 @@ export const App: React.FC = () => {
       return;
     }
 
+    const activeOffset = getActiveOffsetAt(dist);
     const newStation: StationPoint = {
       id: `station-${Date.now()}`,
       distanceFt: dist,
       readingInches: null,
+      datumOffsetInches: activeOffset !== 0 ? activeOffset : undefined,
     };
 
     // Insert and keep sorted by distance
@@ -277,6 +315,7 @@ export const App: React.FC = () => {
     } else {
       const lastStation = project.stations[project.stations.length - 1];
       const startDist = lastStation ? lastStation.distanceFt : 0;
+      const activeOffset = getActiveOffsetAt();
       const newStations: StationPoint[] = [];
 
       for (let i = 1; i <= count; i++) {
@@ -284,6 +323,7 @@ export const App: React.FC = () => {
           id: `station-${Date.now()}-${i}`,
           distanceFt: startDist + i * interval,
           readingInches: null,
+          datumOffsetInches: activeOffset !== 0 ? activeOffset : undefined,
         });
       }
 
@@ -313,6 +353,8 @@ export const App: React.FC = () => {
         return {
           ...s,
           isTurningPoint: true,
+          tpNewReadingInches: newReadingInches,
+          datumOffsetInches: delta,
         };
       }
       if (idx > targetIdx) {
@@ -336,7 +378,7 @@ export const App: React.FC = () => {
     setProject(prev => ({
       ...prev,
       stations: prev.stations.map(s => {
-        const { datumOffsetInches, isTurningPoint, ...rest } = s;
+        const { datumOffsetInches, isTurningPoint, tpNewReadingInches, ...rest } = s;
         return rest;
       })
     }));
@@ -454,6 +496,7 @@ export const App: React.FC = () => {
         isOpen={isKeypadOpen}
         stationDistanceFt={activeEditingStation?.distanceFt ?? 0}
         currentReadingInches={activeEditingStation?.readingInches ?? null}
+        datumOffsetInches={activeEditingStation?.appliedDatumOffsetInches ?? activeEditingStation?.datumOffsetInches}
         onSave={handleSaveStationReading}
         onSaveAndNext={handleSaveAndNext}
         onSaveAndPrev={handleSaveAndPrev}
