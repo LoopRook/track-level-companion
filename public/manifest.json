@@ -1,0 +1,23 @@
+{
+  "short_name": "TrackLevel",
+  "name": "Track Level Companion",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "display": "standalone",
+  "orientation": "any",
+  "description": "Precision live steam & miniature railroad track leveling with laser datum calculations, gentle profile graphing, and trackside lift recommendations."
+}

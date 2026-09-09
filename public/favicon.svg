@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" rx="22" fill="#0f172a"/>
+  <!-- Ties -->
+  <line x1="20" y1="35" x2="80" y2="35" stroke="#78350f" stroke-width="6" stroke-linecap="round"/>
+  <line x1="16" y1="50" x2="84" y2="50" stroke="#78350f" stroke-width="6" stroke-linecap="round"/>
+  <line x1="12" y1="65" x2="88" y2="65" stroke="#78350f" stroke-width="6" stroke-linecap="round"/>
+  <line x1="8" y1="80" x2="92" y2="80" stroke="#78350f" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Steel Rails (converging perspective) -->
+  <line x1="38" y1="20" x2="22" y2="88" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>
+  <line x1="62" y1="20" x2="78" y2="88" stroke="#94a3b8" stroke-width="5" stroke-linecap="round"/>
+  
+  <!-- Red Laser Level Line (Horizontal Datum) -->
+  <line x1="5" y1="35" x2="95" y2="35" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,3"/>
+  <circle cx="50" cy="35" r="4" fill="#ef4444"/>
+  
+  <!-- Green Level Indicator / Check -->
+  <circle cx="50" cy="65" r="7" fill="#10b981"/>
+  <path d="M47 65 L49 67 L53 63" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
