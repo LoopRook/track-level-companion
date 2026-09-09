@@ -1,6 +1,6 @@
 import React from 'react';
 import { UnitFormat, TrackProject } from '../core/types';
-import { Sliders, Sun, Moon, Compass } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass, BookOpen } from 'lucide-react';
 
 interface StationConfigProps {
   project: TrackProject;
@@ -8,6 +8,7 @@ interface StationConfigProps {
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
   onOpenDataModal: () => void;
+  onOpenGuideModal: () => void;
   summary: {
     totalStations: number;
     measuredCount: number;
@@ -26,6 +27,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
   isDarkMode,
   onToggleDarkMode,
   onOpenDataModal,
+  onOpenGuideModal,
   summary,
 }) => {
   return (
@@ -54,8 +56,20 @@ export const StationConfig: React.FC<StationConfigProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
+          {/* Field Guide / Tutorial */}
+          <button
+            type="button"
+            onClick={onOpenGuideModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95"
+            title="Open Field Guide & Feature Tutorial"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+            <span>Guide</span>
+          </button>
+
           {/* Data / Files */}
           <button
+            type="button"
             onClick={onOpenDataModal}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95"
           >

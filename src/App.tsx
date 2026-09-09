@@ -6,6 +6,7 @@ import { ProfileChart } from './components/ProfileChart';
 import { ActionTable } from './components/ActionTable';
 import { FractionKeypad } from './components/FractionKeypad';
 import { DataManagementModal } from './components/DataManagementModal';
+import { UserGuideModal } from './components/UserGuideModal';
 
 const INITIAL_STATIONS: StationPoint[] = [
   { id: 'st-0', distanceFt: 0, readingInches: 14.0 },
@@ -56,6 +57,7 @@ export const App: React.FC = () => {
   const [activeEditingStation, setActiveEditingStation] = useState<CalculatedStation | null>(null);
   const [isKeypadOpen, setIsKeypadOpen] = useState(false);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   // Sync dark mode class
   useEffect(() => {
@@ -438,6 +440,7 @@ export const App: React.FC = () => {
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onOpenDataModal={() => setIsDataModalOpen(true)}
+        onOpenGuideModal={() => setIsGuideOpen(true)}
         summary={summary}
       />
 
@@ -487,6 +490,12 @@ export const App: React.FC = () => {
         onLoadProject={(p) => setProject(p)}
         onResetProject={handleResetProject}
         onLoadDemoTrack={handleLoadDemoTrack}
+      />
+
+      {/* Field Guide & Animated Tutorial Modal */}
+      <UserGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
       />
     </div>
   );
