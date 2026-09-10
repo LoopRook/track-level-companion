@@ -3,7 +3,6 @@ import { CalculatedStation, UnitFormat } from '../core/types';
 import { formatMeasurement, parseMeasurement } from '../core/units';
 import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
-import { triggerHaptic } from '../core/haptics';
 
 interface ActionTableProps {
   stations: CalculatedStation[];
@@ -246,7 +245,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               onClick={() => onEditStation(s)}
               className={`p-3 transition-all cursor-pointer rounded-xl ${
                 isSelected
-                  ? 'bg-amber-500/10 dark:bg-amber-500/15 ring-2 ring-amber-500'
+                  ? 'bg-amber-500/10 dark:bg-amber-500/15 ring-1 ring-inset ring-amber-500/50'
                   : isCompleted
                   ? 'bg-zinc-100/50 dark:bg-zinc-950/70 opacity-40 grayscale-[0.2]'
                   : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'
@@ -260,11 +259,6 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (!isCompleted) {
-                        triggerHaptic('success');
-                      } else {
-                        triggerHaptic('light');
-                      }
                       onToggleComplete(s.id);
                     }}
                     className="w-11 h-11 -m-2.5 flex items-center justify-center rounded-xl text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 active:scale-90 transition shrink-0"
@@ -561,11 +555,6 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     className="py-3 px-3 text-center"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (!isCompleted) {
-                        triggerHaptic('success');
-                      } else {
-                        triggerHaptic('light');
-                      }
                       onToggleComplete(s.id);
                     }}
                   >

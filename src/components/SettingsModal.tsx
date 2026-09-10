@@ -289,28 +289,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <hr className="border-zinc-200 dark:border-zinc-800" />
 
-          {/* Section 5: Mobile Haptic Feedback */}
+          {/* Section 5: Keypad Haptic Feedback */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
                 <Vibrate className="w-4 h-4 text-amber-500" />
-                <span>Haptic Feedback (Tactile Touch)</span>
+                <span>Keypad Haptic Feedback</span>
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  triggerHaptic('success', true);
-                  setTestPulseMsg('Fired! (10ms tick)');
+                  triggerHaptic('selection', true);
+                  setTestPulseMsg('Fired! (5ms tick)');
                   setTimeout(() => setTestPulseMsg(null), 1500);
                 }}
                 className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 active:scale-95 cursor-pointer"
-                title="Test how refined haptic feedback feels on this device"
+                title="Test how the soft keypad micro-tick feels on this device"
               >
-                {testPulseMsg ?? 'Test Pulse'}
+                {testPulseMsg ?? 'Test Tap'}
               </button>
             </div>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Provides soft, refined physical micro-pulses (8–12ms) for keypad digit entries, nudge buttons, station advance, and tie completions.
+              Provides ultra-soft physical micro-ticks (4–6ms) exclusively on the trackside numeric keypad for tactile entry confirmation.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -331,7 +331,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {isHapticOn && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
                 </div>
                 <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                  Gentle tactile clicks when typing rod shots and a crisp double-tap when saving or marking ties.
+                  Gentle mechanical tick when tapping keys or advancing stations. Checklists and navigation remain silent.
                 </span>
               </button>
 
@@ -349,13 +349,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {!isHapticOn && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
                 </div>
                 <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                  Silent operation. Disables all tactile vibration.
+                  Silent operation. Disables all keypad vibration.
                 </span>
               </button>
             </div>
 
             <p className="text-[10px] text-zinc-400 dark:text-zinc-500 italic">
-              Note: Supported on Android devices (Chrome, Edge, Firefox). Apple iOS Safari does not support the web vibration API.
+              Adheres to Apple HIG and Material Design keypad guidelines. Supported on Android (Chrome, Edge, Firefox). Apple iOS Safari does not support web vibration.
             </p>
           </div>
 

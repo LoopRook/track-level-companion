@@ -107,8 +107,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   useEffect(() => {
     if (selectedStationId && selectedStationId !== selectedStartId && !selectedEndId) {
       setSelectedStartId(selectedStationId);
+    } else if (!selectedStationId && !isMeasureModeActive) {
+      setSelectedStartId(null);
     }
-  }, [selectedStationId]);
+  }, [selectedStationId, isMeasureModeActive]);
 
   // Filter measured stations
   const measuredStations = useMemo(() => {
@@ -152,7 +154,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   }, [zoomScale]);
 
   const baseWidth = 850;
-  const padding = { top: 35, right: 35, bottom: 40, left: 60 };
+  const padding = { top: 35, right: 35, bottom: 40, left: 65 };
 
   // Width
   const effectiveWidth = isScrollable ? Math.max(baseWidth, stations.length * 60) : baseWidth;
@@ -825,8 +827,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   Elev: {formatMeasurement(currentInspectStation.elevationInches, 'inches_fraction')}
                 </span>
 
-                {/* Mobile guidance when 1 station is selected */}
-                {selectedStartId && !selectedEndId && (
+                {/* Mobile guidance when 1 station is selected AND measure mode is active */}
+                {isMeasureModeActive && selectedStartId && !selectedEndId && (
                   <span className="text-[11px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-sans font-semibold px-2 py-0.5 rounded-md border border-amber-500/25 animate-pulse whitespace-nowrap shrink-0">
                     <span className="hidden xs:inline">Tap 2nd station for grade</span>
                     <span className="xs:hidden">Tap 2nd station</span>
@@ -1188,11 +1190,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={13}
+                    r={11}
                     fill="#f59e0b"
                     fillOpacity={0.25}
                     stroke="#f59e0b"
-                    strokeWidth="2.5"
+                    strokeWidth="2"
                     className="animate-pulse"
                   />
                 )}
@@ -1202,11 +1204,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={13}
+                    r={11}
                     fill="#38bdf8"
                     fillOpacity={0.25}
                     stroke="#38bdf8"
-                    strokeWidth="2.5"
+                    strokeWidth="2"
                     className="animate-pulse"
                   />
                 )}

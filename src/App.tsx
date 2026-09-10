@@ -237,6 +237,7 @@ export const App: React.FC = () => {
       )
     }));
     setIsKeypadOpen(false);
+    setActiveEditingStation(null);
   };
 
   // Save and automatically advance to next station (or create next station)
@@ -764,7 +765,10 @@ export const App: React.FC = () => {
           onSave={handleSaveStationReading}
           onSaveAndNext={handleSaveAndNext}
           onSaveAndPrev={handleSaveAndPrev}
-          onClose={() => setIsKeypadOpen(false)}
+          onClose={() => {
+            setIsKeypadOpen(false);
+            setActiveEditingStation(null);
+          }}
         />
 
         {/* Data Management / Export Modal */}

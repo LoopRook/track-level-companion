@@ -118,22 +118,26 @@ describe('Haptics Module', () => {
         configurable: true,
       });
 
-      // Default is 'selection' (10ms)
+      // Default is 'selection' (5ms)
+      expect(HAPTIC_PATTERNS.selection).toBe(5);
       const res = triggerHaptic('selection');
       expect(res).toBe(true);
-      expect(mockVibrate).toHaveBeenCalledWith(HAPTIC_PATTERNS.selection);
+      expect(mockVibrate).toHaveBeenCalledWith(5);
 
-      // 'success' pattern [10, 30, 12]
+      // 'success' pattern (single gentle 6ms tick)
+      expect(HAPTIC_PATTERNS.success).toBe(6);
       triggerHaptic('success');
-      expect(mockVibrate).toHaveBeenCalledWith(HAPTIC_PATTERNS.success);
+      expect(mockVibrate).toHaveBeenCalledWith(6);
 
-      // 'light' pattern 8ms
+      // 'light' pattern 4ms
+      expect(HAPTIC_PATTERNS.light).toBe(4);
       triggerHaptic('light');
-      expect(mockVibrate).toHaveBeenCalledWith(HAPTIC_PATTERNS.light);
+      expect(mockVibrate).toHaveBeenCalledWith(4);
 
-      // 'warning' pattern [15, 35, 15]
+      // 'warning' pattern 10ms
+      expect(HAPTIC_PATTERNS.warning).toBe(10);
       triggerHaptic('warning');
-      expect(mockVibrate).toHaveBeenCalledWith(HAPTIC_PATTERNS.warning);
+      expect(mockVibrate).toHaveBeenCalledWith(10);
     });
 
     it('does not trigger vibration when haptics are disabled', () => {

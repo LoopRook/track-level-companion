@@ -1,13 +1,18 @@
 /**
- * Refined Haptic Feedback Engine for Track Level Companion.
+ * Refined Keypad Haptic Feedback Engine for Track Level Companion.
  *
- * Design Guidelines:
- * - Modern smartphones utilize Linear Resonant Actuators (LRAs) or Taptic Engines.
- * - Traditional web vibrations of 35-100ms feel like a harsh, rattling buzzer that shakes the chassis.
- * - Refined micro-pulses between 8ms and 15ms produce a sharp, physical "click" or "tick"
- *   similar to mechanical micro-switches or native iOS/Android impact generators.
- * - Success patterns use a crisp double-pulse (e.g. [10ms, 30ms, 12ms]) to signify completion
- *   without prolonged vibration.
+ * Design Guidelines (Apple HIG & Material Design 3):
+ * - Haptics should be used purposefully and sparingly. Apple HIG explicitly reserves
+ *   haptics for virtual keypads/keyboards where physical mechanical dome switches are absent,
+ *   and advises against haptics for standard buttons, list items, or checkboxes.
+ * - On the web, the W3C Vibration API (navigator.vibrate) lacks amplitude/intensity control;
+ *   the motor fires at 100% full power for the duration in milliseconds.
+ * - Standard web pulses of 15–50ms, or multi-pulse sequences (e.g. [10, 30, 12]), hit the
+ *   chassis with full acceleration and feel sharply metallic and buzzing.
+ * - Ultra-soft single micro-pulses (4ms–6ms) allow Linear Resonant Actuators (LRAs) to just
+ *   initiate movement before shutting off, producing a gentle, muffled mechanical "tick"
+ *   without harshness, sharpness, or lingering frame vibration.
+ * - Non-keypad UI elements (checkboxes, table rows, cards) remain silent and clean.
  * - Browser support: Native on Android (Chrome, Firefox, Edge, Opera, Samsung Internet).
  *   Safely degrades to a no-op on platforms that do not expose the W3C Vibration API (such as iOS Safari).
  */
@@ -17,16 +22,16 @@ export const HAPTIC_STORAGE_KEY = 'tlc_haptic_feedback';
 export type HapticType = 'selection' | 'light' | 'nudge' | 'success' | 'warning';
 
 export const HAPTIC_PATTERNS: Record<HapticType, number | number[]> = {
-  // Ultra-crisp 10ms tick for typing digits, selecting fractions, or switching items
-  selection: 10,
-  // Gentle 8ms micro-pulse for +/- nudges and navigation
-  light: 8,
-  // 8ms micro-pulse for fine adjustments
-  nudge: 8,
-  // Refined double-tap [10ms pulse, 30ms pause, 12ms pulse] for station save & tie completion
-  success: [10, 30, 12],
-  // Dual-pulse [15ms pulse, 35ms pause, 15ms pulse] for clear, delete, or datum moves
-  warning: [15, 35, 15],
+  // Ultra-soft 5ms mechanical tick for typing digits, decimal point, fractions, or inches
+  selection: 5,
+  // Whisper-light 4ms micro-pulse for +/- nudges
+  light: 4,
+  // 4ms micro-pulse for fine adjustments
+  nudge: 4,
+  // Single gentle 6ms confirmation tick for station advance (Save & Next)
+  success: 6,
+  // Soft 10ms tick for clear or reset
+  warning: 10,
 };
 
 /**
