@@ -20,8 +20,7 @@ import {
   Lock,
   Flag,
   Edit3,
-  Trash2,
-  ExternalLink
+  Trash2
 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
@@ -652,42 +651,33 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 </div>
               </div>
 
-              {/* Leveling Margins & Live Steam Tolerance Standards */}
+              {/* Leveling Margins & Track Tolerances */}
               <div className="bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 space-y-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                    Why ±1/16″ is the Live Steam Standard
+                    Leveling Margins & Track Tolerances
                   </span>
-                  <a
-                    href="https://ibls.org/mediawiki/index.php/Category:Standards"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline"
-                  >
-                    <span>IBLS Standards Wiki</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
                 </div>
 
                 <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-2 leading-relaxed">
                   <p>
-                    In live steam riding railroading (7¼″ and 7½″ gauge), locomotives have rigid driving wheelbases and shallow wheel flanges—typically only <strong>3/16″ to 1/4″ deep</strong> per <a href="https://ibls.org/mediawiki/index.php/Category:Standards" target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 underline font-medium">IBLS (International Brotherhood of Live Steamers) specifications</a>.
+                    Vertical dips, humps, and cross-level twist directly affect wheel load distribution and riding safety. In scale and miniature railroading, stiff locomotive wheelbases or rigid truck frames can bridge across dips, momentarily transferring axle weight away from center wheels. When an axle is unloaded, shallow wheel flanges can climb the rail head and cause a derailment.
                   </p>
                   <p>
-                    If a vertical dip or track twist exceeds <strong>1/16″ to 1/8″</strong> over a 5 to 10-foot span, the rigid locomotive frame bridges the dip, transferring all axle weight to the ends and <strong>unloading the center driver</strong>. With a shallow 3/16″ flange, the unloaded wheel climbs the rail head and derails.
+                    Because acceptable station deviation depends on equipment suspension, track construction, and club guidelines, Track Level Companion lets you set your desired on-grade tolerance:
                   </p>
                   <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
                     <div>
-                      <strong className="text-zinc-900 dark:text-zinc-100 block font-mono text-xs">±1/32″ (Bridges)</strong>
-                      <span className="text-zinc-500">Solid-deck timber trestles, steel spans, and turntable approaches where ballast doesn't settle.</span>
+                      <strong className="text-zinc-900 dark:text-zinc-100 block font-mono text-xs">±1/32″ (±0.031″)</strong>
+                      <span className="text-zinc-500">Fine tolerance for tight-tolerance trackwork or solid spans.</span>
                     </div>
                     <div>
-                      <strong className="text-emerald-700 dark:text-emerald-400 block font-mono text-xs">±1/16″ (Standard Mainline)</strong>
-                      <span className="text-zinc-500">Standard live steam mainline. Physical limit of hand tamping crushed rock ballast before settlement.</span>
+                      <strong className="text-emerald-700 dark:text-emerald-400 block font-mono text-xs">±1/16″ (±0.062″)</strong>
+                      <span className="text-zinc-500">Standard working margin for typical ballasted track leveling.</span>
                     </div>
                     <div>
-                      <strong className="text-zinc-900 dark:text-zinc-100 block font-mono text-xs">±1/8″ (Yards & Sidings)</strong>
-                      <span className="text-zinc-500">Acceptable for slow-speed yard tracks, steaming bays, and non-passenger sidings.</span>
+                      <strong className="text-zinc-900 dark:text-zinc-100 block font-mono text-xs">±1/8″ (±0.125″)</strong>
+                      <span className="text-zinc-500">Wider working margin for rough passes, yards, or sidings.</span>
                     </div>
                   </div>
                   <p className="text-[11px] text-zinc-500">

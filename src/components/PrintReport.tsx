@@ -111,7 +111,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
           </div>
           <div className="text-right font-mono text-[11px] text-zinc-700">
             <div><strong>Date:</strong> {project.date || new Date().toISOString().split('T')[0]}</div>
-            <div><strong>Scale:</strong> 8.5" × 11" Field Sheet</div>
+            <div><strong>Format:</strong> Field Leveling Sheet</div>
           </div>
         </div>
 
@@ -122,7 +122,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
             <strong className="text-sm">{summary.lengthFt} ft</strong> ({summary.totalStations} ties)
           </div>
           <div className="p-1.5 bg-zinc-100 rounded border border-zinc-300">
-            <span className="text-[9px] uppercase font-bold text-zinc-500 block">Design Slope</span>
+            <span className="text-[9px] uppercase font-bold text-zinc-500 block">Design Grade</span>
             <strong className="text-sm">
               {gradeInfo ? `${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%` : '0.00%'}
             </strong> ({project.gradeMode === 'end_to_end' ? 'End-to-End' : 'Target %'})

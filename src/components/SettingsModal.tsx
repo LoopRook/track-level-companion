@@ -12,12 +12,12 @@ export interface SettingsModalProps {
 }
 
 const TOLERANCE_PRESETS = [
-  { label: '1/32"', sub: '±0.031"', val: 0.03125, desc: 'High Precision / Bridges' },
-  { label: '1/16"', sub: '±0.062"', val: 0.0625, desc: 'Standard Live Steam (Default)' },
-  { label: '0.05"', sub: '±0.050"', val: 0.05, desc: 'Decimal Inch Standard' },
-  { label: '1/8"', sub: '±0.125"', val: 0.125, desc: 'Relaxed / Rough Yard' },
-  { label: '1.0 mm', sub: '±0.039"', val: 0.03937, desc: 'Metric Tight' },
-  { label: '2.0 mm', sub: '±0.079"', val: 0.07874, desc: 'Metric Standard' },
+  { label: '1/32"', sub: '±0.031"', val: 0.03125 },
+  { label: '1/16"', sub: '±0.062"', val: 0.0625 },
+  { label: '0.05"', sub: '±0.050"', val: 0.05 },
+  { label: '1/8"', sub: '±0.125"', val: 0.125 },
+  { label: '1.0 mm', sub: '±0.039"', val: 0.03937 },
+  { label: '2.0 mm', sub: '±0.079"', val: 0.07874 },
 ];
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -111,7 +111,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <span className="font-extrabold text-sm">{p.label}</span>
                       {isMatch && <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" />}
                     </div>
-                    <span className="text-[10px] text-zinc-400 mt-0.5">{p.desc}</span>
+                    <span className="text-[10px] text-zinc-400 font-mono mt-0.5">{p.sub}</span>
                   </button>
                 );
               })}
@@ -156,10 +156,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
             <div className="grid grid-cols-3 gap-2">
               {[
-                { res: 8 as const, label: '1/8"', desc: 'Fewer keys, faster typing' },
-                { res: 16 as const, label: '1/16"', desc: 'Standard live steam (Default)' },
-                { res: 32 as const, label: '1/32"', desc: 'Machined track / Bridges' },
-              ].map(({ res, label, desc }) => {
+                { res: 8 as const, label: '1/8"', sub: '±1/8" steps' },
+                { res: 16 as const, label: '1/16"', sub: '±1/16" steps' },
+                { res: 32 as const, label: '1/32"', sub: '±1/32" steps' },
+              ].map(({ res, label, sub }) => {
                 const isSelected = (project.fractionResolution ?? 16) === res;
                 return (
                   <button
@@ -176,7 +176,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <span className="font-extrabold text-sm">{label}</span>
                       {isSelected && <Check className="w-3.5 h-3.5 text-amber-500 stroke-[3]" />}
                     </div>
-                    <span className="text-[10px] text-zinc-400 block mt-0.5">{desc}</span>
+                    <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">{sub}</span>
                   </button>
                 );
               })}
@@ -252,7 +252,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </button>
             </div>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Precision live steam and miniature railroad track leveling engine with laser datum compensation, smooth visual profile plotting, and trackside lift recommendations.
+              Precision miniature and ride-on railroad track leveling engine with laser datum compensation, smooth visual profile plotting, and trackside lift recommendations.
             </p>
           </div>
 

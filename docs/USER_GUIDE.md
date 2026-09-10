@@ -180,20 +180,18 @@ Every station in the checklist table (and on mobile station cards) features dedi
 
 In **⚙ Settings**, you can configure the **Leveling Margin (On-Grade Tolerance)**. When a tie's calculated lift is within this threshold, it is marked **`ON GRADE ✓`** in green, suppressing unnecessary shim/tamp action recommendations.
 
-### Why ±1/16″ is the Live Steam Standard:
-1. **Locomotive Suspension & Wheel Flange Physics:**
-   - In live steam riding railroading (7¼″ and 7½″ gauge), locomotives feature rigid, multi-axle driving wheelbases (e.g. 4-4-0, 4-6-2, 2-8-2).
-   - Wheel flanges are shallow—typically only **$\frac{3}{16}''$ to $\frac{1}{4}''$ deep** according to [IBLS (International Brotherhood of Live Steamers) Standards](https://ibls.org/mediawiki/index.php/Category:Standards).
-   - If a dip or track twist exceeds **$\frac{1}{16}''$ to $\frac{1}{8}''$** across a 5 to 10-foot chord, the rigid locomotive frame bridges the dip, transferring all weight to the outer axles and **unloading the middle driver**. With a shallow $\frac{3}{16}''$ flange, the unloaded driver climbs the rail head, causing immediate derailment.
-2. **Physical Limits of Shimming & Ballast:**
-   - Real-world track shims (cedar, composite, or steel) are manufactured in **$\frac{1}{16}''$** (16-gauge) and **$\frac{1}{8}''$** thicknesses.
-   - In crushed stone or decomposed granite ballast, **$\frac{1}{16}''$ is the practical physical limit of hand tamping**. Trying to tamp tighter than $\frac{1}{16}''$ settles right back under the weight of a loaded train.
-3. **Application Guidelines:**
-   - **`±1/32"` ($\pm 0.031"$) – High Precision / Bridges:** For solid-deck timber trestles, steel girder bridges, and turntable approaches where ballast does not settle.
-   - **`±1/16"` ($\pm 0.062"$) – Standard Live Steam (Default):** The optimal balance for passenger-carrying live steam mainlines.
-   - **`0.05"` ($\pm 0.050"$) – Decimal Inch Standard:** Common for decimal-rod survey crews.
-   - **`±1/8"` ($\pm 0.125"$) – Relaxed / Rough Yard:** Acceptable for low-speed steaming bay tracks, yard ladders, and non-passenger sidings.
-   - **`1.0 mm` & `2.0 mm`:** Metric tolerance standards.
+### Track Leveling Margins & Tolerances:
+1. **Wheel Flange & Suspension Dynamics:**
+   - In scale and miniature railroading, locomotives often feature multi-axle driving wheelbases or stiff truck frames.
+   - If a dip or cross-level twist is excessive across a chord, rigid frames bridge across dips, transferring axle load away from center wheels. Unloaded wheels with shallow flanges can climb the rail head and increase derailment risk.
+2. **Practical Tamping & Shimming:**
+   - Common track shims are manufactured in **$\frac{1}{16}''$** and **$\frac{1}{8}''$** thicknesses. In crushed ballast, hand tamping naturally settles slightly under traffic.
+3. **Tolerance Presets in Settings:**
+   - **`±1/32"` ($\pm 0.031"$)**: Fine working tolerance for tight-tolerance trackwork or solid spans.
+   - **`±1/16"` ($\pm 0.062"$)**: Standard working margin for ballasted track leveling.
+   - **`0.05"` ($\pm 0.050"$)**: Decimal inch standard.
+   - **`±1/8"` ($\pm 0.125"$)**: Wider working margin for rough passes, yards, or sidings.
+   - **`1.0 mm` & `2.0 mm`**: Metric tolerance presets.
 
 ---
 

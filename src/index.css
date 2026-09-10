@@ -137,7 +137,7 @@ input, textarea {
 
 @media print {
   @page {
-    size: letter portrait;
+    size: auto;
     margin: 0.35in;
   }
 
@@ -155,13 +155,28 @@ input, textarea {
     display: none !important;
   }
 
-  /* Show ONLY the dedicated 8.5x11 printable report */
+  /* Show ONLY the dedicated printable report (scales to Letter, 11x17, A4, etc.) */
   .print-report-container {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+  }
+
+  /* Multi-page table handling: repeat header, avoid row splitting */
+  .print-report-container table {
+    width: 100% !important;
+    page-break-inside: auto;
+  }
+
+  .print-report-container tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .print-report-container thead {
+    display: table-header-group;
   }
 
   .no-print {

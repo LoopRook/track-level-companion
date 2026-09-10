@@ -643,7 +643,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     className="w-full px-3 py-2 text-left flex items-center gap-2 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition font-medium"
                   >
                     <Printer className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Print / PDF (8.5×11 Report)</span>
+                    <span>Print / PDF Field Sheet</span>
                   </button>
                 </div>
               </>
