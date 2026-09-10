@@ -16,9 +16,11 @@ import {
   FileText,
   Layers,
   AlertCircle,
-  Plus
+  Plus,
+  RefreshCw
 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
+import { triggerAppUpdateCheck } from './UpdatePrompt';
 
 interface DataManagementModalProps {
   isOpen: boolean;
@@ -64,6 +66,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   const [pendingCsvStations, setPendingCsvStations] = useState<{ stations: StationPoint[]; sourceName: string } | null>(null);
   const [pastedText, setPastedText] = useState('');
   const [showRawCsv, setShowRawCsv] = useState(false);
+  const [modalUpdateStatus, setModalUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -847,11 +850,40 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 text-right">
+        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={async () => {
+              if (modalUpdateStatus === 'checking') return;
+              setModalUpdateStatus('checking');
+              try {
+                const res = await triggerAppUpdateCheck();
+                if (res === 'up_to_date') {
+                  setModalUpdateStatus('updated');
+                  setTimeout(() => setModalUpdateStatus('idle'), 3000);
+                } else {
+                  setModalUpdateStatus('idle');
+                }
+              } catch {
+                setModalUpdateStatus('idle');
+              }
+            }}
+            className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition flex items-center gap-1.5 cursor-pointer"
+            title="Check for application updates"
+          >
+            <RefreshCw className={`w-3 h-3 text-amber-500 ${modalUpdateStatus === 'checking' ? 'animate-spin' : ''}`} />
+            <span>
+              {modalUpdateStatus === 'checking'
+                ? 'Checking for updates...'
+                : modalUpdateStatus === 'updated'
+                ? 'App is up to date ✓'
+                : 'Track Level Companion v1.0 • Check for Updates'}
+            </span>
+          </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold text-xs hover:bg-zinc-300 dark:hover:bg-zinc-800 transition"
+            className="px-4 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold text-xs hover:bg-zinc-300 dark:hover:bg-zinc-800 transition ml-auto"
           >
             Close
           </button>

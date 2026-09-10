@@ -2,6 +2,35 @@ import React from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { RefreshCw, X, Sparkles } from 'lucide-react';
 
+let globalSWRegistration: ServiceWorkerRegistration | null = null;
+
+/**
+ * Triggers an immediate network check for service worker updates.
+ * Bypasses timer throttling and HTTP caches when invoked.
+ */
+export const triggerAppUpdateCheck = async (): Promise<'update_found' | 'up_to_date' | 'offline' | 'error'> => {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return 'up_to_date';
+  }
+  if (!navigator.onLine) {
+    return 'offline';
+  }
+
+  try {
+    const reg = globalSWRegistration || (await navigator.serviceWorker?.getRegistration());
+    if (!reg) return 'up_to_date';
+    
+    await reg.update();
+    if (reg.waiting || reg.installing) {
+      return 'update_found';
+    }
+    return 'up_to_date';
+  } catch (err) {
+    console.error('App update check error:', err);
+    return 'error';
+  }
+};
+
 export const UpdatePrompt: React.FC = () => {
   const {
     needRefresh: [needRefresh, setNeedRefresh],
@@ -9,9 +38,39 @@ export const UpdatePrompt: React.FC = () => {
   } = useRegisterSW({
     onRegistered(r) {
       if (r) {
-        setInterval(() => {
-          r.update();
-        }, 60 * 60 * 1000);
+        globalSWRegistration = r;
+
+        // 1. Check immediately on startup
+        r.update().catch(() => {});
+
+        // 2. Check whenever user returns to the tab/PWA or screen unlocks
+        const handleVisibilityChange = () => {
+          if (document.visibilityState === 'visible' && navigator.onLine) {
+            r.update().catch(() => {});
+          }
+        };
+
+        const handleOnline = () => {
+          r.update().catch(() => {});
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('focus', handleVisibilityChange);
+        window.addEventListener('online', handleOnline);
+
+        // 3. Periodic poll every 2 minutes while active
+        const intervalId = setInterval(() => {
+          if (navigator.onLine) {
+            r.update().catch(() => {});
+          }
+        }, 2 * 60 * 1000);
+
+        return () => {
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          window.removeEventListener('focus', handleVisibilityChange);
+          window.removeEventListener('online', handleOnline);
+          clearInterval(intervalId);
+        };
       }
     },
     onRegisterError(error) {

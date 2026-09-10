@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { UnitFormat, TrackProject, CalculatedStation } from '../core/types';
 import { calculateGradeInfo } from '../core/calculations';
 import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2, TrendingUp, Plus, Download } from 'lucide-react';
+import { triggerAppUpdateCheck } from './UpdatePrompt';
 
 export interface StationSummaryData {
   totalStations: number;
@@ -52,6 +53,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
   summary,
 }) => {
   const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -63,6 +65,22 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  const handleCheckForUpdates = async () => {
+    if (updateStatus === 'checking') return;
+    setUpdateStatus('checking');
+    try {
+      const res = await triggerAppUpdateCheck();
+      if (res === 'up_to_date') {
+        setUpdateStatus('updated');
+        setTimeout(() => setUpdateStatus('idle'), 3000);
+      } else {
+        setUpdateStatus('idle');
+      }
+    } catch {
+      setUpdateStatus('idle');
+    }
+  };
 
   return (
     <header className="bg-white dark:bg-black text-zinc-900 dark:text-white rounded-2xl p-3.5 sm:p-4 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
@@ -94,13 +112,21 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
                   <span>Offline</span>
                 </span>
               ) : (
-                <span
-                  className="hidden sm:flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400"
-                  title="Service Worker active: full offline support enabled"
+                <button
+                  type="button"
+                  onClick={handleCheckForUpdates}
+                  className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition cursor-pointer"
+                  title="Service Worker active (offline ready). Tap to check for app updates."
                 >
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                  <span>Offline Ready</span>
-                </span>
+                  <CheckCircle2 className={`w-3 h-3 text-emerald-500 ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
+                  <span>
+                    {updateStatus === 'checking'
+                      ? 'Checking...'
+                      : updateStatus === 'updated'
+                      ? 'Up to Date ✓'
+                      : 'Offline Ready • Check for Updates'}
+                  </span>
+                </button>
               )}
             </div>
           </div>
