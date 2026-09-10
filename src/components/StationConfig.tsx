@@ -118,10 +118,10 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <button
             type="button"
             onClick={onOpenNewTrackModal}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition shadow-sm active:scale-95"
+            className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition shadow-sm active:scale-95 whitespace-nowrap"
             title="Start New Track (Blank, Pre-Generated Grid, or Clear Readings)"
           >
-            <Plus className="w-3.5 h-3.5 stroke-[3]" />
+            <Plus className="w-3.5 h-3.5 stroke-[3] shrink-0" />
             <span>New Track</span>
           </button>
 
@@ -129,10 +129,10 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <button
             type="button"
             onClick={onOpenGuideModal}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95"
+            className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95 whitespace-nowrap"
             title="Open Field Guide & Feature Tutorial"
           >
-            <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+            <BookOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span>Guide</span>
           </button>
 
@@ -140,10 +140,10 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <button
             type="button"
             onClick={onOpenDataModal}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95"
+            className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
           >
-            <Sliders className="w-3.5 h-3.5 text-amber-500" />
-            <span>Files / Export</span>
+            <Sliders className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span>Files<span className="hidden xs:inline"> / Export</span></span>
           </button>
 
           {/* Theme Toggle on desktop */}
@@ -171,16 +171,16 @@ export const StationConfig: React.FC<StationConfigProps> = ({
             </span>
             {summary.completedCount !== undefined && summary.completedCount > 0 && (
               <span
-                className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25"
+                className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 whitespace-nowrap shrink-0"
                 title={`${summary.completedCount} of ${summary.totalStations} ties completed trackside`}
               >
                 ✓ {summary.completedCount}/{summary.totalStations}
               </span>
             )}
           </div>
-          <div className="text-lg font-mono font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
-            {summary.lengthFt} ft
-            <span className="text-[11px] text-zinc-400 dark:text-zinc-400 font-normal ml-1.5">
+          <div className="text-lg font-mono font-bold text-zinc-900 dark:text-zinc-100 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+            <span>{summary.lengthFt} ft</span>
+            <span className="text-[11px] text-zinc-500 font-normal whitespace-nowrap">
               ({summary.measuredCount}/{summary.totalStations} shot)
             </span>
           </div>
@@ -198,12 +198,14 @@ export const StationConfig: React.FC<StationConfigProps> = ({
                 : '1/8"'
             })
           </span>
-          <div className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">
-            {summary.measuredCount >= 2
-              ? `${Math.round((summary.onGradeCount / summary.measuredCount) * 100)}%`
-              : '—'}
-            <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-semibold ml-1.5">
-              {summary.measuredCount < 2 ? '(Need ≥ 2 shots)' : `(${summary.onGradeCount} pts)`}
+          <div className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+            <span>
+              {summary.measuredCount >= 2
+                ? `${Math.round((summary.onGradeCount / summary.measuredCount) * 100)}%`
+                : '—'}
+            </span>
+            <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-semibold whitespace-nowrap">
+              {summary.measuredCount < 2 ? '(Need ≥ 2)' : `(${summary.onGradeCount} pts)`}
             </span>
           </div>
         </div>
@@ -212,10 +214,10 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider block">
             Needs Lift (Low spots)
           </span>
-          <div className="text-lg font-mono font-bold text-sky-700 dark:text-sky-400 mt-0.5">
-            {summary.measuredCount >= 2 ? `${summary.liftCount} pts` : '—'}
+          <div className="text-lg font-mono font-bold text-sky-700 dark:text-sky-400 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+            <span>{summary.measuredCount >= 2 ? `${summary.liftCount} pts` : '—'}</span>
             {summary.measuredCount >= 2 && summary.maxLift > 0 && (
-              <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold ml-1.5">
+              <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
                 (Max +{project.unitFormat === 'decimal_inches'
                   ? `${summary.maxLift.toFixed(2)}"`
                   : project.unitFormat === 'metric_mm'
@@ -226,8 +228,8 @@ export const StationConfig: React.FC<StationConfigProps> = ({
               </span>
             )}
             {summary.measuredCount < 2 && (
-              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-normal ml-1.5">
-                (Need ≥ 2 shots)
+              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-normal whitespace-nowrap">
+                (Need ≥ 2)
               </span>
             )}
           </div>
@@ -237,10 +239,10 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <span className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">
             Needs Lower (High spots)
           </span>
-          <div className="text-lg font-mono font-bold text-amber-800 dark:text-amber-400 mt-0.5">
-            {summary.measuredCount >= 2 ? `${summary.lowerCount} pts` : '—'}
+          <div className="text-lg font-mono font-bold text-amber-800 dark:text-amber-400 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+            <span>{summary.measuredCount >= 2 ? `${summary.lowerCount} pts` : '—'}</span>
             {summary.measuredCount >= 2 && summary.maxLower > 0 && (
-              <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold ml-1.5">
+              <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap">
                 (Max -{project.unitFormat === 'decimal_inches'
                   ? `${summary.maxLower.toFixed(2)}"`
                   : project.unitFormat === 'metric_mm'
@@ -251,8 +253,8 @@ export const StationConfig: React.FC<StationConfigProps> = ({
               </span>
             )}
             {summary.measuredCount < 2 && (
-              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-normal ml-1.5">
-                (Need ≥ 2 shots)
+              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-normal whitespace-nowrap">
+                (Need ≥ 2)
               </span>
             )}
           </div>
@@ -328,16 +330,16 @@ export const StationConfig: React.FC<StationConfigProps> = ({
 
           {/* If End-to-End is selected, show resulting grade readout */}
           {project.gradeMode === 'end_to_end' && (
-            <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 h-8 text-xs flex-wrap">
+            <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 min-h-[32px] py-1 text-xs flex-wrap">
               {!gradeInfo ? (
-                <div className="flex items-center gap-1 text-zinc-500 font-medium">
-                  <TrendingUp className="w-3.5 h-3.5 text-zinc-400" />
+                <div className="flex items-center gap-1 text-zinc-500 font-medium whitespace-nowrap shrink-0">
+                  <TrendingUp className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                   <span>Grade:</span>
                   <span className="italic text-[11px] text-zinc-400">Need 2+ shots</span>
                 </div>
               ) : !gradeInfo.hasLockedPoints ? (
-                <div className="flex items-center gap-1.5">
-                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                <div className="flex items-center gap-1.5 whitespace-nowrap shrink-0">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                   <span className="text-zinc-500 font-medium">Grade:</span>
                   <span className={`font-mono font-bold ${
                     gradeInfo.overallGradePercent > 0.05
@@ -354,8 +356,8 @@ export const StationConfig: React.FC<StationConfigProps> = ({
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <div className="flex items-center gap-1">
-                    <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
+                  <div className="flex items-center gap-1 whitespace-nowrap shrink-0">
+                    <TrendingUp className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                     <span className="text-zinc-500 font-medium">Net:</span>
                     <span className={`font-mono font-bold ${
                       gradeInfo.overallGradePercent > 0.05
@@ -367,14 +369,14 @@ export const StationConfig: React.FC<StationConfigProps> = ({
                       {gradeInfo.overallGradePercent >= 0 ? '+' : ''}{gradeInfo.overallGradePercent.toFixed(2)}%
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 pl-1.5 border-l border-zinc-200 dark:border-zinc-800">
-                    <span className="text-[10px] uppercase font-bold text-zinc-400 hidden xs:inline">
+                  <div className="flex items-center gap-1 pl-1.5 border-l border-zinc-200 dark:border-zinc-800 flex-wrap">
+                    <span className="text-[10px] uppercase font-bold text-zinc-400 hidden xs:inline whitespace-nowrap">
                       {gradeInfo.segments.length} Chords:
                     </span>
                     {gradeInfo.segments.map((seg, idx) => (
                       <span
                         key={idx}
-                        className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold"
+                        className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold whitespace-nowrap shrink-0"
                         title={`Chord ${idx + 1} (${seg.startDistanceFt}'-${seg.endDistanceFt}'): ${seg.gradePercent >= 0 ? '+' : ''}${seg.gradePercent.toFixed(2)}% (${seg.elevChangeInches >= 0 ? '+' : ''}${seg.elevChangeInches.toFixed(2)}" over ${seg.lengthFt}ft)`}
                       >
                         {seg.startDistanceFt}'-{seg.endDistanceFt}': <strong className={seg.gradePercent > 0.05 ? 'text-sky-500 dark:text-sky-400' : seg.gradePercent < -0.05 ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-500 dark:text-emerald-400'}>{seg.gradePercent >= 0 ? '+' : ''}{seg.gradePercent.toFixed(2)}%</strong>

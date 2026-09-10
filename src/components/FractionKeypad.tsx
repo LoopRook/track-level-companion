@@ -289,14 +289,14 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         {/* Header with Station & Target Measurement info */}
         <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 py-3 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Recording Station</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold whitespace-nowrap shrink-0">Recording Station</span>
               {stationIndex !== undefined && totalStations !== undefined && (
-                <span className="text-[10px] uppercase font-bold text-zinc-600 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.2 rounded">
+                <span className="text-[10px] uppercase font-bold text-zinc-600 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.2 rounded whitespace-nowrap shrink-0">
                   Tie {stationIndex} of {totalStations}
                 </span>
               )}
-              <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1.5 py-0.2 rounded border border-amber-500/30">
+              <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1.5 py-0.2 rounded border border-amber-500/30 whitespace-nowrap shrink-0">
                 {unitFormat === 'decimal_inches'
                   ? 'Decimal In'
                   : unitFormat === 'metric_mm'
@@ -307,14 +307,14 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span className={`text-xl font-extrabold text-amber-500 dark:text-amber-400 font-mono inline-block rounded-md px-1 -ml-1 transition-all ${pulseDistance ? 'animate-pulse-highlight bg-amber-500/20 ring-2 ring-amber-400' : ''}`}>
+              <span className={`text-xl font-extrabold text-amber-500 dark:text-amber-400 font-mono inline-block rounded-md px-1 -ml-1 transition-all whitespace-nowrap shrink-0 ${pulseDistance ? 'animate-pulse-highlight bg-amber-500/20 ring-2 ring-amber-400' : ''}`}>
                 {stationDistanceFt} ft
               </span>
               {targetReadingInches !== null && targetReadingInches !== undefined && (
-                <div className="flex items-center gap-1 text-xs font-mono font-bold text-sky-700 dark:text-sky-300 bg-sky-500/15 px-2 py-0.5 rounded-lg border border-sky-500/30">
+                <div className="flex items-center gap-1 text-xs font-mono font-bold text-sky-700 dark:text-sky-300 bg-sky-500/15 px-2 py-0.5 rounded-lg border border-sky-500/30 whitespace-nowrap shrink-0">
                   <Target className="w-3.5 h-3.5 text-sky-500 shrink-0" />
                   <span>Target: {formatMeasurement(targetReadingInches, unitFormat, fractionResolution)}</span>
-                  {actionText && <span className="font-sans font-normal opacity-80">({actionText})</span>}
+                  {actionText && <span className="font-sans font-normal opacity-80 whitespace-nowrap">({actionText})</span>}
                 </div>
               )}
             </div>
@@ -387,8 +387,11 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
           </div>
 
           {datumOffsetInches !== undefined && datumOffsetInches !== 0 && currentComputedInches !== null && (
-            <div className="mt-2 text-xs font-mono text-purple-700 dark:text-purple-300 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">
-              Normalized: <strong>{formatMeasurement(currentComputedInches - datumOffsetInches, unitFormat, fractionResolution)}</strong> ({datumOffsetInches >= 0 ? '+' : ''}{formatMeasurement(datumOffsetInches, unitFormat, fractionResolution)} shift)
+            <div className="mt-2 text-xs font-mono text-purple-700 dark:text-purple-300 bg-purple-500/10 px-3 py-1 rounded-xl border border-purple-500/20 inline-block text-center max-w-full">
+              Normalized: <strong>{formatMeasurement(currentComputedInches - datumOffsetInches, unitFormat, fractionResolution)}</strong>{' '}
+              <span className="whitespace-nowrap">
+                ({datumOffsetInches >= 0 ? '+' : ''}{formatMeasurement(datumOffsetInches, unitFormat, fractionResolution)} shift)
+              </span>
             </div>
           )}
 

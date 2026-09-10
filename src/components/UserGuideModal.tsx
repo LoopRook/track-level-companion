@@ -470,7 +470,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                       <Ruler className="w-4 h-4 stroke-[2.5]" />
                       <span>Subset Grade Evaluation Tool ("Evaluate Grade")</span>
                     </h4>
-                    <span className="text-[10px] bg-sky-500/15 text-sky-700 dark:text-sky-300 font-bold px-2 py-0.5 rounded-full border border-sky-500/30">
+                    <span className="text-[10px] bg-sky-500/15 text-sky-700 dark:text-sky-300 font-bold px-2 py-0.5 rounded-full border border-sky-500/30 whitespace-nowrap shrink-0">
                       New Tool
                     </span>
                   </div>

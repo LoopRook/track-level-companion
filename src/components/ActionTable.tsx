@@ -153,11 +153,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
       <div className="px-3 sm:px-4 py-2 bg-zinc-100/70 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap text-xs">
         <div className="flex items-center gap-2">
           <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Display:</span>
-          <div className="flex rounded-lg bg-zinc-200/80 dark:bg-zinc-900 p-0.5 border border-zinc-300 dark:border-zinc-800 h-7 items-center">
+          <div className="flex rounded-lg bg-zinc-200/80 dark:bg-zinc-900 p-0.5 border border-zinc-300 dark:border-zinc-800 h-7 items-center shrink-0">
             <button
               type="button"
               onClick={() => handleSetDisplayMode('target_reading')}
-              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition ${
+              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition whitespace-nowrap shrink-0 ${
                 displayMode === 'target_reading'
                   ? 'bg-amber-500 text-black shadow-xs'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -169,7 +169,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <button
               type="button"
               onClick={() => handleSetDisplayMode('relative_elev')}
-              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition ${
+              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition whitespace-nowrap shrink-0 ${
                 displayMode === 'relative_elev'
                   ? 'bg-amber-500 text-black shadow-xs'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -181,7 +181,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <button
               type="button"
               onClick={() => handleSetDisplayMode('both')}
-              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition ${
+              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition whitespace-nowrap shrink-0 ${
                 displayMode === 'both'
                   ? 'bg-amber-500 text-black shadow-xs'
                   : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
@@ -275,20 +275,20 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
                   {isLocked && (
                     <span
-                      className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-1"
+                      className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-1 whitespace-nowrap shrink-0"
                       title="Locked Tie / Control Point"
                     >
-                      <Lock className="w-2.5 h-2.5" />
+                      <Lock className="w-2.5 h-2.5 shrink-0" />
                       <span>LOCKED</span>
                     </span>
                   )}
 
                   {s.isTurningPoint && (
                     <span
-                      className="text-[10px] bg-purple-500/20 text-purple-600 dark:text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-500/30 flex items-center gap-0.5"
+                      className="text-[10px] bg-purple-500/20 text-purple-600 dark:text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-500/30 flex items-center gap-0.5 whitespace-nowrap shrink-0"
                       title="Laser Relocation Benchmark (Turning Point)"
                     >
-                      <Flag className="w-2.5 h-2.5" />
+                      <Flag className="w-2.5 h-2.5 shrink-0" />
                       <span>TP</span>
                     </span>
                   )}
@@ -360,14 +360,14 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     <div className="font-mono text-xs">
                       <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                         <span>{s.readingInches !== null ? formatMeasurement(s.readingInches, unitFormat, fractionResolution) : '—'}</span>
-                        <span className="text-[10px] bg-purple-500/15 text-purple-700 dark:text-purple-300 px-1 py-0.2 rounded font-sans font-semibold">
+                        <span className="text-[10px] bg-purple-500/15 text-purple-700 dark:text-purple-300 px-1 py-0.2 rounded font-sans font-semibold whitespace-nowrap shrink-0">
                           Active Laser backsight
                         </span>
                       </div>
                       {s.tpOldReadingInches !== undefined && (
                         <div className="text-[11px] text-zinc-500 font-sans mt-0.5">
                           Laser 1 was: {formatMeasurement(s.tpOldReadingInches, unitFormat, fractionResolution)}{' '}
-                          <span className="font-mono">
+                          <span className="font-mono whitespace-nowrap">
                             ({(s.datumOffsetInches ?? 0) >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches ?? 0, unitFormat, fractionResolution)} shift)
                           </span>
                         </div>
@@ -381,7 +381,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       {s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0 && (
                         <div className="text-[11px] font-sans text-purple-600 dark:text-purple-400 mt-0.5">
                           Was: <strong>{formatMeasurement(s.readingInches - s.datumOffsetInches, unitFormat, fractionResolution)}</strong>{' '}
-                          <span className="text-[10px] text-purple-500/80">
+                          <span className="text-[10px] text-purple-500/80 whitespace-nowrap">
                             ({s.datumOffsetInches >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches, unitFormat, fractionResolution)} laser shift)
                           </span>
                         </div>
@@ -447,41 +447,41 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               <div>
                 {isCompleted ? (
                   <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-zinc-200/50 dark:bg-zinc-800/50 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>LEVELED</span>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span className="whitespace-nowrap">LEVELED</span>
                     {s.actionText !== '—' && s.action !== 'ok' && (
-                      <span className="text-[11px] text-zinc-600 dark:text-zinc-400 line-through font-normal ml-1">
+                      <span className="text-[11px] text-zinc-600 dark:text-zinc-400 line-through font-normal ml-1 whitespace-nowrap">
                         ({s.actionText})
                       </span>
                     )}
                   </div>
                 ) : isLocked ? (
                   <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                    <Lock className="w-3.5 h-3.5 text-amber-500" />
-                    <span>LOCKED</span>
+                    <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span className="whitespace-nowrap">LOCKED</span>
                   </div>
                 ) : (
                   <>
                     {s.action === 'ok' && (
                       <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>{s.actionText}</span>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        <span className="whitespace-nowrap">{s.actionText}</span>
                       </div>
                     )}
                     {s.action === 'lift' && (
                       <div className="w-full py-1.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 bg-sky-500/20 text-sky-700 dark:text-sky-300 border border-sky-500/30">
-                        <ArrowUpCircle className="w-4 h-4 text-sky-500" />
-                        <span>{s.actionText}</span>
+                        <ArrowUpCircle className="w-4 h-4 text-sky-500 shrink-0" />
+                        <span className="whitespace-nowrap">{s.actionText}</span>
                       </div>
                     )}
                     {s.action === 'lower' && (
                       <div className="w-full py-1.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                        <ArrowDownCircle className="w-4 h-4 text-amber-500" />
-                        <span>{s.actionText}</span>
+                        <ArrowDownCircle className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span className="whitespace-nowrap">{s.actionText}</span>
                       </div>
                     )}
                     {s.action === 'none' && (
-                      <div className="w-full py-1 px-3 rounded-xl text-xs text-center text-zinc-600 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-900/50">
+                      <div className="w-full py-1 px-3 rounded-xl text-xs text-center text-zinc-600 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-900/50 whitespace-nowrap">
                         Awaiting reading
                       </div>
                     )}
@@ -671,38 +671,38 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {/* Track Action Badge */}
                   <td className="py-3 px-3 text-center">
                     {isCompleted ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-zinc-200/50 dark:bg-zinc-800/60 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-zinc-200/50 dark:bg-zinc-800/60 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap shrink-0">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         <span>LEVELED</span>
                         {s.actionText !== '—' && s.action !== 'ok' && (
-                          <span className="text-[10px] text-zinc-600 dark:text-zinc-400 line-through font-normal ml-0.5">
+                          <span className="text-[10px] text-zinc-600 dark:text-zinc-400 line-through font-normal ml-0.5 whitespace-nowrap">
                             ({s.actionText})
                           </span>
                         )}
                       </span>
                     ) : isLocked ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                        <Lock className="w-3.5 h-3.5 text-amber-500" />
-                        LOCKED
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 whitespace-nowrap shrink-0">
+                        <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        <span>LOCKED</span>
                       </span>
                     ) : (
                       <>
                         {s.action === 'ok' && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                            {s.actionText}
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 whitespace-nowrap shrink-0">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>{s.actionText}</span>
                           </span>
                         )}
                         {s.action === 'lift' && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30">
-                            <ArrowUpCircle className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
-                            {s.actionText}
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30 whitespace-nowrap shrink-0">
+                            <ArrowUpCircle className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400 shrink-0" />
+                            <span>{s.actionText}</span>
                           </span>
                         )}
                         {s.action === 'lower' && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                            <ArrowDownCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                            {s.actionText}
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 whitespace-nowrap shrink-0">
+                            <ArrowDownCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
+                            <span>{s.actionText}</span>
                           </span>
                         )}
                         {s.action === 'none' && (

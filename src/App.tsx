@@ -31,7 +31,7 @@ const INITIAL_STATIONS: StationPoint[] = [
 ];
 
 const DEFAULT_PROJECT: TrackProject = {
-  id: 'default-project-v2',
+  id: 'default-project-v3',
   name: 'North Loop Tangent',
   date: new Date().toISOString().split('T')[0],
   gauge: '7 1/4"',
@@ -40,7 +40,7 @@ const DEFAULT_PROJECT: TrackProject = {
   toleranceInches: 0.05,
   stationIntervalFt: 5,
   laserDatumMode: 'relative_to_first',
-  gradeMode: 'target_grade',
+  gradeMode: 'end_to_end',
   targetGradePercent: 0.0,
   stations: INITIAL_STATIONS,
 };
@@ -52,8 +52,8 @@ export const App: React.FC = () => {
       const saved = localStorage.getItem('track_level_companion_active');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // If it's the old default demo project, refresh to the new decimal example values
-        if (parsed.id === 'default-project' || parsed.id === 'default-project-v1') {
+        // If it's the old default demo project, refresh to the new decimal example values and end_to_end default
+        if (parsed.id === 'default-project' || parsed.id === 'default-project-v1' || parsed.id === 'default-project-v2') {
           return DEFAULT_PROJECT;
         }
         return parsed;
@@ -503,7 +503,7 @@ export const App: React.FC = () => {
       ...project,
       name: 'Sample 85ft Section (Decimal Inches)',
       date: new Date().toISOString().split('T')[0],
-      gradeMode: 'target_grade',
+      gradeMode: 'end_to_end',
       targetGradePercent: 0.0,
       stationIntervalFt: 5,
       unitFormat: 'decimal_inches',

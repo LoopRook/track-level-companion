@@ -75,7 +75,7 @@ function getSmoothSplinePath(points: { x: number; y: number }[]): string {
 
 export const ProfileChart: React.FC<ProfileChartProps> = ({
   stations,
-  gradeMode = 'target_grade',
+  gradeMode = 'end_to_end',
   targetGradePercent = 0.0,
   onSelectStation,
   selectedStationId,
@@ -416,17 +416,18 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       {/* Header Toolbar */}
       <div className="px-3.5 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-950">
         {/* Title and Shot Counter */}
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
-            Track Vertical Profile
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm whitespace-nowrap">
+            <span className="sm:hidden">Track Profile</span>
+            <span className="hidden sm:inline">Track Vertical Profile</span>
           </h3>
-          <span className="text-[11px] bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 font-mono px-2 py-0.5 rounded-full">
+          <span className="text-[11px] bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 font-mono px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
             {measuredStations.length}/{stations.length} Shot
           </span>
           {gradeInfo && (
             <span
-              className="text-[11px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-500/25"
+              className="text-[11px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md border border-emerald-500/25 whitespace-nowrap shrink-0"
               title={
                 gradeMode === 'end_to_end'
                   ? `End-to-End net slope: ${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}% (${gradeInfo.segments.length} chords)`
@@ -435,7 +436,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             >
               {gradeMode === 'end_to_end' ? 'End-to-End: ' : 'Grade: '}
               {gradeInfo.overallGradePercent >= 0 ? '+' : ''}{gradeInfo.overallGradePercent.toFixed(2)}%
-              {gradeInfo.hasLockedPoints && ` (${gradeInfo.segments.length} chords)`}
+              {gradeInfo.hasLockedPoints && <span className="hidden sm:inline"> ({gradeInfo.segments.length} chords)</span>}
             </span>
           )}
         </div>
@@ -647,17 +648,17 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {activeSubsetGrade ? (
             <>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
-                <span className={`font-bold px-2 py-0.5 rounded text-xs ${
+                <span className={`font-bold px-2 py-0.5 rounded-md text-xs whitespace-nowrap shrink-0 ${
                   isRangeLocked ? 'bg-sky-500/20 text-sky-700 dark:text-sky-300' : 'bg-amber-500/20 text-amber-700 dark:text-amber-400'
                 }`}>
                   {isRangeLocked ? 'SUBSET EVALUATION' : 'SUBSET PREVIEW'}: {activeSubsetGrade.startStation.distanceFt}' → {activeSubsetGrade.endStation.distanceFt}'
                 </span>
                 <span className="text-zinc-400 hidden sm:inline">|</span>
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                   Span: <strong>{activeSubsetGrade.distanceFt} ft</strong> ({activeSubsetGrade.stationCount} ties)
                 </span>
                 <span className="text-zinc-400">|</span>
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                   Rise/Fall:{' '}
                   <strong>
                     {activeSubsetGrade.elevationDiffInches >= 0 ? '+' : ''}
@@ -665,7 +666,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   </strong>
                 </span>
                 <span className="text-zinc-400">|</span>
-                <span className={`font-bold font-mono px-2 py-0.5 rounded border ${
+                <span className={`font-bold font-mono px-2 py-0.5 rounded-md border whitespace-nowrap shrink-0 ${
                   isRangeLocked
                     ? 'bg-sky-500/15 border-sky-500/30 text-sky-700 dark:text-sky-300'
                     : 'bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400'
@@ -682,7 +683,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     {onApplyTargetGrade && (
                       <button
                         onClick={() => onApplyTargetGrade(activeSubsetGrade.netGradePercent)}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition active:scale-95 shadow-sm"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition active:scale-95 shadow-sm whitespace-nowrap shrink-0"
                       >
                         Apply as Target
                       </button>
@@ -692,13 +693,13 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                         setSelectedStartId(null);
                         setSelectedEndId(null);
                       }}
-                      className="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold transition active:scale-95"
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold transition active:scale-95 whitespace-nowrap shrink-0"
                     >
                       Clear Range
                     </button>
                   </>
                 ) : (
-                  <span className="text-zinc-500 dark:text-zinc-400 text-xs italic font-sans">
+                  <span className="text-zinc-500 dark:text-zinc-400 text-xs italic font-sans whitespace-nowrap">
                     Tap to lock range
                   </span>
                 )}
@@ -707,32 +708,33 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           ) : currentInspectStation ? (
             <>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
-                <span className="font-bold text-amber-600 dark:text-amber-400">
+                <span className="font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">
                   Station {currentInspectStation.distanceFt} ft
                 </span>
                 <span className="text-zinc-400">|</span>
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                   Reading:{' '}
                   {currentInspectStation.readingInches !== null
                     ? formatFeetInches(currentInspectStation.readingInches)
                     : 'Need shot'}
                 </span>
                 <span className="text-zinc-400 hidden sm:inline">|</span>
-                <span className="text-zinc-500 hidden sm:inline">
+                <span className="text-zinc-500 hidden sm:inline whitespace-nowrap">
                   Elev: {formatMeasurement(currentInspectStation.elevationInches, 'inches_fraction')}
                 </span>
 
                 {/* Mobile guidance when 1 station is selected */}
                 {selectedStartId && !selectedEndId && (
-                  <span className="text-[11px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-sans font-semibold px-2 py-0.5 rounded-full border border-amber-500/25 animate-pulse">
-                    Tap 2nd station for grade
+                  <span className="text-[11px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-sans font-semibold px-2 py-0.5 rounded-md border border-amber-500/25 animate-pulse whitespace-nowrap shrink-0">
+                    <span className="hidden xs:inline">Tap 2nd station for grade</span>
+                    <span className="xs:hidden">Tap 2nd station</span>
                   </span>
                 )}
 
                 {gradeInfo && (
                   <>
                     <span className="text-zinc-400 hidden md:inline">|</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 hidden md:inline font-bold">
+                    <span className="text-emerald-600 dark:text-emerald-400 hidden md:inline font-bold whitespace-nowrap">
                       Design Grade:{' '}
                       {(() => {
                         const activeSeg = gradeInfo.segments.find(
@@ -749,32 +751,32 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
               <div className="flex items-center gap-2 font-sans font-bold self-end sm:self-auto shrink-0">
                 {currentInspectStation.completed && (
-                  <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1 font-sans">
+                  <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1 font-sans whitespace-nowrap shrink-0">
                     ✓ LEVELED
                   </span>
                 )}
                 {currentInspectStation.isLocked ? (
-                  <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1 font-sans">
+                  <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1 font-sans whitespace-nowrap shrink-0">
                     🔒 LOCKED
                   </span>
                 ) : (
                   <>
                     {currentInspectStation.action === 'ok' && (
-                      <span className="text-emerald-700 dark:text-emerald-400 text-xs font-sans">
+                      <span className="text-emerald-700 dark:text-emerald-400 text-xs font-sans whitespace-nowrap shrink-0">
                         {currentInspectStation.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : '✓ ON GRADE'}
                       </span>
                     )}
                     {currentInspectStation.action === 'lift' && (
-                      <span className="text-sky-700 dark:text-sky-400 text-xs font-sans">▲ {currentInspectStation.actionText}</span>
+                      <span className="text-sky-700 dark:text-sky-400 text-xs font-sans whitespace-nowrap shrink-0">▲ {currentInspectStation.actionText}</span>
                     )}
                     {currentInspectStation.action === 'lower' && (
-                      <span className="text-amber-800 dark:text-amber-400 text-xs font-sans">▼ {currentInspectStation.actionText}</span>
+                      <span className="text-amber-800 dark:text-amber-400 text-xs font-sans whitespace-nowrap shrink-0">▼ {currentInspectStation.actionText}</span>
                     )}
                   </>
                 )}
                 <button
                   onClick={() => onSelectStation(currentInspectStation)}
-                  className="px-3 py-1 rounded-lg bg-amber-500 text-black text-xs font-bold shadow-sm hover:bg-amber-400 transition active:scale-95 flex items-center gap-1"
+                  className="px-3 py-1 rounded-lg bg-amber-500 text-black text-xs font-bold shadow-sm hover:bg-amber-400 transition active:scale-95 flex items-center gap-1 whitespace-nowrap shrink-0"
                 >
                   ✏️ Edit
                 </button>
@@ -1191,17 +1193,17 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-3 font-semibold flex-wrap">
-          <span className="flex items-center gap-1 text-sky-700 dark:text-sky-400">
-            <span className="w-2 h-2 rounded-full bg-sky-500"></span> Lift (Low)
+          <span className="flex items-center gap-1 text-sky-700 dark:text-sky-400 whitespace-nowrap shrink-0">
+            <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0"></span> Lift (Low)
           </span>
-          <span className="flex items-center gap-1 text-amber-800 dark:text-amber-400">
-            <span className="w-2 h-2 rounded-full bg-amber-500"></span> Lower (High)
+          <span className="flex items-center gap-1 text-amber-800 dark:text-amber-400 whitespace-nowrap shrink-0">
+            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span> Lower (High)
           </span>
-          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> On Grade
+          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 whitespace-nowrap shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span> On Grade
           </span>
-          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-            <span className="w-2 h-2 rounded-full border border-emerald-500 bg-emerald-500/30"></span> Leveled ✓
+          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 whitespace-nowrap shrink-0">
+            <span className="w-2 h-2 rounded-full border border-emerald-500 bg-emerald-500/30 shrink-0"></span> Leveled ✓
           </span>
         </div>
       </div>
