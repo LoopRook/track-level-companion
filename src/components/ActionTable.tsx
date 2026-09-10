@@ -247,7 +247,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 isSelected
                   ? 'bg-amber-500/10 dark:bg-amber-500/15 ring-2 ring-amber-500'
                   : isCompleted
-                  ? 'bg-zinc-100/50 dark:bg-zinc-950/70 opacity-40 hover:opacity-80 grayscale-[0.2]'
+                  ? 'bg-zinc-100/50 dark:bg-zinc-950/70 opacity-40 grayscale-[0.2]'
                   : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'
               }`}
             >
@@ -545,7 +545,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     isSelected
                       ? 'bg-amber-500/10 dark:bg-amber-500/15 font-medium'
                       : isCompleted
-                      ? 'bg-zinc-100/40 dark:bg-zinc-950/70 opacity-40 hover:opacity-80 grayscale-[0.2]'
+                      ? 'bg-zinc-100/40 dark:bg-zinc-950/70 opacity-40 grayscale-[0.2]'
                       : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'
                   }`}
                   onClick={() => onEditStation(s)}
