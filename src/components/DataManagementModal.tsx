@@ -877,7 +877,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                 ? 'Checking for updates...'
                 : modalUpdateStatus === 'updated'
                 ? 'App is up to date ✓'
-                : 'Track Level Companion v1.0 • Check for Updates'}
+                : 'Track Level Companion v0.9.0 Beta • Check for Updates'}
             </span>
           </button>
           <button

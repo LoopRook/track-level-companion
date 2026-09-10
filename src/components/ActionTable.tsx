@@ -796,22 +796,51 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             </h4>
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-zinc-500 font-medium block mb-1">Length to add (feet):</label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[25, 50, 100, 200].map(amt => (
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs text-zinc-500 font-medium">Length to add (feet):</label>
+                  <span className="text-xs font-mono font-bold text-amber-500">+{extendLength} ft</span>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5 mb-2">
+                  {[25, 50, 100].map(amt => (
                     <button
                       key={amt}
                       type="button"
                       onClick={() => setExtendLength(amt)}
                       className={`py-1.5 rounded-lg text-xs font-bold border transition ${
                         extendLength === amt
-                          ? 'bg-amber-500 text-black border-amber-500'
+                          ? 'bg-amber-500 text-black border-amber-500 shadow-sm'
                           : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
                       }`}
                     >
                       +{amt}'
                     </button>
                   ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="custom-extend-ft" className="text-xs text-zinc-500 font-medium whitespace-nowrap">
+                    Custom:
+                  </label>
+                  <div className="relative flex-1">
+                    <input
+                      id="custom-extend-ft"
+                      type="number"
+                      min="1"
+                      max="5000"
+                      step="1"
+                      value={extendLength || ''}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val > 0) {
+                          setExtendLength(val);
+                        } else if (e.target.value === '') {
+                          setExtendLength(0);
+                        }
+                      }}
+                      className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-amber-500 pr-8"
+                      placeholder="e.g. 75"
+                    />
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400 font-medium pointer-events-none">ft</span>
+                  </div>
                 </div>
               </div>
               <div>
@@ -884,11 +913,13 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 Cancel
               </button>
               <button
+                disabled={!extendLength || extendLength <= 0}
                 onClick={() => {
+                  if (!extendLength || extendLength <= 0) return;
                   onExtendTrack?.(extendLength, extendInterval, extendDirection);
                   setIsExtendModalOpen(false);
                 }}
-                className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-xl shadow-sm"
+                className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-extrabold text-xs rounded-xl shadow-sm transition"
               >
                 Add {extendLength} Feet {extendDirection === 'forward' ? 'Ahead' : 'Before 0'}
               </button>

@@ -8,6 +8,7 @@ import { FractionKeypad } from './components/FractionKeypad';
 import { DataManagementModal } from './components/DataManagementModal';
 import { UserGuideModal } from './components/UserGuideModal';
 import { NewTrackModal } from './components/NewTrackModal';
+import { SettingsModal } from './components/SettingsModal';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { useBodyScrollLock } from './core/useBodyScrollLock';
 
@@ -90,8 +91,9 @@ export const App: React.FC = () => {
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isNewTrackModalOpen, setIsNewTrackModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  useBodyScrollLock(isKeypadOpen || isDataModalOpen || isGuideOpen || isNewTrackModalOpen);
+  useBodyScrollLock(isKeypadOpen || isDataModalOpen || isGuideOpen || isNewTrackModalOpen || isSettingsOpen);
 
   // Desktop PWA Installation
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -573,6 +575,7 @@ export const App: React.FC = () => {
         onOpenDataModal={() => setIsDataModalOpen(true)}
         onOpenGuideModal={() => setIsGuideOpen(true)}
         onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
+        onOpenSettingsModal={() => setIsSettingsOpen(true)}
         onInstallApp={handleInstallApp}
         canInstall={!!installPrompt}
         summary={summary}
@@ -598,6 +601,7 @@ export const App: React.FC = () => {
             stations={calculatedStations}
             gradeMode={project.gradeMode}
             targetGradePercent={project.targetGradePercent}
+            trackName={project.name}
             onSelectStation={handleSelectStation}
             selectedStationId={activeEditingStation?.id}
             onApplyTargetGrade={(grade) => {
@@ -665,6 +669,14 @@ export const App: React.FC = () => {
         onClose={() => setIsNewTrackModalOpen(false)}
         currentProject={project}
         onCreateNewTrack={handleCreateNewTrack}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        project={project}
+        onChangeProject={handleUpdateProject}
       />
 
       {/* Field Guide & Animated Tutorial Modal */}

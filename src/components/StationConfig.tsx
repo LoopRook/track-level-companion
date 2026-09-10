@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { UnitFormat, TrackProject, CalculatedStation } from '../core/types';
 import { calculateGradeInfo } from '../core/calculations';
-import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2, TrendingUp, Plus, Download } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2, TrendingUp, Plus, Download, Settings } from 'lucide-react';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 
 export interface StationSummaryData {
@@ -24,6 +24,7 @@ export interface StationConfigHeaderProps {
   onOpenDataModal: () => void;
   onOpenGuideModal: () => void;
   onOpenNewTrackModal: () => void;
+  onOpenSettingsModal?: () => void;
   onInstallApp?: () => void;
   canInstall?: boolean;
   summary: StationSummaryData;
@@ -48,6 +49,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
   onOpenDataModal,
   onOpenGuideModal,
   onOpenNewTrackModal,
+  onOpenSettingsModal,
   onInstallApp,
   canInstall,
   summary,
@@ -194,6 +196,19 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           <span>Files<span className="hidden xs:inline"> / Export</span></span>
         </button>
 
+        {/* Settings */}
+        {onOpenSettingsModal && (
+          <button
+            type="button"
+            onClick={onOpenSettingsModal}
+            className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
+            title="Open App Settings (Grade Tolerance, Keypad Resolution, Default Units)"
+          >
+            <Settings className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span>Settings</span>
+          </button>
+        )}
+
         {/* Theme Toggle on desktop */}
         <button
           onClick={onToggleDarkMode}
@@ -211,6 +226,20 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
     </header>
   );
 };
+
+const getToleranceLabel = (tol?: number, unit?: UnitFormat) => {
+  const t = tol ?? 0.0625;
+  if (Math.abs(t - 0.03125) < 0.001) return '±1/32"';
+  if (Math.abs(t - 0.0625) < 0.001) return '±1/16"';
+  if (Math.abs(t - 0.125) < 0.001) return '±1/8"';
+  if (Math.abs(t - 0.05) < 0.001) return '±0.05"';
+  if (Math.abs(t - 0.03937) < 0.001) return '±1.0mm';
+  if (Math.abs(t - 0.07874) < 0.001) return '±2.0mm';
+  if (unit === 'metric_mm') return `±${(t * 25.4).toFixed(1)}mm`;
+  if (unit === 'decimal_inches') return `±${t.toFixed(2)}"`;
+  return `±${t.toFixed(3)}"`;
+};
+
 export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, summary }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -238,15 +267,7 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
 
       <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
         <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-          On Grade (Within {
-            project.unitFormat === 'decimal_inches'
-              ? '0.05"'
-              : project.unitFormat === 'metric_mm'
-              ? '1.5mm'
-              : project.fractionResolution === 16
-              ? '1/16"'
-              : '1/8"'
-          })
+          On Grade (Within {getToleranceLabel(project.toleranceInches, project.unitFormat)})
         </span>
         <div className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
           <span>

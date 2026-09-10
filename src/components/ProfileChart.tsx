@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CalculatedStation, GradeMode } from '../core/types';
 import { formatFeetInches, formatMeasurement } from '../core/units';
 import { calculateGradeInfo, calculateSubsetGrade, SubsetGradeInfo } from '../core/calculations';
-import { Spline, TrendingUp, Maximize2, Minimize2, Ruler } from 'lucide-react';
+import { Spline, TrendingUp, Maximize2, Minimize2, Ruler, Download, Image as ImageIcon, Printer } from 'lucide-react';
 
 interface ProfileChartProps {
   stations: CalculatedStation[];
@@ -11,6 +11,7 @@ interface ProfileChartProps {
   onSelectStation: (station: CalculatedStation) => void;
   selectedStationId?: string | null;
   onApplyTargetGrade?: (gradePercent: number) => void;
+  trackName?: string;
 }
 
 type ZoomScale = '1x' | '3x' | '8x' | '15x';
@@ -75,12 +76,17 @@ function getSmoothSplinePath(points: { x: number; y: number }[]): string {
 
 export const ProfileChart: React.FC<ProfileChartProps> = ({
   stations,
-  gradeMode = 'end_to_end',
+  gradeMode,
   targetGradePercent = 0.0,
   onSelectStation,
   selectedStationId,
   onApplyTargetGrade,
+  trackName,
 }) => {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
   // Style: 'curve' (gentle smooth curve) vs 'straight' (point-to-point chords)
   const [curveMode, setCurveMode] = useState<'curve' | 'straight'>('curve');
   // Zoom: '3x' is default gentle view, 8x/15x are exaggerated
@@ -411,6 +417,115 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     onSelectStation(s);
   };
 
+  const handleExportPng = () => {
+    if (!svgRef.current) return;
+    setIsExporting(true);
+    try {
+      const svgEl = svgRef.current;
+      const viewBoxAttr = svgEl.getAttribute('viewBox');
+      const vbParts = viewBoxAttr ? viewBoxAttr.split(' ').map(Number) : [0, 0, effectiveWidth, chartHeight];
+      const svgWidth = vbParts[2] || effectiveWidth;
+      const svgHeight = vbParts[3] || chartHeight;
+
+      const clone = svgEl.cloneNode(true) as SVGSVGElement;
+
+      // Inline computed styles from original SVG to ensure strokes, colors, and typography are preserved
+      const origElements = svgEl.querySelectorAll('*');
+      const cloneElements = clone.querySelectorAll('*');
+      const cssProps = [
+        'stroke', 'stroke-width', 'stroke-dasharray', 'stroke-linecap',
+        'stroke-linejoin', 'fill', 'fill-opacity', 'opacity',
+        'font-family', 'font-size', 'font-weight', 'text-anchor', 'dominant-baseline'
+      ];
+
+      for (let i = 0; i < origElements.length; i++) {
+        const orig = origElements[i];
+        const cln = cloneElements[i];
+        if (orig && cln) {
+          const computed = window.getComputedStyle(orig);
+          for (const prop of cssProps) {
+            const val = computed.getPropertyValue(prop);
+            if (val && val !== 'none' && !cln.hasAttribute(prop)) {
+              cln.setAttribute(prop, val);
+            }
+          }
+        }
+      }
+
+      const serializer = new XMLSerializer();
+      let svgString = serializer.serializeToString(clone);
+      if (!svgString.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+        svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+
+      const canvas = document.createElement('canvas');
+      const scaleFactor = 2; // High-res Hi-DPI
+      const bannerHeight = 70;
+      canvas.width = svgWidth * scaleFactor;
+      canvas.height = (svgHeight + bannerHeight) * scaleFactor;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        setIsExporting(false);
+        return;
+      }
+
+      ctx.scale(scaleFactor, scaleFactor);
+
+      // Match current dark/light mode
+      const isDark = document.documentElement.classList.contains('dark') || !document.documentElement.classList.contains('light');
+      ctx.fillStyle = isDark ? '#09090b' : '#ffffff';
+      ctx.fillRect(0, 0, svgWidth, svgHeight + bannerHeight);
+
+      // Header Title
+      ctx.fillStyle = isDark ? '#f4f4f5' : '#18181b';
+      ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
+      ctx.fillText(trackName || 'Track Vertical Profile', padding.left, 28);
+
+      // Subtitle with stats and date
+      ctx.font = '11px monospace';
+      ctx.fillStyle = isDark ? '#a1a1aa' : '#71717a';
+      const gradeStr = gradeInfo ? `Overall Grade: ${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%` : '';
+      const dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      ctx.fillText(`${gradeStr}  •  ${measuredStations.length}/${stations.length} Shot  •  ${dateStr}`, padding.left, 48);
+
+      const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+
+      img.onload = () => {
+        ctx.drawImage(img, 0, bannerHeight, svgWidth, svgHeight);
+        URL.revokeObjectURL(url);
+
+        const link = document.createElement('a');
+        const safeName = (trackName || 'track-profile')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+        link.download = `${safeName}-profile.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        setIsExporting(false);
+        setShowExportMenu(false);
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        setIsExporting(false);
+      };
+
+      img.src = url;
+    } catch (err) {
+      console.error('Export PNG failed:', err);
+      setIsExporting(false);
+    }
+  };
+
+  const handlePrint = () => {
+    setShowExportMenu(false);
+    window.print();
+  };
+
   return (
     <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors">
       {/* Header Toolbar */}
@@ -547,6 +662,47 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               </>
             )}
           </button>
+
+          {/* Export / Print Dropdown Menu */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition active:scale-95 shadow-xs"
+              title="Export PNG or print track profile chart"
+            >
+              <Download className="w-3.5 h-3.5 stroke-[2.2] text-amber-500" />
+              <span className="text-[11px] hidden sm:inline">Export</span>
+            </button>
+
+            {showExportMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={() => setShowExportMenu(false)}
+                />
+                <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl py-1 z-30 space-y-0.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={handleExportPng}
+                    disabled={isExporting}
+                    className="w-full px-3 py-2 text-left flex items-center gap-2 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition font-medium"
+                  >
+                    <ImageIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>{isExporting ? 'Exporting PNG...' : 'Save PNG Image'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePrint}
+                    className="w-full px-3 py-2 text-left flex items-center gap-2 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition font-medium"
+                  >
+                    <Printer className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Print Chart / PDF</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -797,6 +953,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
         style={{ touchAction: 'pan-y' }}
       >
         <svg
+          ref={svgRef}
           viewBox={`0 0 ${effectiveWidth} ${chartHeight}`}
           className={`block ${isScrollable ? '' : 'w-full'} h-auto`}
           style={{
