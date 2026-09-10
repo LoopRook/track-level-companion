@@ -16,7 +16,12 @@ import {
   Play,
   Spline,
   Plus,
-  Ruler
+  Ruler,
+  Lock,
+  Flag,
+  Edit3,
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
@@ -62,8 +67,8 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
     },
     {
       id: 'field-tips',
-      title: '5. Keypad, Checklist & Export',
-      shortTitle: 'Keypad & Export',
+      title: '5. Station Buttons, Tolerances & Field Tips',
+      shortTitle: 'Buttons & Tips',
       icon: CheckCircle2,
     },
   ];
@@ -556,15 +561,139 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
           )}
 
           {/* ================= STEP 4: KEYPAD & EXPORT ================= */}
+          {/* ================= STEP 4: STATION ACTIONS, TOLERANCES & FIELD TIPS ================= */}
           {currentStep === 4 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100">
-                  Rapid Keypad, Mobile Cards & Export
+                  Station Controls, Leveling Margins & Pro Tips
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-                  Built specifically for rapid one-handed surveying with phone or tablet in the dirt:
+                  Everything you need to know about trackside tie actions, live steam tolerances, and field workflows:
                 </p>
+              </div>
+
+              {/* Station Action Buttons Explainer */}
+              <div className="bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                    Station Row Action Buttons
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-mono">
+                    (On every station in the checklist table)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  {/* Status Circle */}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-500 shrink-0 font-bold">
+                      ✓
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-zinc-900 dark:text-zinc-100 block">Status (Checkmark / Circle)</strong>
+                      <p className="text-zinc-500 leading-relaxed text-[11px]">
+                        Tap once you level/tamp that tie. Strikes through the distance and increments the tie completion counter (<code className="text-emerald-500 font-mono">✓ X/Y</code>) in the header.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Lock / Anchor */}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 shrink-0">
+                      <Lock className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-zinc-900 dark:text-zinc-100 block">Lock (Immovable Obstacle)</strong>
+                      <p className="text-zinc-500 leading-relaxed text-[11px]">
+                        Locks ties that cannot move (tree roots, road crossings, bridge abutments). In <strong>End-to-End</strong> mode, it acts as a grade hinge, calculating chords around it.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Turning Point Flag */}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800">
+                    <div className="w-7 h-7 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-500 shrink-0">
+                      <Flag className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-zinc-900 dark:text-zinc-100 block">Flag (Relocate Laser / TP)</strong>
+                      <p className="text-zinc-500 leading-relaxed text-[11px]">
+                        Designates this tie as your Turning Point benchmark when moving your laser tripod ahead to continue surveying down the line.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Edit Pencil */}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800">
+                    <div className="w-7 h-7 rounded-lg bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 shrink-0">
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-zinc-900 dark:text-zinc-100 block">Edit (Touch Keypad)</strong>
+                      <p className="text-zinc-500 leading-relaxed text-[11px]">
+                        Opens the quick fraction/decimal keypad for this tie to enter, adjust, or clear its raw grade rod measurement.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Delete Trash */}
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 sm:col-span-2">
+                    <div className="w-7 h-7 rounded-lg bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-500 shrink-0">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <strong className="text-zinc-900 dark:text-zinc-100 block">Delete Station</strong>
+                      <p className="text-zinc-500 leading-relaxed text-[11px]">
+                        Permanently deletes this station point from your track survey.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Leveling Margins & Live Steam Tolerance Standards */}
+              <div className="bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                    Why ±1/16″ is the Live Steam Standard
+                  </span>
+                  <a
+                    href="https://ibls.org/mediawiki/index.php/Category:Standards"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline"
+                  >
+                    <span>IBLS Standards Wiki</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-2 leading-relaxed">
+                  <p>
+                    In live steam riding railroading (7¼″ and 7½″ gauge), locomotives have rigid driving wheelbases and shallow wheel flanges—typically only <strong>3/16″ to 1/4″ deep</strong> per <a href="https://ibls.org/mediawiki/index.php/Category:Standards" target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 underline font-medium">IBLS (International Brotherhood of Live Steamers) specifications</a>.
+                  </p>
+                  <p>
+                    If a vertical dip or track twist exceeds <strong>1/16″ to 1/8″</strong> over a 5 to 10-foot span, the rigid locomotive frame bridges the dip, transferring all axle weight to the ends and <strong>unloading the center driver</strong>. With a shallow 3/16″ flange, the unloaded wheel climbs the rail head and derails.
+                  </p>
+                  <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                    <div>
+                      <strong className="text-zinc-900 dark:text-zinc-100 block font-mono text-xs">±1/32″ (Bridges)</strong>
+                      <span className="text-zinc-500">Solid-deck timber trestles, steel spans, and turntable approaches where ballast doesn't settle.</span>
+                    </div>
+                    <div>
+                      <strong className="text-emerald-700 dark:text-emerald-400 block font-mono text-xs">±1/16″ (Standard Mainline)</strong>
+                      <span className="text-zinc-500">Standard live steam mainline. Physical limit of hand tamping crushed rock ballast before settlement.</span>
+                    </div>
+                    <div>
+                      <strong className="text-zinc-900 dark:text-zinc-100 block font-mono text-xs">±1/8″ (Yards & Sidings)</strong>
+                      <span className="text-zinc-500">Acceptable for slow-speed yard tracks, steaming bays, and non-passenger sidings.</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    💡 You can customize your leveling margin anytime in <strong>⚙ Settings</strong> in the top header.
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">

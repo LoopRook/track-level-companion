@@ -162,13 +162,49 @@ When running out of line-of-sight or moving the tripod down the track, use the *
 
 ---
 
-## 6. Extending Track & Feathering Runouts
+## 6. Trackside Station Row Buttons & Controls
+
+Every station in the checklist table (and on mobile station cards) features dedicated quick-action controls:
+
+| Icon / Control | Name | Purpose & Workflow |
+| :--- | :--- | :--- |
+| **`◯` / `✓`** | **Status Toggle (Checkmark)** | **Leveled / Done Tracker:** Tap this circle once you finish tamping or shimming that tie to grade. It turns green with a checkmark (`✓`), strikes through the station distance, and increments your tie completion counter (e.g. `✓ 12/18 completed`) in the header. |
+| **`🔒` / `🔓`** | **Lock / Anchor** | **Immovable Obstacle / Control Point:** Use this when a tie cannot be raised or lowered (e.g. sitting over a tree root, road crossing, concrete culvert, or bridge deck). In **End-to-End** mode, locking a tie turns it into an elevation hinge, recalculating slope chords around it so you don't force impossible shims. |
+| **`🚩`** | **Flag (Turning Point)** | **Laser Relocation Benchmark:** Tap this to make this tie your Turning Point when trees, buildings, or distance block your laser beam. It opens the relocation modal to record your Laser 2 backsight reading and seamlessly propagates the datum shift. |
+| **`✏️`** | **Pencil (Edit)** | **Open Keypad:** Opens the large fraction/decimal numeric keypad for that specific tie to record, adjust, or clear its raw grade rod reading. |
+| **`🗑️`** | **Trash Can** | **Delete Station:** Permanently deletes this station point from your track survey. |
+
+---
+
+## 7. Leveling Margins, Tolerances & Live Steam Standards (Why ±1/16″?)
+
+In **⚙ Settings**, you can configure the **Leveling Margin (On-Grade Tolerance)**. When a tie's calculated lift is within this threshold, it is marked **`ON GRADE ✓`** in green, suppressing unnecessary shim/tamp action recommendations.
+
+### Why ±1/16″ is the Live Steam Standard:
+1. **Locomotive Suspension & Wheel Flange Physics:**
+   - In live steam riding railroading (7¼″ and 7½″ gauge), locomotives feature rigid, multi-axle driving wheelbases (e.g. 4-4-0, 4-6-2, 2-8-2).
+   - Wheel flanges are shallow—typically only **$\frac{3}{16}''$ to $\frac{1}{4}''$ deep** according to [IBLS (International Brotherhood of Live Steamers) Standards](https://ibls.org/mediawiki/index.php/Category:Standards).
+   - If a dip or track twist exceeds **$\frac{1}{16}''$ to $\frac{1}{8}''$** across a 5 to 10-foot chord, the rigid locomotive frame bridges the dip, transferring all weight to the outer axles and **unloading the middle driver**. With a shallow $\frac{3}{16}''$ flange, the unloaded driver climbs the rail head, causing immediate derailment.
+2. **Physical Limits of Shimming & Ballast:**
+   - Real-world track shims (cedar, composite, or steel) are manufactured in **$\frac{1}{16}''$** (16-gauge) and **$\frac{1}{8}''$** thicknesses.
+   - In crushed stone or decomposed granite ballast, **$\frac{1}{16}''$ is the practical physical limit of hand tamping**. Trying to tamp tighter than $\frac{1}{16}''$ settles right back under the weight of a loaded train.
+3. **Application Guidelines:**
+   - **`±1/32"` ($\pm 0.031"$) – High Precision / Bridges:** For solid-deck timber trestles, steel girder bridges, and turntable approaches where ballast does not settle.
+   - **`±1/16"` ($\pm 0.062"$) – Standard Live Steam (Default):** The optimal balance for passenger-carrying live steam mainlines.
+   - **`0.05"` ($\pm 0.050"$) – Decimal Inch Standard:** Common for decimal-rod survey crews.
+   - **`±1/8"` ($\pm 0.125"$) – Relaxed / Rough Yard:** Acceptable for low-speed steaming bay tracks, yard ladders, and non-passenger sidings.
+   - **`1.0 mm` & `2.0 mm`:** Metric tolerance standards.
+
+---
+
+## 8. Extending Track & Feathering Runouts
 
 ### The `+ Extend` Button Modal:
 Tap the **`+ Extend`** button in the checklist toolbar:
 - **`Ahead (Forward →)`:** Appends new stations after the end of your track.
 - **`Behind 0 (Backward ←)`:** Inserts negative stations (`-5 ft, -10 ft, -15 ft...`) before Station 0. Use this when you need to "feather" or taper the lift 20–30 feet back into undisturbed track so trains don't hit a bump leading into Station 0.
-- Presets: choose length (`+25'`, `+50'`, `+100'`, `+200'`) and interval (`1'`, `2'`, `5'`, `10'`).
+- **Length Options:** Quick presets for `+25'`, `+50'`, `+100'`, plus a **`Custom: [ ___ ] ft`** input allowing you to extend by any arbitrary distance (e.g. 75 ft, 120 ft).
+- **Interval:** Choose `1'`, `2'`, `5'`, or `10'` tie spacing.
 
 ### Intermediate Stations & Quick Add:
 - **`+ Custom Pt`:** Prompts for any custom distance along the track (e.g. `12.5 ft` at an insulated joint or bridge shoe) and inserts it in sorted numerical order.
@@ -176,7 +212,7 @@ Tap the **`+ Extend`** button in the checklist toolbar:
 
 ---
 
-## 7. Data Management, Google Sheets Templates & Offline PWA
+## 9. Data Management, Google Sheets Templates & Offline PWA
 
 Tap **`Files / Export`** in the header to access data tools:
 
