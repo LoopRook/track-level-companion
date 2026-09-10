@@ -137,7 +137,7 @@ input, textarea {
 
 @media print {
   @page {
-    size: auto;
+    size: landscape;
     margin: 0.35in;
   }
 

@@ -19,10 +19,10 @@ export const PrintReport: React.FC<PrintReportProps> = ({
     return calculateGradeInfo(calculatedStations, project.gradeMode, project.targetGradePercent);
   }, [calculatedStations, project.gradeMode, project.targetGradePercent]);
 
-  // Dimensions for 8.5x11 printable SVG graph
-  const width = 800;
-  const height = 230;
-  const padding = { top: 32, right: 25, bottom: 40, left: 50 };
+  // Dimensions for printable SVG graph in landscape orientation
+  const width = 1000;
+  const height = 240;
+  const padding = { top: 32, right: 30, bottom: 40, left: 55 };
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
 
@@ -111,7 +111,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
           </div>
           <div className="text-right font-mono text-[11px] text-zinc-700">
             <div><strong>Date:</strong> {project.date || new Date().toISOString().split('T')[0]}</div>
-            <div><strong>Format:</strong> Field Leveling Sheet</div>
+            <div><strong>Format:</strong> Field Sheet (Landscape)</div>
           </div>
         </div>
 
