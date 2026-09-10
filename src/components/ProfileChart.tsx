@@ -338,76 +338,83 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
         </div>
       </div>
 
-      {/* Selected Station Banner / Active Readout */}
-      {currentInspectStation && (
-        <div className="px-3.5 py-2 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-xs font-mono gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-amber-500 dark:text-amber-400">
-              Station {currentInspectStation.distanceFt} ft
-            </span>
-            <span className="text-zinc-400">|</span>
-            <span className="text-zinc-700 dark:text-zinc-300">
-              Reading:{' '}
-              {currentInspectStation.readingInches !== null
-                ? formatFeetInches(currentInspectStation.readingInches)
-                : 'Need shot'}
-            </span>
-            <span className="text-zinc-400 hidden sm:inline">|</span>
-            <span className="text-zinc-500 hidden sm:inline">
-              Elev: {formatMeasurement(currentInspectStation.elevationInches, 'inches_fraction')}
-            </span>
-            {gradeInfo && (
-              <>
-                <span className="text-zinc-400 hidden md:inline">|</span>
-                <span className="text-emerald-600 dark:text-emerald-400 hidden md:inline font-bold">
-                  Design Grade:{' '}
-                  {(() => {
-                    const activeSeg = gradeInfo.segments.find(
-                      seg => currentInspectStation.distanceFt >= seg.startDistanceFt && currentInspectStation.distanceFt <= seg.endDistanceFt
-                    ) || gradeInfo.segments[0];
-                    return activeSeg
-                      ? `${activeSeg.gradePercent >= 0 ? '+' : ''}${activeSeg.gradePercent.toFixed(2)}%`
-                      : `${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%`;
-                  })()}
-                </span>
-              </>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 font-sans font-bold">
-            {currentInspectStation.completed && (
-              <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
-                ✓ LEVELED
+      {/* Selected Station Banner / Active Readout - Persistent height prevents SVG layout shifts */}
+      <div className="min-h-[42px] px-3.5 py-2 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-xs font-mono gap-2 transition-colors">
+        {currentInspectStation ? (
+          <>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-amber-500 dark:text-amber-400">
+                Station {currentInspectStation.distanceFt} ft
               </span>
-            )}
-            {currentInspectStation.isLocked ? (
-              <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1">
-                🔒 LOCKED
+              <span className="text-zinc-400">|</span>
+              <span className="text-zinc-700 dark:text-zinc-300">
+                Reading:{' '}
+                {currentInspectStation.readingInches !== null
+                  ? formatFeetInches(currentInspectStation.readingInches)
+                  : 'Need shot'}
               </span>
-            ) : (
-              <>
-                {currentInspectStation.action === 'ok' && (
-                  <span className="text-emerald-700 dark:text-emerald-400 text-xs">
-                    {currentInspectStation.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : '✓ ON GRADE'}
+              <span className="text-zinc-400 hidden sm:inline">|</span>
+              <span className="text-zinc-500 hidden sm:inline">
+                Elev: {formatMeasurement(currentInspectStation.elevationInches, 'inches_fraction')}
+              </span>
+              {gradeInfo && (
+                <>
+                  <span className="text-zinc-400 hidden md:inline">|</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 hidden md:inline font-bold">
+                    Design Grade:{' '}
+                    {(() => {
+                      const activeSeg = gradeInfo.segments.find(
+                        seg => currentInspectStation.distanceFt >= seg.startDistanceFt && currentInspectStation.distanceFt <= seg.endDistanceFt
+                      ) || gradeInfo.segments[0];
+                      return activeSeg
+                        ? `${activeSeg.gradePercent >= 0 ? '+' : ''}${activeSeg.gradePercent.toFixed(2)}%`
+                        : `${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%`;
+                    })()}
                   </span>
-                )}
-                {currentInspectStation.action === 'lift' && (
-                  <span className="text-sky-700 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
-                )}
-                {currentInspectStation.action === 'lower' && (
-                  <span className="text-amber-800 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
-                )}
-              </>
-            )}
-            <button
-              onClick={() => onSelectStation(currentInspectStation)}
-              className="text-[11px] underline text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 ml-1.5"
-            >
-              Edit
-            </button>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 font-sans font-bold">
+              {currentInspectStation.completed && (
+                <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
+                  ✓ LEVELED
+                </span>
+              )}
+              {currentInspectStation.isLocked ? (
+                <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1">
+                  🔒 LOCKED
+                </span>
+              ) : (
+                <>
+                  {currentInspectStation.action === 'ok' && (
+                    <span className="text-emerald-700 dark:text-emerald-400 text-xs">
+                      {currentInspectStation.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : '✓ ON GRADE'}
+                    </span>
+                  )}
+                  {currentInspectStation.action === 'lift' && (
+                    <span className="text-sky-700 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
+                  )}
+                  {currentInspectStation.action === 'lower' && (
+                    <span className="text-amber-800 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
+                  )}
+                </>
+              )}
+              <button
+                onClick={() => onSelectStation(currentInspectStation)}
+                className="text-[11px] underline text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 ml-1.5"
+              >
+                Edit
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-xs font-sans">
+            <span className="inline-block w-2 h-2 rounded-full bg-zinc-400 dark:bg-zinc-600" />
+            <span>Click or hover any station node on the profile chart to inspect details</span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Unified SVG Canvas Container */}
       <div className={`w-full ${isScrollable ? 'overflow-x-auto scrollbar-thin' : ''} bg-zinc-50/50 dark:bg-black select-none`}>
@@ -449,6 +456,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {/* Vertical Station Grid lines (X-Ticks) */}
           {stations.map(s => {
             const x = getX(s.distanceFt);
+            const isStationActive = currentInspectStation?.id === s.id;
             return (
               <g key={s.id}>
                 <line
@@ -456,14 +464,22 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   y1={padding.top}
                   x2={x}
                   y2={padding.top + innerHeight}
-                  className="stroke-zinc-200 dark:stroke-zinc-800/60 stroke-1"
-                  strokeDasharray="2,2"
+                  className={
+                    isStationActive
+                      ? 'stroke-amber-400 dark:stroke-amber-400 stroke-[1.5]'
+                      : 'stroke-zinc-200 dark:stroke-zinc-800/60 stroke-1'
+                  }
+                  strokeDasharray={isStationActive ? undefined : '2,2'}
                 />
                 <text
                   x={x}
                   y={padding.top + innerHeight + 18}
                   textAnchor="middle"
-                  className="font-mono text-[10px] fill-zinc-600 dark:fill-zinc-400 font-bold"
+                  className={`font-mono text-[10px] font-bold ${
+                    isStationActive
+                      ? 'fill-amber-600 dark:fill-amber-400'
+                      : 'fill-zinc-600 dark:fill-zinc-400'
+                  }`}
                 >
                   {s.distanceFt}'
                 </text>
@@ -541,6 +557,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             const isMeasured = s.elevationInches !== null;
             const y = isMeasured ? getY(s.elevationInches!) : padding.top + innerHeight / 2;
             const isSelected = selectedStationId === s.id;
+            const isHovered = activeStation?.id === s.id;
 
             let dotFill = '#52525b'; // zinc-600 unmeasured
             if (isMeasured) {
@@ -552,7 +569,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             return (
               <g
                 key={s.id}
-                className="cursor-pointer transition-transform hover:scale-125 active:scale-95"
+                className="cursor-pointer"
                 onClick={() => {
                   setActiveStation(s);
                   onSelectStation(s);
@@ -560,19 +577,34 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 onMouseEnter={() => setActiveStation(s)}
                 onMouseLeave={() => setActiveStation(null)}
               >
-                {/* Generous touch target */}
-                <circle cx={x} cy={y} r={17} fill="transparent" />
+                {/* Generous stable touch / mouse hit target */}
+                <circle cx={x} cy={y} r={18} fill="transparent" pointerEvents="all" />
+
+                {/* Hover halo ring */}
+                {isHovered && !isSelected && (
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={12}
+                    fill={dotFill}
+                    fillOpacity={0.22}
+                    stroke={dotFill}
+                    strokeWidth="1.5"
+                    className="pointer-events-none transition-all duration-150"
+                  />
+                )}
 
                 {/* Selection indicator ring */}
                 {isSelected && (
                   <circle
                     cx={x}
                     cy={y}
-                    r={10}
-                    fill="none"
+                    r={11}
+                    fill="#f59e0b"
+                    fillOpacity={0.2}
                     stroke="#f59e0b"
                     strokeWidth="2.5"
-                    className="animate-pulse"
+                    className="animate-pulse pointer-events-none"
                   />
                 )}
 
@@ -586,6 +618,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     stroke="#a855f7"
                     strokeWidth="2"
                     strokeDasharray="2,2"
+                    className="pointer-events-none"
                   />
                 )}
 
@@ -598,6 +631,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     fill="none"
                     stroke="#f59e0b"
                     strokeWidth="2"
+                    className="pointer-events-none"
                   />
                 )}
 
@@ -610,6 +644,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     fill="none"
                     stroke="#10b981"
                     strokeWidth="2"
+                    className="pointer-events-none"
                   />
                 )}
 
@@ -617,11 +652,12 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 <circle
                   cx={x}
                   cy={y}
-                  r={isMeasured ? (isSelected ? 6.5 : 5.5) : 3.5}
+                  r={isMeasured ? (isSelected || isHovered ? 7 : 5.5) : (isHovered ? 4.5 : 3.5)}
                   fill={s.completed ? '#10b981' : dotFill}
                   stroke={isSelected ? '#f59e0b' : '#000000'}
                   strokeWidth="1.5"
                   opacity={s.completed ? 0.6 : 1}
+                  className="transition-[r] duration-150 ease-out pointer-events-none"
                 />
               </g>
             );
