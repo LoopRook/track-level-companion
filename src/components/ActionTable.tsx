@@ -95,9 +95,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors">
+    <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors lg:max-h-[calc(100vh-6.5rem)]">
       {/* Header Toolbar */}
-      <div className="px-3 sm:px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-950">
+      <div className="px-3 sm:px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-950 shrink-0">
         <div>
           <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm sm:text-base">
             Trackside Leveling Checklist
@@ -153,7 +153,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
       </div>
 
       {/* View Mode & Column Selector Toolbar */}
-      <div className="px-3 sm:px-4 py-2 bg-zinc-100/70 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap text-xs">
+      <div className="px-3 sm:px-4 py-2 bg-zinc-100/70 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap text-xs shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Display:</span>
           <div className="flex rounded-lg bg-zinc-200/80 dark:bg-zinc-900 p-0.5 border border-zinc-300 dark:border-zinc-800 h-7 items-center shrink-0">
@@ -204,7 +204,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
       {/* Active Laser Relocation / Datum Shift Banner */}
       {stations.some(s => s.isTurningPoint) && (
-        <div className="px-3 sm:px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 text-xs flex items-center justify-between gap-2 text-purple-700 dark:text-purple-300">
+        <div className="px-3 sm:px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 text-xs flex items-center justify-between gap-2 text-purple-700 dark:text-purple-300 shrink-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Flag className="w-3.5 h-3.5 shrink-0 text-purple-500" />
             <span>
@@ -497,16 +497,16 @@ export const ActionTable: React.FC<ActionTableProps> = ({
       </div>
 
       {/* DESKTOP TABLE VIEW (hidden md:block): full table layout with all columns */}
-      <div className="overflow-x-auto hidden md:block">
+      <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0 hidden md:block">
         <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 bg-zinc-100/70 dark:bg-zinc-950 font-bold">
-              <th className="py-2.5 px-3 w-10 text-center">Status</th>
-              <th className="py-2.5 px-3">Station</th>
-              <th className="py-2.5 px-3">Last Reading</th>
+          <thead className="sticky top-0 z-10 bg-zinc-100 dark:bg-zinc-950 shadow-xs">
+            <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 font-bold bg-zinc-100 dark:bg-zinc-950">
+              <th className="py-2.5 px-3 w-10 text-center sticky top-0 bg-zinc-100 dark:bg-zinc-950">Status</th>
+              <th className="py-2.5 px-3 sticky top-0 bg-zinc-100 dark:bg-zinc-950">Station</th>
+              <th className="py-2.5 px-3 sticky top-0 bg-zinc-100 dark:bg-zinc-950">Last Reading</th>
               {(displayMode === 'target_reading' || displayMode === 'both') && (
                 <th
-                  className="py-2.5 px-3 cursor-pointer hover:text-amber-500 transition select-none"
+                  className="py-2.5 px-3 cursor-pointer hover:text-amber-500 transition select-none sticky top-0 bg-zinc-100 dark:bg-zinc-950"
                   onClick={handleCycleDisplayMode}
                   title="Click to toggle display mode (Target Rod vs Rel. Elev vs Both)"
                 >
@@ -518,7 +518,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               )}
               {(displayMode === 'relative_elev' || displayMode === 'both') && (
                 <th
-                  className="py-2.5 px-3 cursor-pointer hover:text-amber-500 transition select-none"
+                  className="py-2.5 px-3 cursor-pointer hover:text-amber-500 transition select-none sticky top-0 bg-zinc-100 dark:bg-zinc-950"
                   onClick={handleCycleDisplayMode}
                   title="Click to toggle display mode (Target Rod vs Rel. Elev vs Both)"
                 >
@@ -528,8 +528,8 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   </div>
                 </th>
               )}
-              <th className="py-2.5 px-3 text-center">Track Action</th>
-              <th className="py-2.5 px-3 text-right">Actions</th>
+              <th className="py-2.5 px-3 text-center sticky top-0 bg-zinc-100 dark:bg-zinc-950">Track Action</th>
+              <th className="py-2.5 px-3 text-right sticky top-0 bg-zinc-100 dark:bg-zinc-950">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60 text-sm">

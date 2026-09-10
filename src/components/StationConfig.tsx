@@ -78,8 +78,9 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
                 type="text"
                 value={project.name}
                 onChange={(e) => onChangeProject({ name: e.target.value })}
-                className="bg-transparent font-extrabold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 rounded px-1.5 -ml-1.5 py-0.5 outline-none transition w-44 sm:w-auto truncate"
+                className="bg-transparent font-extrabold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 rounded px-1.5 -ml-1.5 py-0.5 outline-none transition w-44 sm:w-80 md:w-96 truncate"
                 placeholder="Track Section Name"
+                title="Click to rename track section"
               />
             </div>
             <div className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-300 font-medium">

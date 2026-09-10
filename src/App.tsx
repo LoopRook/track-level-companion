@@ -33,8 +33,8 @@ const INITIAL_STATIONS: StationPoint[] = [
 ];
 
 const DEFAULT_PROJECT: TrackProject = {
-  id: 'default-project-v3',
-  name: 'North Loop Tangent',
+  id: 'default-project-v4',
+  name: 'Sample 85ft Section (Decimal Inches)',
   date: new Date().toISOString().split('T')[0],
   gauge: '7 1/4"',
   unitFormat: 'decimal_inches',
@@ -54,8 +54,14 @@ export const App: React.FC = () => {
       const saved = localStorage.getItem('track_level_companion_active');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // If it's the old default demo project, refresh to the new decimal example values and end_to_end default
-        if (parsed.id === 'default-project' || parsed.id === 'default-project-v1' || parsed.id === 'default-project-v2') {
+        // If it's an old default demo project or still named "North Loop Tangent", refresh to the new example section
+        if (
+          parsed.id === 'default-project' ||
+          parsed.id === 'default-project-v1' ||
+          parsed.id === 'default-project-v2' ||
+          parsed.id === 'default-project-v3' ||
+          parsed.name === 'North Loop Tangent'
+        ) {
           return DEFAULT_PROJECT;
         }
         return parsed;
@@ -604,7 +610,7 @@ export const App: React.FC = () => {
         </div>
 
         {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
-        <div className="lg:col-span-5 space-y-3">
+        <div className="lg:col-span-5 space-y-3 lg:sticky lg:top-3">
           <ActionTable
             stations={calculatedStations}
             unitFormat={project.unitFormat}
