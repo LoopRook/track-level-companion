@@ -3,6 +3,7 @@ import { CalculatedStation, UnitFormat } from '../core/types';
 import { formatMeasurement, parseMeasurement } from '../core/units';
 import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
+import { triggerHaptic } from '../core/haptics';
 
 interface ActionTableProps {
   stations: CalculatedStation[];
@@ -259,6 +260,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (!isCompleted) {
+                        triggerHaptic('success');
+                      } else {
+                        triggerHaptic('light');
+                      }
                       onToggleComplete(s.id);
                     }}
                     className="w-11 h-11 -m-2.5 flex items-center justify-center rounded-xl text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 active:scale-90 transition shrink-0"
@@ -555,6 +561,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     className="py-3 px-3 text-center"
                     onClick={(e) => {
                       e.stopPropagation();
+                      if (!isCompleted) {
+                        triggerHaptic('success');
+                      } else {
+                        triggerHaptic('light');
+                      }
                       onToggleComplete(s.id);
                     }}
                   >

@@ -9,6 +9,7 @@ import {
 } from '../core/units';
 import { Check, X, ArrowRight, ArrowLeft, Keyboard, SlidersHorizontal, Target, Delete, CheckCircle2 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
+import { triggerHaptic } from '../core/haptics';
 
 interface FractionKeypadProps {
   isOpen: boolean;
@@ -180,6 +181,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
   // Handle Nudges
   const handleNudge = (deltaInches: number) => {
+    triggerHaptic('light');
     setHasEnteredValue(true);
     const current = currentComputedInches ?? 12.0;
     const nextVal = Math.max(0, current + deltaInches);
@@ -196,6 +198,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
   // Touch Numeric Keypad typing for Decimal & Metric
   const handleKeypadDigit = (digit: string) => {
+    triggerHaptic('selection');
     setHasEnteredValue(true);
     if (unitFormat === 'decimal_inches') {
       if (digit === '.' && decimalInputStr.includes('.')) return;
@@ -207,6 +210,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   };
 
   const handleKeypadBackspace = () => {
+    triggerHaptic('light');
     if (unitFormat === 'decimal_inches') {
       if (decimalInputStr.length <= 1) {
         setDecimalInputStr('');
@@ -225,6 +229,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   };
 
   const handleKeypadClear = () => {
+    triggerHaptic('warning');
     setHasEnteredValue(false);
     setDecimalInputStr('');
     setMetricInputStr('');
@@ -232,15 +237,12 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   };
 
   const handleSave = () => {
+    triggerHaptic('success');
     onSave(currentComputedInches);
   };
 
   const handleSaveAndNext = () => {
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate(35);
-      } catch (_) {}
-    }
+    triggerHaptic('success');
 
     const savedFormatted = currentComputedInches !== null
       ? formatMeasurement(currentComputedInches, unitFormat, fractionResolution)
@@ -260,11 +262,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   };
 
   const handleSaveAndPrev = () => {
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      try {
-        navigator.vibrate(35);
-      } catch (_) {}
-    }
+    triggerHaptic('success');
 
     const savedFormatted = currentComputedInches !== null
       ? formatMeasurement(currentComputedInches, unitFormat, fractionResolution)
@@ -627,6 +625,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                     <button
                       type="button"
                       onClick={() => {
+                        triggerHaptic('light');
                         setTotalInchesOnly((prev) => Math.max(0, prev - 1));
                         setHasEnteredValue(true);
                       }}
@@ -637,6 +636,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                     <button
                       type="button"
                       onClick={() => {
+                        triggerHaptic('light');
                         setTotalInchesOnly((prev) => prev + 1);
                         setHasEnteredValue(true);
                       }}
@@ -654,6 +654,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                         key={inch}
                         type="button"
                         onClick={() => {
+                          triggerHaptic('selection');
                           setTotalInchesOnly(inch);
                           setHasEnteredValue(true);
                         }}
@@ -687,6 +688,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                         key={frac.label}
                         type="button"
                         onClick={() => {
+                          triggerHaptic('selection');
                           setNumerator(frac.num);
                           setDenominator(frac.den);
                           setHasEnteredValue(true);
@@ -720,6 +722,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                         key={f}
                         type="button"
                         onClick={() => {
+                          triggerHaptic('selection');
                           setFeet(f);
                           setHasEnteredValue(true);
                         }}
@@ -749,6 +752,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                         key={inch}
                         type="button"
                         onClick={() => {
+                          triggerHaptic('selection');
                           setInches(inch);
                           setHasEnteredValue(true);
                         }}
@@ -782,6 +786,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                         key={frac.label}
                         type="button"
                         onClick={() => {
+                          triggerHaptic('selection');
                           setNumerator(frac.num);
                           setDenominator(frac.den);
                           setHasEnteredValue(true);

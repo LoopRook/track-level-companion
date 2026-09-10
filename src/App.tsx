@@ -13,6 +13,7 @@ import { BetaNoticeModal } from './components/BetaNoticeModal';
 import { PrintReport } from './components/PrintReport';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { useBodyScrollLock } from './core/useBodyScrollLock';
+import { getHapticPreference, setHapticPreference } from './core/haptics';
 import { ListTodo, TrendingUp } from 'lucide-react';
 
 const INITIAL_STATIONS: StationPoint[] = [
@@ -123,6 +124,16 @@ export const App: React.FC = () => {
     } catch (err) {
       console.error('Failed to save mobile layout preference', err);
     }
+  };
+
+  // Haptic feedback preference (default: enabled)
+  const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(() => {
+    return getHapticPreference();
+  });
+
+  const handleSetHapticsEnabled = (enabled: boolean) => {
+    setHapticsEnabled(enabled);
+    setHapticPreference(enabled);
   };
 
   useBodyScrollLock(
@@ -784,6 +795,8 @@ export const App: React.FC = () => {
           onChangeProject={handleUpdateProject}
           mobileLayout={mobileLayout}
           onChangeMobileLayout={handleSetMobileLayout}
+          hapticsEnabled={hapticsEnabled}
+          onChangeHapticsEnabled={handleSetHapticsEnabled}
         />
 
         {/* Field Guide & Animated Tutorial Modal */}
