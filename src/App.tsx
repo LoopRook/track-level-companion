@@ -537,6 +537,12 @@ export const App: React.FC = () => {
         targetGradePercent={project.targetGradePercent}
         onSelectStation={handleSelectStation}
         selectedStationId={activeEditingStation?.id}
+        onApplyTargetGrade={(grade) => {
+          handleUpdateProject({
+            gradeMode: 'target_grade',
+            targetGradePercent: Number(grade.toFixed(2)),
+          });
+        }}
       />
 
       {/* Actionable Trackside Checklist Table */}

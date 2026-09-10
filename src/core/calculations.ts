@@ -411,3 +411,101 @@ export function calculateGradeInfo(
   };
 }
 
+export interface SubsetGradeInfo {
+  startStation: CalculatedStation;
+  endStation: CalculatedStation;
+  distanceFt: number;
+  elevationDiffInches: number;
+  netGradePercent: number;
+  stationCount: number;
+  stationsInRange: CalculatedStation[];
+  bestFitGradePercent: number | null;
+  maxDeviationInches: number | null;
+  slopeInchesPerFt: number;
+  direction: 'uphill' | 'downhill' | 'flat';
+}
+
+/**
+ * Calculates grade slope, elevation rise/fall, chord line, and statistical variations
+ * between any two arbitrary stations along the track.
+ */
+export function calculateSubsetGrade(
+  stations: CalculatedStation[],
+  stationIdA: string,
+  stationIdB: string
+): SubsetGradeInfo | null {
+  const stationA = stations.find(s => s.id === stationIdA);
+  const stationB = stations.find(s => s.id === stationIdB);
+
+  if (!stationA || !stationB || stationA.id === stationB.id) return null;
+  if (stationA.elevationInches === null || stationB.elevationInches === null) return null;
+
+  // Order by distance
+  const [start, end] = stationA.distanceFt <= stationB.distanceFt ? [stationA, stationB] : [stationB, stationA];
+  const distanceFt = end.distanceFt - start.distanceFt;
+  if (distanceFt <= 0) return null;
+
+  const elevationDiffInches = end.elevationInches! - start.elevationInches!;
+  const netGradePercent = (elevationDiffInches / (distanceFt * 12)) * 100;
+  const slopeInchesPerFt = elevationDiffInches / distanceFt;
+
+  const stationsInRange = stations.filter(
+    s => s.distanceFt >= start.distanceFt && s.distanceFt <= end.distanceFt
+  );
+
+  const measuredInRange = stationsInRange.filter(s => s.elevationInches !== null);
+
+  // Best fit linear regression if 3 or more measured stations
+  let bestFitGradePercent: number | null = null;
+  let maxDeviationInches: number | null = null;
+
+  if (measuredInRange.length >= 3) {
+    let sumX = 0;
+    let sumY = 0;
+    let sumXY = 0;
+    let sumX2 = 0;
+    const n = measuredInRange.length;
+
+    for (const st of measuredInRange) {
+      const x = st.distanceFt;
+      const y = st.elevationInches!;
+      sumX += x;
+      sumY += y;
+      sumXY += x * y;
+      sumX2 += x * x;
+    }
+
+    const denominator = n * sumX2 - sumX * sumX;
+    if (Math.abs(denominator) > 1e-9) {
+      const slope = (n * sumXY - sumX * sumY) / denominator; // inches per ft
+      bestFitGradePercent = (slope / 12) * 100;
+    }
+
+    // Max absolute deviation from the straight chord between start and end
+    let maxDev = 0;
+    for (const st of measuredInRange) {
+      const chordY = start.elevationInches! + (st.distanceFt - start.distanceFt) * slopeInchesPerFt;
+      const dev = Math.abs(st.elevationInches! - chordY);
+      if (dev > maxDev) maxDev = dev;
+    }
+    maxDeviationInches = maxDev;
+  }
+
+  const direction: 'uphill' | 'downhill' | 'flat' =
+    netGradePercent > 0.005 ? 'uphill' : netGradePercent < -0.005 ? 'downhill' : 'flat';
+
+  return {
+    startStation: start,
+    endStation: end,
+    distanceFt,
+    elevationDiffInches,
+    netGradePercent,
+    stationCount: stationsInRange.length,
+    stationsInRange,
+    bestFitGradePercent,
+    maxDeviationInches,
+    slopeInchesPerFt,
+    direction,
+  };
+}
+

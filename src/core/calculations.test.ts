@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseMeasurement, formatFeetInches, formatInchesFraction, reduceFraction } from './units';
-import { calculateTrackProfile, getTrackSummary, calculateGradeInfo } from './calculations';
+import { calculateTrackProfile, getTrackSummary, calculateGradeInfo, calculateSubsetGrade } from './calculations';
 import { TrackProject } from './types';
 
 describe('Units and Fraction Parsing', () => {
@@ -638,6 +638,64 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(summary.measuredCount).toBe(18);
     expect(summary.lengthFt).toBe(85);
   });
+
+  describe('Subset Grade Evaluation', () => {
+    it('calculates net grade, rise, distance, and direction between two stations correctly', () => {
+      const stations = [
+        { id: 's0', distanceFt: 0, elevationInches: 0, targetElevationInches: 0, readingInches: 10, liftInches: 0, action: 'ok' as const, actionText: 'OK' },
+        { id: 's20', distanceFt: 20, elevationInches: 1.0, targetElevationInches: 1.0, readingInches: 9, liftInches: 0, action: 'ok' as const, actionText: 'OK' },
+        { id: 's50', distanceFt: 50, elevationInches: 3.0, targetElevationInches: 3.0, readingInches: 7, liftInches: 0, action: 'ok' as const, actionText: 'OK' },
+        { id: 's80', distanceFt: 80, elevationInches: 1.5, targetElevationInches: 1.5, readingInches: 8.5, liftInches: 0, action: 'ok' as const, actionText: 'OK' },
+      ];
+
+      // Test s0 to s50: 50 ft span, 3.0 inches rise
+      // Grade = (3.0 / (50 * 12)) * 100 = (3.0 / 600) * 100 = 0.50%
+      const res1 = calculateSubsetGrade(stations, 's0', 's50');
+      expect(res1).not.toBeNull();
+      expect(res1!.distanceFt).toBe(50);
+      expect(res1!.elevationDiffInches).toBe(3.0);
+      expect(res1!.netGradePercent).toBeCloseTo(0.50, 3);
+      expect(res1!.direction).toBe('uphill');
+      expect(res1!.stationCount).toBe(3); // s0, s20, s50
+
+      // Test reverse order (s50 to s0): should normalize distance and order
+      const resReverse = calculateSubsetGrade(stations, 's50', 's0');
+      expect(resReverse).not.toBeNull();
+      expect(resReverse!.distanceFt).toBe(50);
+      expect(resReverse!.netGradePercent).toBeCloseTo(0.50, 3);
+
+      // Test downhill section s50 (3.0") to s80 (1.5"): 30 ft span, -1.5 inches fall
+      // Grade = (-1.5 / (30 * 12)) * 100 = (-1.5 / 360) * 100 = -0.4167%
+      const res2 = calculateSubsetGrade(stations, 's50', 's80');
+      expect(res2).not.toBeNull();
+      expect(res2!.distanceFt).toBe(30);
+      expect(res2!.elevationDiffInches).toBe(-1.5);
+      expect(res2!.netGradePercent).toBeCloseTo(-0.417, 3);
+      expect(res2!.direction).toBe('downhill');
+
+      // Test same station returns null
+      expect(calculateSubsetGrade(stations, 's0', 's0')).toBeNull();
+
+      // Test non-existent station returns null
+      expect(calculateSubsetGrade(stations, 's0', 's999')).toBeNull();
+    });
+
+    it('calculates best-fit grade and max deviation when 3+ stations are in range', () => {
+      const stations = [
+        { id: 'a', distanceFt: 0, elevationInches: 0, targetElevationInches: 0, readingInches: 10, liftInches: 0, action: 'ok' as const, actionText: 'OK' },
+        { id: 'b', distanceFt: 10, elevationInches: 0.8, targetElevationInches: 0.6, readingInches: 9.2, liftInches: 0, action: 'ok' as const, actionText: 'OK' },
+        { id: 'c', distanceFt: 20, elevationInches: 1.2, targetElevationInches: 1.2, readingInches: 8.8, liftInches: 0, action: 'ok' as const, actionText: 'OK' },
+      ];
+
+      const res = calculateSubsetGrade(stations, 'a', 'c');
+      expect(res).not.toBeNull();
+      expect(res!.bestFitGradePercent).toBeDefined();
+      expect(res!.maxDeviationInches).toBeDefined();
+      // Straight chord midpoint at 10 ft would be 0.6", but actual is 0.8" -> deviation 0.2"
+      expect(res!.maxDeviationInches).toBeCloseTo(0.2, 2);
+    });
+  });
 });
+
 
 

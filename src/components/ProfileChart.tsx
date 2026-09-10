@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { CalculatedStation, GradeMode } from '../core/types';
 import { formatFeetInches, formatMeasurement } from '../core/units';
-import { calculateGradeInfo } from '../core/calculations';
-import { Spline, TrendingUp, Maximize2, Minimize2 } from 'lucide-react';
+import { calculateGradeInfo, calculateSubsetGrade, SubsetGradeInfo } from '../core/calculations';
+import { Spline, TrendingUp, Maximize2, Minimize2, Ruler } from 'lucide-react';
 
 interface ProfileChartProps {
   stations: CalculatedStation[];
@@ -10,6 +10,7 @@ interface ProfileChartProps {
   targetGradePercent: number;
   onSelectStation: (station: CalculatedStation) => void;
   selectedStationId?: string | null;
+  onApplyTargetGrade?: (gradePercent: number) => void;
 }
 
 type ZoomScale = '1x' | '3x' | '8x' | '15x';
@@ -78,13 +79,30 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   targetGradePercent = 0.0,
   onSelectStation,
   selectedStationId,
+  onApplyTargetGrade,
 }) => {
   // Style: 'curve' (gentle smooth curve) vs 'straight' (point-to-point chords)
   const [curveMode, setCurveMode] = useState<'curve' | 'straight'>('curve');
   // Zoom: '3x' is default gentle view, 8x/15x are exaggerated
   const [zoomScale, setZoomScale] = useState<ZoomScale>('3x');
   const [isScrollable, setIsScrollable] = useState<boolean>(false);
-  const [activeStation, setActiveStation] = useState<CalculatedStation | null>(null);
+
+  // Selected start & end station for subset evaluation / pinned inspection
+  const [selectedStartId, setSelectedStartId] = useState<string | null>(selectedStationId || null);
+  const [selectedEndId, setSelectedEndId] = useState<string | null>(null);
+
+  // Smooth hover tracking across the track
+  const [hoveredStationId, setHoveredStationId] = useState<string | null>(null);
+
+  // Measure / Subset evaluation toolbar toggle
+  const [isMeasureModeActive, setIsMeasureModeActive] = useState<boolean>(false);
+
+  // Sync external selectedStationId (e.g. from table row click) if no range is locked
+  useEffect(() => {
+    if (selectedStationId && selectedStationId !== selectedStartId && !selectedEndId) {
+      setSelectedStartId(selectedStationId);
+    }
+  }, [selectedStationId]);
 
   // Filter measured stations
   const measuredStations = useMemo(() => {
@@ -95,6 +113,26 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   const gradeInfo = useMemo(() => {
     return calculateGradeInfo(stations, gradeMode, targetGradePercent);
   }, [stations, gradeMode, targetGradePercent]);
+
+  // Active subset evaluation (locked range or live preview)
+  const activeSubsetGrade = useMemo<SubsetGradeInfo | null>(() => {
+    // 1. Locked range between selectedStartId and selectedEndId
+    if (selectedStartId && selectedEndId && selectedStartId !== selectedEndId) {
+      return calculateSubsetGrade(stations, selectedStartId, selectedEndId);
+    }
+    // 2. Live preview between selectedStartId and hoveredStationId
+    if (selectedStartId && hoveredStationId && selectedStartId !== hoveredStationId) {
+      return calculateSubsetGrade(stations, selectedStartId, hoveredStationId);
+    }
+    return null;
+  }, [stations, selectedStartId, selectedEndId, hoveredStationId]);
+
+  const isRangeLocked = Boolean(selectedStartId && selectedEndId && selectedStartId !== selectedEndId);
+
+  // Single station to inspect if no subset is active
+  const startStation = stations.find(s => s.id === selectedStartId) || null;
+  const hoveredStation = stations.find(s => s.id === hoveredStationId) || null;
+  const currentInspectStation = !activeSubsetGrade ? (hoveredStation || startStation || null) : null;
 
   // Chart Height adapts to give more physical headroom as zoom increases
   const chartHeight = useMemo(() => {
@@ -141,10 +179,6 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     const center = (rawMax + rawMin) / 2;
 
     // Window span tuning:
-    // 1x: Takes ~25% of height (very gentle, flat perspective)
-    // 3x: Takes ~50% of height (realistic, gentle rail view)
-    // 8x: Takes ~75% of height (clearly prominent height differences)
-    // 15x: Takes ~93% of height (maximum magnification of every bump & slope)
     let spanMultiplier = 2.0;
     let minSpan = 6.0;
 
@@ -226,8 +260,63 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     }, '');
   }, [measuredStations, minY, maxY, minX, maxX, innerWidth]);
 
-  // Active station to inspect (selected or hovered)
-  const currentInspectStation = activeStation || stations.find(s => s.id === selectedStationId) || null;
+  // Smooth mouse tracking across SVG canvas to prevent jitter in gaps between nodes
+  const handleSvgMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    if (!rect.width) return;
+    const screenX = e.clientX - rect.left;
+    const svgX = (screenX / rect.width) * effectiveWidth;
+
+    let closest: CalculatedStation | null = null;
+    let minDist = Infinity;
+
+    for (const s of stations) {
+      const sx = getX(s.distanceFt);
+      const dist = Math.abs(sx - svgX);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = s;
+      }
+    }
+
+    if (closest && minDist < 45) {
+      if (hoveredStationId !== closest.id) {
+        setHoveredStationId(closest.id);
+      }
+    } else {
+      if (hoveredStationId !== null) {
+        setHoveredStationId(null);
+      }
+    }
+  };
+
+  const handleSvgMouseLeave = () => {
+    setHoveredStationId(null);
+  };
+
+  // Node interaction: click selects/evaluates range; double click opens keypad editor
+  const handleNodeClick = (s: CalculatedStation) => {
+    if (!selectedStartId) {
+      setSelectedStartId(s.id);
+      setSelectedEndId(null);
+    } else if (selectedStartId === s.id && !selectedEndId) {
+      // Clicking same single selected station deselects
+      setSelectedStartId(null);
+      setSelectedEndId(null);
+    } else if (!selectedEndId) {
+      // Lock range between start and clicked station
+      setSelectedEndId(s.id);
+    } else {
+      // Range was locked, start fresh from clicked station
+      setSelectedStartId(s.id);
+      setSelectedEndId(null);
+    }
+  };
+
+  const handleNodeDoubleClick = (s: CalculatedStation) => {
+    onSelectStation(s);
+  };
 
   return (
     <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors">
@@ -288,6 +377,35 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             </button>
           </div>
 
+          {/* Evaluate Grade / Subset Tool Button */}
+          <button
+            onClick={() => {
+              const nextState = !isMeasureModeActive;
+              setIsMeasureModeActive(nextState);
+              if (nextState && !selectedStartId) {
+                if (measuredStations.length >= 2) {
+                  setSelectedStartId(measuredStations[0].id);
+                  setSelectedEndId(measuredStations[measuredStations.length - 1].id);
+                }
+              }
+            }}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition active:scale-95 ${
+              isMeasureModeActive || isRangeLocked
+                ? 'bg-sky-500 text-black shadow-sm'
+                : 'bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-800'
+            }`}
+            title="Evaluate grade, rise, and slope between any subset of stations"
+          >
+            <Ruler className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span className="hidden sm:inline">Evaluate Grade</span>
+            <span className="sm:hidden">Grade</span>
+            {isRangeLocked && activeSubsetGrade && (
+              <span className="bg-black/20 text-black px-1.5 py-0.2 rounded text-[10px] font-mono font-extrabold">
+                {activeSubsetGrade.distanceFt}'
+              </span>
+            )}
+          </button>
+
           {/* Vertical Zoom Sensitivity Buttons */}
           <div className="flex items-center bg-zinc-200/80 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-300 dark:border-zinc-800">
             <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold px-1.5 hidden md:inline">
@@ -338,83 +456,237 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
         </div>
       </div>
 
-      {/* Selected Station Banner / Active Readout - Persistent height prevents SVG layout shifts */}
-      <div className="min-h-[42px] px-3.5 py-2 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-xs font-mono gap-2 transition-colors">
-        {currentInspectStation ? (
-          <>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-amber-500 dark:text-amber-400">
-                Station {currentInspectStation.distanceFt} ft
-              </span>
-              <span className="text-zinc-400">|</span>
-              <span className="text-zinc-700 dark:text-zinc-300">
-                Reading:{' '}
-                {currentInspectStation.readingInches !== null
-                  ? formatFeetInches(currentInspectStation.readingInches)
-                  : 'Need shot'}
-              </span>
-              <span className="text-zinc-400 hidden sm:inline">|</span>
-              <span className="text-zinc-500 hidden sm:inline">
-                Elev: {formatMeasurement(currentInspectStation.elevationInches, 'inches_fraction')}
-              </span>
-              {gradeInfo && (
-                <>
-                  <span className="text-zinc-400 hidden md:inline">|</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 hidden md:inline font-bold">
-                    Design Grade:{' '}
-                    {(() => {
-                      const activeSeg = gradeInfo.segments.find(
-                        seg => currentInspectStation.distanceFt >= seg.startDistanceFt && currentInspectStation.distanceFt <= seg.endDistanceFt
-                      ) || gradeInfo.segments[0];
-                      return activeSeg
-                        ? `${activeSeg.gradePercent >= 0 ? '+' : ''}${activeSeg.gradePercent.toFixed(2)}%`
-                        : `${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%`;
-                    })()}
-                  </span>
-                </>
-              )}
+      {/* Subset Grade Evaluator Bar (Dropdown controls) */}
+      {isMeasureModeActive && (
+        <div className="px-3.5 py-2 bg-sky-500/10 dark:bg-sky-950/40 border-b border-sky-500/20 flex flex-wrap items-center justify-between text-xs gap-2 transition-colors">
+          <div className="flex items-center gap-2.5 flex-wrap font-mono">
+            <span className="font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1">
+              <Ruler className="w-3.5 h-3.5" /> Subset:
+            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-zinc-500 font-sans text-[11px]">From:</span>
+              <select
+                value={selectedStartId || ''}
+                onChange={(e) => setSelectedStartId(e.target.value || null)}
+                className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-0.5 text-xs text-zinc-900 dark:text-zinc-100 font-semibold"
+              >
+                <option value="">Select Start...</option>
+                {stations.map(s => (
+                  <option key={`start-${s.id}`} value={s.id}>
+                    {s.distanceFt} ft {s.elevationInches !== null ? `(${formatMeasurement(s.elevationInches, 'inches_fraction')})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-zinc-500 font-sans text-[11px]">To:</span>
+              <select
+                value={selectedEndId || ''}
+                onChange={(e) => setSelectedEndId(e.target.value || null)}
+                className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-0.5 text-xs text-zinc-900 dark:text-zinc-100 font-semibold"
+              >
+                <option value="">Select End...</option>
+                {stations.map(s => (
+                  <option key={`end-${s.id}`} value={s.id}>
+                    {s.distanceFt} ft {s.elevationInches !== null ? `(${formatMeasurement(s.elevationInches, 'inches_fraction')})` : ''}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="flex items-center gap-2 font-sans font-bold">
-              {currentInspectStation.completed && (
-                <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
-                  ✓ LEVELED
+            {activeSubsetGrade && (
+              <>
+                <span className="text-zinc-400">|</span>
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  Span: <strong className="text-zinc-900 dark:text-white">{activeSubsetGrade.distanceFt} ft</strong> ({activeSubsetGrade.stationCount} ties)
                 </span>
-              )}
-              {currentInspectStation.isLocked ? (
-                <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1">
-                  🔒 LOCKED
+                <span className="text-zinc-400">|</span>
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  Rise/Fall:{' '}
+                  <strong className="text-zinc-900 dark:text-white">
+                    {activeSubsetGrade.elevationDiffInches >= 0 ? '+' : ''}
+                    {formatMeasurement(activeSubsetGrade.elevationDiffInches, 'inches_fraction')}
+                  </strong>
                 </span>
-              ) : (
-                <>
-                  {currentInspectStation.action === 'ok' && (
-                    <span className="text-emerald-700 dark:text-emerald-400 text-xs">
-                      {currentInspectStation.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : '✓ ON GRADE'}
-                    </span>
-                  )}
-                  {currentInspectStation.action === 'lift' && (
-                    <span className="text-sky-700 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
-                  )}
-                  {currentInspectStation.action === 'lower' && (
-                    <span className="text-amber-800 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
-                  )}
-                </>
-              )}
-              <button
-                onClick={() => onSelectStation(currentInspectStation)}
-                className="text-[11px] underline text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 ml-1.5"
-              >
-                Edit
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-xs font-sans">
-            <span className="inline-block w-2 h-2 rounded-full bg-zinc-400 dark:bg-zinc-600" />
-            <span>Click or hover any station node on the profile chart to inspect details</span>
+                <span className="text-zinc-400">|</span>
+                <span className="font-bold text-sky-700 dark:text-sky-300 bg-sky-500/15 px-2 py-0.5 rounded border border-sky-500/30">
+                  Grade: {activeSubsetGrade.netGradePercent >= 0 ? '+' : ''}
+                  {activeSubsetGrade.netGradePercent.toFixed(2)}%{' '}
+                  {activeSubsetGrade.direction === 'uphill' ? '↗' : activeSubsetGrade.direction === 'downhill' ? '↘' : '→'}
+                </span>
+                {activeSubsetGrade.bestFitGradePercent !== null && (
+                  <span className="text-zinc-500 text-[11px] hidden lg:inline">
+                    (Best-Fit: {activeSubsetGrade.bestFitGradePercent >= 0 ? '+' : ''}
+                    {activeSubsetGrade.bestFitGradePercent.toFixed(2)}%)
+                  </span>
+                )}
+              </>
+            )}
           </div>
-        )}
-      </div>
+
+          <div className="flex items-center gap-2">
+            {activeSubsetGrade && onApplyTargetGrade && (
+              <button
+                onClick={() => onApplyTargetGrade(activeSubsetGrade.netGradePercent)}
+                className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition active:scale-95"
+                title={`Set design target grade to ${activeSubsetGrade.netGradePercent.toFixed(2)}%`}
+              >
+                Apply as Target
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setSelectedStartId(null);
+                setSelectedEndId(null);
+                setIsMeasureModeActive(false);
+              }}
+              className="px-2 py-1 rounded bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-semibold transition"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Selected Station Banner / Active Readout - Persistent height prevents SVG layout shifts */}
+      {!isMeasureModeActive && (
+        <div className="min-h-[42px] px-3.5 py-2 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-xs font-mono gap-2 transition-colors">
+          {activeSubsetGrade ? (
+            <>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`font-bold px-2 py-0.5 rounded text-xs ${
+                  isRangeLocked ? 'bg-sky-500/20 text-sky-700 dark:text-sky-300' : 'bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                }`}>
+                  {isRangeLocked ? 'SUBSET EVALUATION' : 'SUBSET PREVIEW'}: {activeSubsetGrade.startStation.distanceFt}' → {activeSubsetGrade.endStation.distanceFt}'
+                </span>
+                <span className="text-zinc-400">|</span>
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  Span: <strong>{activeSubsetGrade.distanceFt} ft</strong> ({activeSubsetGrade.stationCount} ties)
+                </span>
+                <span className="text-zinc-400">|</span>
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  Rise/Fall:{' '}
+                  <strong>
+                    {activeSubsetGrade.elevationDiffInches >= 0 ? '+' : ''}
+                    {formatMeasurement(activeSubsetGrade.elevationDiffInches, 'inches_fraction')}
+                  </strong>
+                </span>
+                <span className="text-zinc-400">|</span>
+                <span className={`font-bold font-mono px-2 py-0.5 rounded border ${
+                  isRangeLocked
+                    ? 'bg-sky-500/15 border-sky-500/30 text-sky-700 dark:text-sky-300'
+                    : 'bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-400'
+                }`}>
+                  Net Grade: {activeSubsetGrade.netGradePercent >= 0 ? '+' : ''}
+                  {activeSubsetGrade.netGradePercent.toFixed(2)}%{' '}
+                  {activeSubsetGrade.direction === 'uphill' ? '↗' : activeSubsetGrade.direction === 'downhill' ? '↘' : '→'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 font-sans font-bold">
+                {isRangeLocked ? (
+                  <>
+                    {onApplyTargetGrade && (
+                      <button
+                        onClick={() => onApplyTargetGrade(activeSubsetGrade.netGradePercent)}
+                        className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition active:scale-95 shadow-sm"
+                      >
+                        Apply as Target
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setSelectedStartId(null);
+                        setSelectedEndId(null);
+                      }}
+                      className="text-xs px-2.5 py-1 rounded bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold transition"
+                    >
+                      Clear Range
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-zinc-500 dark:text-zinc-400 text-xs italic font-sans">
+                    Click to lock range
+                  </span>
+                )}
+              </div>
+            </>
+          ) : currentInspectStation ? (
+            <>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-amber-500 dark:text-amber-400">
+                  Station {currentInspectStation.distanceFt} ft
+                </span>
+                <span className="text-zinc-400">|</span>
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  Reading:{' '}
+                  {currentInspectStation.readingInches !== null
+                    ? formatFeetInches(currentInspectStation.readingInches)
+                    : 'Need shot'}
+                </span>
+                <span className="text-zinc-400 hidden sm:inline">|</span>
+                <span className="text-zinc-500 hidden sm:inline">
+                  Elev: {formatMeasurement(currentInspectStation.elevationInches, 'inches_fraction')}
+                </span>
+                {gradeInfo && (
+                  <>
+                    <span className="text-zinc-400 hidden md:inline">|</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 hidden md:inline font-bold">
+                      Design Grade:{' '}
+                      {(() => {
+                        const activeSeg = gradeInfo.segments.find(
+                          seg => currentInspectStation.distanceFt >= seg.startDistanceFt && currentInspectStation.distanceFt <= seg.endDistanceFt
+                        ) || gradeInfo.segments[0];
+                        return activeSeg
+                          ? `${activeSeg.gradePercent >= 0 ? '+' : ''}${activeSeg.gradePercent.toFixed(2)}%`
+                          : `${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%`;
+                      })()}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 font-sans font-bold">
+                {currentInspectStation.completed && (
+                  <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
+                    ✓ LEVELED
+                  </span>
+                )}
+                {currentInspectStation.isLocked ? (
+                  <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1">
+                    🔒 LOCKED
+                  </span>
+                ) : (
+                  <>
+                    {currentInspectStation.action === 'ok' && (
+                      <span className="text-emerald-700 dark:text-emerald-400 text-xs">
+                        {currentInspectStation.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : '✓ ON GRADE'}
+                      </span>
+                    )}
+                    {currentInspectStation.action === 'lift' && (
+                      <span className="text-sky-700 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
+                    )}
+                    {currentInspectStation.action === 'lower' && (
+                      <span className="text-amber-800 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
+                    )}
+                  </>
+                )}
+                <button
+                  onClick={() => onSelectStation(currentInspectStation)}
+                  className="px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 hover:bg-amber-500 hover:text-black dark:hover:bg-amber-400 dark:hover:text-black text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition"
+                >
+                  Edit
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-xs font-sans">
+              <span className="inline-block w-2 h-2 rounded-full bg-zinc-400 dark:bg-zinc-600" />
+              <span>Click a station to inspect. Click two stations to evaluate the grade between them.</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Unified SVG Canvas Container */}
       <div className={`w-full ${isScrollable ? 'overflow-x-auto scrollbar-thin' : ''} bg-zinc-50/50 dark:bg-black select-none`}>
@@ -422,7 +694,20 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           viewBox={`0 0 ${effectiveWidth} ${chartHeight}`}
           className={`block ${isScrollable ? '' : 'w-full'} h-auto`}
           style={isScrollable ? { minWidth: `${effectiveWidth}px` } : undefined}
+          onMouseMove={handleSvgMouseMove}
+          onMouseLeave={handleSvgMouseLeave}
         >
+          {/* Shaded Range Region for Subset Grade Evaluation */}
+          {activeSubsetGrade && (
+            <rect
+              x={getX(activeSubsetGrade.startStation.distanceFt)}
+              y={padding.top}
+              width={Math.max(2, getX(activeSubsetGrade.endStation.distanceFt) - getX(activeSubsetGrade.startStation.distanceFt))}
+              height={innerHeight}
+              className={isRangeLocked ? "fill-sky-500/10 dark:fill-sky-400/10 pointer-events-none" : "fill-amber-500/10 dark:fill-amber-400/10 pointer-events-none"}
+            />
+          )}
+
           {/* Background Grid Lines (Y-Ticks) */}
           {yTicks.map(t => {
             const y = getY(t.val);
@@ -456,7 +741,33 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {/* Vertical Station Grid lines (X-Ticks) */}
           {stations.map(s => {
             const x = getX(s.distanceFt);
-            const isStationActive = currentInspectStation?.id === s.id;
+            const isStart = selectedStartId === s.id;
+            const isEnd = selectedEndId === s.id;
+            const isHovered = hoveredStationId === s.id;
+            const isInRange = activeSubsetGrade &&
+              s.distanceFt >= activeSubsetGrade.startStation.distanceFt &&
+              s.distanceFt <= activeSubsetGrade.endStation.distanceFt;
+
+            let lineClass = 'stroke-zinc-200 dark:stroke-zinc-800/60 stroke-1';
+            let strokeDash: string | undefined = '2,2';
+            let textClass = 'fill-zinc-600 dark:fill-zinc-400 font-bold';
+
+            if (isStart) {
+              lineClass = 'stroke-amber-400 dark:stroke-amber-400 stroke-[2]';
+              strokeDash = undefined;
+              textClass = 'fill-amber-600 dark:fill-amber-400 font-extrabold';
+            } else if (isEnd) {
+              lineClass = 'stroke-sky-400 dark:stroke-sky-400 stroke-[2]';
+              strokeDash = undefined;
+              textClass = 'fill-sky-600 dark:fill-sky-400 font-extrabold';
+            } else if (isHovered) {
+              lineClass = 'stroke-amber-400/80 dark:stroke-amber-400/80 stroke-[1.5]';
+              strokeDash = '3,3';
+              textClass = 'fill-amber-600 dark:fill-amber-400 font-bold';
+            } else if (isInRange) {
+              lineClass = isRangeLocked ? 'stroke-sky-300/40 dark:stroke-sky-700/40 stroke-1' : 'stroke-zinc-300 dark:stroke-zinc-700/60 stroke-1';
+            }
+
             return (
               <g key={s.id}>
                 <line
@@ -464,22 +775,14 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   y1={padding.top}
                   x2={x}
                   y2={padding.top + innerHeight}
-                  className={
-                    isStationActive
-                      ? 'stroke-amber-400 dark:stroke-amber-400 stroke-[1.5]'
-                      : 'stroke-zinc-200 dark:stroke-zinc-800/60 stroke-1'
-                  }
-                  strokeDasharray={isStationActive ? undefined : '2,2'}
+                  className={lineClass}
+                  strokeDasharray={strokeDash}
                 />
                 <text
                   x={x}
                   y={padding.top + innerHeight + 18}
                   textAnchor="middle"
-                  className={`font-mono text-[10px] font-bold ${
-                    isStationActive
-                      ? 'fill-amber-600 dark:fill-amber-400'
-                      : 'fill-zinc-600 dark:fill-zinc-400'
-                  }`}
+                  className={`font-mono text-[10px] ${textClass}`}
                 >
                   {s.distanceFt}'
                 </text>
@@ -506,6 +809,64 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               strokeLinecap="round"
               strokeLinejoin="round"
             />
+          )}
+
+          {/* Reference Chord between Subset Stations */}
+          {activeSubsetGrade && activeSubsetGrade.startStation.elevationInches !== null && activeSubsetGrade.endStation.elevationInches !== null && (
+            <g className="pointer-events-none select-none">
+              <line
+                x1={getX(activeSubsetGrade.startStation.distanceFt)}
+                y1={getY(activeSubsetGrade.startStation.elevationInches)}
+                x2={getX(activeSubsetGrade.endStation.distanceFt)}
+                y2={getY(activeSubsetGrade.endStation.elevationInches)}
+                stroke={isRangeLocked ? "#38bdf8" : "#f59e0b"}
+                strokeWidth="2.5"
+                strokeDasharray={isRangeLocked ? "5,3" : "3,3"}
+              />
+              {(() => {
+                const x1 = getX(activeSubsetGrade.startStation.distanceFt);
+                const y1 = getY(activeSubsetGrade.startStation.elevationInches);
+                const x2 = getX(activeSubsetGrade.endStation.distanceFt);
+                const y2 = getY(activeSubsetGrade.endStation.elevationInches);
+                const midX = (x1 + x2) / 2;
+                const midY = (y1 + y2) / 2;
+                const sign = activeSubsetGrade.netGradePercent > 0.001 ? '+' : '';
+                const arrow = activeSubsetGrade.direction === 'uphill' ? '↗' : activeSubsetGrade.direction === 'downhill' ? '↘' : '→';
+                const text = `${sign}${activeSubsetGrade.netGradePercent.toFixed(2)}% (${activeSubsetGrade.distanceFt}') ${arrow}`;
+                const badgeWidth = text.length * 6.8 + 14;
+                const badgeHeight = 18;
+                const badgeY = Math.max(padding.top + 4, Math.min(padding.top + innerHeight - 22, midY - 14));
+
+                return (
+                  <g>
+                    <rect
+                      x={midX - badgeWidth / 2}
+                      y={badgeY}
+                      width={badgeWidth}
+                      height={badgeHeight}
+                      rx={5}
+                      className={
+                        isRangeLocked
+                          ? "fill-sky-950/95 stroke-sky-400 stroke-[1.5]"
+                          : "fill-amber-950/95 stroke-amber-400 stroke-[1.5]"
+                      }
+                    />
+                    <text
+                      x={midX}
+                      y={badgeY + 12.5}
+                      textAnchor="middle"
+                      className={
+                        isRangeLocked
+                          ? "font-mono text-[10px] font-extrabold fill-sky-300"
+                          : "font-mono text-[10px] font-extrabold fill-amber-300"
+                      }
+                    >
+                      {text}
+                    </text>
+                  </g>
+                );
+              })()}
+            </g>
           )}
 
           {/* Grade Slope Labels on Target Line Chords */}
@@ -556,8 +917,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             const x = getX(s.distanceFt);
             const isMeasured = s.elevationInches !== null;
             const y = isMeasured ? getY(s.elevationInches!) : padding.top + innerHeight / 2;
-            const isSelected = selectedStationId === s.id;
-            const isHovered = activeStation?.id === s.id;
+            const isStart = selectedStartId === s.id;
+            const isEnd = selectedEndId === s.id;
+            const isHovered = hoveredStationId === s.id;
+            const isSelected = isStart || isEnd;
 
             let dotFill = '#52525b'; // zinc-600 unmeasured
             if (isMeasured) {
@@ -570,12 +933,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               <g
                 key={s.id}
                 className="cursor-pointer"
-                onClick={() => {
-                  setActiveStation(s);
-                  onSelectStation(s);
-                }}
-                onMouseEnter={() => setActiveStation(s)}
-                onMouseLeave={() => setActiveStation(null)}
+                onClick={() => handleNodeClick(s)}
+                onDoubleClick={() => handleNodeDoubleClick(s)}
               >
                 {/* Generous stable touch / mouse hit target */}
                 <circle cx={x} cy={y} r={18} fill="transparent" pointerEvents="all" />
@@ -594,15 +953,29 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   />
                 )}
 
-                {/* Selection indicator ring */}
-                {isSelected && (
+                {/* Start Station selection ring */}
+                {isStart && (
                   <circle
                     cx={x}
                     cy={y}
                     r={11}
                     fill="#f59e0b"
-                    fillOpacity={0.2}
+                    fillOpacity={0.25}
                     stroke="#f59e0b"
+                    strokeWidth="2.5"
+                    className="animate-pulse pointer-events-none"
+                  />
+                )}
+
+                {/* End Station selection ring */}
+                {isEnd && (
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={11}
+                    fill="#38bdf8"
+                    fillOpacity={0.25}
+                    stroke="#38bdf8"
                     strokeWidth="2.5"
                     className="animate-pulse pointer-events-none"
                   />
@@ -654,8 +1027,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   cy={y}
                   r={isMeasured ? (isSelected || isHovered ? 7 : 5.5) : (isHovered ? 4.5 : 3.5)}
                   fill={s.completed ? '#10b981' : dotFill}
-                  stroke={isSelected ? '#f59e0b' : '#000000'}
-                  strokeWidth="1.5"
+                  stroke={isStart ? '#f59e0b' : isEnd ? '#38bdf8' : '#000000'}
+                  strokeWidth={isSelected ? '2' : '1.5'}
                   opacity={s.completed ? 0.6 : 1}
                   className="transition-[r] duration-150 ease-out pointer-events-none"
                 />
@@ -685,6 +1058,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           <div className="flex items-center gap-1">
             <span className="w-2.5 h-0.5 border-t border-dashed border-emerald-500"></span>
             <span>Target Plane</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="w-2.5 h-0.5 border-t border-dashed border-sky-400"></span>
+            <span>Subset Chord</span>
           </div>
         </div>
         <div className="flex items-center gap-3 font-semibold flex-wrap">
