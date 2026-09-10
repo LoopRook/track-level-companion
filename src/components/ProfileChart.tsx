@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CalculatedStation, GradeMode } from '../core/types';
 import { formatFeetInches, formatMeasurement } from '../core/units';
 import { calculateGradeInfo, calculateSubsetGrade, SubsetGradeInfo } from '../core/calculations';
@@ -260,17 +260,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     }, '');
   }, [measuredStations, minY, maxY, minX, maxX, innerWidth]);
 
-  // Smooth mouse tracking across SVG canvas to prevent jitter in gaps between nodes
-  const handleSvgMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    const svg = e.currentTarget;
-    const rect = svg.getBoundingClientRect();
-    if (!rect.width) return;
-    const screenX = e.clientX - rect.left;
-    const svgX = (screenX / rect.width) * effectiveWidth;
-
+  // Helper to find closest station to an SVG X coordinate
+  const getClosestStation = (svgX: number): CalculatedStation | null => {
     let closest: CalculatedStation | null = null;
     let minDist = Infinity;
-
     for (const s of stations) {
       const sx = getX(s.distanceFt);
       const dist = Math.abs(sx - svgX);
@@ -279,15 +272,48 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
         closest = s;
       }
     }
+    return closest;
+  };
 
-    if (closest && minDist < 45) {
-      if (hoveredStationId !== closest.id) {
-        setHoveredStationId(closest.id);
+  // Full-height column geometry for each station (guarantees 100% reliable tap/click targets on mobile & desktop)
+  const stationColumns = useMemo(() => {
+    if (stations.length === 0) return [];
+    return stations.map((s, idx) => {
+      const x = getX(s.distanceFt);
+      const prevX = idx > 0 ? getX(stations[idx - 1].distanceFt) : padding.left;
+      const nextX = idx < stations.length - 1 ? getX(stations[idx + 1].distanceFt) : effectiveWidth - padding.right;
+      const left = idx === 0 ? padding.left : (prevX + x) / 2;
+      const right = idx === stations.length - 1 ? effectiveWidth - padding.right : (x + nextX) / 2;
+      const width = Math.max(right - left, 1);
+      return {
+        station: s,
+        x,
+        left,
+        width,
+      };
+    });
+  }, [stations, minX, maxX, innerWidth, effectiveWidth, padding.left, padding.right]);
+
+  // Smooth mouse tracking across SVG canvas on desktop
+  const handleSvgMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    if (!rect.width) return;
+    const screenX = e.clientX - rect.left;
+    const svgX = (screenX / rect.width) * effectiveWidth;
+
+    const closest = getClosestStation(svgX);
+    if (closest) {
+      const sx = getX(closest.distanceFt);
+      if (Math.abs(sx - svgX) < 45) {
+        if (hoveredStationId !== closest.id) {
+          setHoveredStationId(closest.id);
+        }
+        return;
       }
-    } else {
-      if (hoveredStationId !== null) {
-        setHoveredStationId(null);
-      }
+    }
+    if (hoveredStationId !== null) {
+      setHoveredStationId(null);
     }
   };
 
@@ -295,7 +321,74 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     setHoveredStationId(null);
   };
 
-  // Node interaction: click selects/evaluates range; double click opens keypad editor
+  // Fallback click on SVG background: snaps to nearest station column
+  const handleSvgClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    if (!rect.width) return;
+    const screenX = e.clientX - rect.left;
+    const svgX = (screenX / rect.width) * effectiveWidth;
+    const closest = getClosestStation(svgX);
+    if (closest) {
+      handleNodeClick(closest);
+    }
+  };
+
+  // Mobile Touch Scrubbing & Drag tracking
+  const touchStartRef = useRef<{ x: number; y: number; time: number; hasMoved: boolean } | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (!e.touches[0]) return;
+    const touch = e.touches[0];
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now(),
+      hasMoved: false,
+    };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (!e.touches[0] || !touchStartRef.current) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+
+    // Horizontal swipe gesture: scrub through stations with live chord preview
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 12) {
+      touchStartRef.current.hasMoved = true;
+      const svg = e.currentTarget;
+      const rect = svg.getBoundingClientRect();
+      if (!rect.width) return;
+      const screenX = touch.clientX - rect.left;
+      const svgX = (screenX / rect.width) * effectiveWidth;
+      const closest = getClosestStation(svgX);
+      if (closest && hoveredStationId !== closest.id) {
+        setHoveredStationId(closest.id);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartRef.current) return;
+    // If the user was dragging/scrubbing across stations horizontally, lock range to destination
+    if (touchStartRef.current.hasMoved && hoveredStationId) {
+      const closest = stations.find(s => s.id === hoveredStationId);
+      if (closest) {
+        handleNodeClick(closest);
+      }
+      setHoveredStationId(null);
+    }
+    // If it was a simple tap, native onClick on the column rect handles it immediately with zero duplicate toggle!
+    touchStartRef.current = null;
+  };
+
+  const handleTouchCancel = () => {
+    touchStartRef.current = null;
+    setHoveredStationId(null);
+  };
+
+  // Station interaction: click/tap selects/evaluates range; double click opens keypad editor
   const handleNodeClick = (s: CalculatedStation) => {
     if (!selectedStartId) {
       setSelectedStartId(s.id);
@@ -458,8 +551,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
       {/* Subset Grade Evaluator Bar (Dropdown controls) */}
       {isMeasureModeActive && (
-        <div className="px-3.5 py-2 bg-sky-500/10 dark:bg-sky-950/40 border-b border-sky-500/20 flex flex-wrap items-center justify-between text-xs gap-2 transition-colors">
-          <div className="flex items-center gap-2.5 flex-wrap font-mono">
+        <div className="px-3.5 py-2 bg-sky-500/10 dark:bg-sky-950/40 border-b border-sky-500/20 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-2 transition-colors">
+          <div className="flex items-center gap-2 flex-wrap font-mono">
             <span className="font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1">
               <Ruler className="w-3.5 h-3.5" /> Subset:
             </span>
@@ -468,7 +561,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               <select
                 value={selectedStartId || ''}
                 onChange={(e) => setSelectedStartId(e.target.value || null)}
-                className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-0.5 text-xs text-zinc-900 dark:text-zinc-100 font-semibold"
+                className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 font-semibold shadow-xs"
               >
                 <option value="">Select Start...</option>
                 {stations.map(s => (
@@ -483,7 +576,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               <select
                 value={selectedEndId || ''}
                 onChange={(e) => setSelectedEndId(e.target.value || null)}
-                className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-0.5 text-xs text-zinc-900 dark:text-zinc-100 font-semibold"
+                className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 font-semibold shadow-xs"
               >
                 <option value="">Select End...</option>
                 {stations.map(s => (
@@ -496,7 +589,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
             {activeSubsetGrade && (
               <>
-                <span className="text-zinc-400">|</span>
+                <span className="text-zinc-400 hidden sm:inline">|</span>
                 <span className="text-zinc-700 dark:text-zinc-300">
                   Span: <strong className="text-zinc-900 dark:text-white">{activeSubsetGrade.distanceFt} ft</strong> ({activeSubsetGrade.stationCount} ties)
                 </span>
@@ -524,11 +617,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
             {activeSubsetGrade && onApplyTargetGrade && (
               <button
                 onClick={() => onApplyTargetGrade(activeSubsetGrade.netGradePercent)}
-                className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition active:scale-95"
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition active:scale-95"
                 title={`Set design target grade to ${activeSubsetGrade.netGradePercent.toFixed(2)}%`}
               >
                 Apply as Target
@@ -540,7 +633,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 setSelectedEndId(null);
                 setIsMeasureModeActive(false);
               }}
-              className="px-2 py-1 rounded bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-semibold transition"
+              className="px-2.5 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-semibold transition"
             >
               Reset
             </button>
@@ -550,16 +643,16 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
       {/* Selected Station Banner / Active Readout - Persistent height prevents SVG layout shifts */}
       {!isMeasureModeActive && (
-        <div className="min-h-[42px] px-3.5 py-2 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-xs font-mono gap-2 transition-colors">
+        <div className="min-h-[42px] px-3.5 py-2 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between text-xs font-mono gap-2 transition-colors">
           {activeSubsetGrade ? (
             <>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
                 <span className={`font-bold px-2 py-0.5 rounded text-xs ${
                   isRangeLocked ? 'bg-sky-500/20 text-sky-700 dark:text-sky-300' : 'bg-amber-500/20 text-amber-700 dark:text-amber-400'
                 }`}>
                   {isRangeLocked ? 'SUBSET EVALUATION' : 'SUBSET PREVIEW'}: {activeSubsetGrade.startStation.distanceFt}' → {activeSubsetGrade.endStation.distanceFt}'
                 </span>
-                <span className="text-zinc-400">|</span>
+                <span className="text-zinc-400 hidden sm:inline">|</span>
                 <span className="text-zinc-700 dark:text-zinc-300">
                   Span: <strong>{activeSubsetGrade.distanceFt} ft</strong> ({activeSubsetGrade.stationCount} ties)
                 </span>
@@ -583,13 +676,13 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 font-sans font-bold">
+              <div className="flex items-center gap-2 font-sans font-bold self-end sm:self-auto shrink-0">
                 {isRangeLocked ? (
                   <>
                     {onApplyTargetGrade && (
                       <button
                         onClick={() => onApplyTargetGrade(activeSubsetGrade.netGradePercent)}
-                        className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition active:scale-95 shadow-sm"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition active:scale-95 shadow-sm"
                       >
                         Apply as Target
                       </button>
@@ -599,22 +692,22 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                         setSelectedStartId(null);
                         setSelectedEndId(null);
                       }}
-                      className="text-xs px-2.5 py-1 rounded bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold transition"
+                      className="text-xs px-2.5 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold transition active:scale-95"
                     >
                       Clear Range
                     </button>
                   </>
                 ) : (
                   <span className="text-zinc-500 dark:text-zinc-400 text-xs italic font-sans">
-                    Click to lock range
+                    Tap to lock range
                   </span>
                 )}
               </div>
             </>
           ) : currentInspectStation ? (
             <>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-amber-500 dark:text-amber-400">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
+                <span className="font-bold text-amber-600 dark:text-amber-400">
                   Station {currentInspectStation.distanceFt} ft
                 </span>
                 <span className="text-zinc-400">|</span>
@@ -628,6 +721,14 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 <span className="text-zinc-500 hidden sm:inline">
                   Elev: {formatMeasurement(currentInspectStation.elevationInches, 'inches_fraction')}
                 </span>
+
+                {/* Mobile guidance when 1 station is selected */}
+                {selectedStartId && !selectedEndId && (
+                  <span className="text-[11px] bg-amber-500/15 text-amber-700 dark:text-amber-400 font-sans font-semibold px-2 py-0.5 rounded-full border border-amber-500/25 animate-pulse">
+                    Tap 2nd station for grade
+                  </span>
+                )}
+
                 {gradeInfo && (
                   <>
                     <span className="text-zinc-400 hidden md:inline">|</span>
@@ -646,56 +747,67 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 )}
               </div>
 
-              <div className="flex items-center gap-2 font-sans font-bold">
+              <div className="flex items-center gap-2 font-sans font-bold self-end sm:self-auto shrink-0">
                 {currentInspectStation.completed && (
-                  <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
+                  <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1 font-sans">
                     ✓ LEVELED
                   </span>
                 )}
                 {currentInspectStation.isLocked ? (
-                  <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1">
+                  <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1 font-sans">
                     🔒 LOCKED
                   </span>
                 ) : (
                   <>
                     {currentInspectStation.action === 'ok' && (
-                      <span className="text-emerald-700 dark:text-emerald-400 text-xs">
+                      <span className="text-emerald-700 dark:text-emerald-400 text-xs font-sans">
                         {currentInspectStation.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : '✓ ON GRADE'}
                       </span>
                     )}
                     {currentInspectStation.action === 'lift' && (
-                      <span className="text-sky-700 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
+                      <span className="text-sky-700 dark:text-sky-400 text-xs font-sans">▲ {currentInspectStation.actionText}</span>
                     )}
                     {currentInspectStation.action === 'lower' && (
-                      <span className="text-amber-800 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
+                      <span className="text-amber-800 dark:text-amber-400 text-xs font-sans">▼ {currentInspectStation.actionText}</span>
                     )}
                   </>
                 )}
                 <button
                   onClick={() => onSelectStation(currentInspectStation)}
-                  className="px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 hover:bg-amber-500 hover:text-black dark:hover:bg-amber-400 dark:hover:text-black text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition"
+                  className="px-3 py-1 rounded-lg bg-amber-500 text-black text-xs font-bold shadow-sm hover:bg-amber-400 transition active:scale-95 flex items-center gap-1"
                 >
-                  Edit
+                  ✏️ Edit
                 </button>
               </div>
             </>
           ) : (
             <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 text-xs font-sans">
               <span className="inline-block w-2 h-2 rounded-full bg-zinc-400 dark:bg-zinc-600" />
-              <span>Click a station to inspect. Click two stations to evaluate the grade between them.</span>
+              <span>Tap a station to inspect. Tap two stations to evaluate the grade between them.</span>
             </div>
           )}
         </div>
       )}
 
       {/* Unified SVG Canvas Container */}
-      <div className={`w-full ${isScrollable ? 'overflow-x-auto scrollbar-thin' : ''} bg-zinc-50/50 dark:bg-black select-none`}>
+      <div
+        className={`w-full ${isScrollable ? 'overflow-x-auto scrollbar-thin' : ''} bg-zinc-50/50 dark:bg-black select-none`}
+        style={{ touchAction: 'pan-y' }}
+      >
         <svg
           viewBox={`0 0 ${effectiveWidth} ${chartHeight}`}
           className={`block ${isScrollable ? '' : 'w-full'} h-auto`}
-          style={isScrollable ? { minWidth: `${effectiveWidth}px` } : undefined}
+          style={{
+            minWidth: isScrollable ? `${effectiveWidth}px` : undefined,
+            touchAction: 'pan-y',
+          }}
           onMouseMove={handleSvgMouseMove}
           onMouseLeave={handleSvgMouseLeave}
+          onClick={handleSvgClick}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
         >
           {/* Shaded Range Region for Subset Grade Evaluation */}
           {activeSubsetGrade && (
@@ -782,7 +894,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   x={x}
                   y={padding.top + innerHeight + 18}
                   textAnchor="middle"
-                  className={`font-mono text-[10px] ${textClass}`}
+                  className={`font-mono text-[11px] ${textClass}`}
                 >
                   {s.distanceFt}'
                 </text>
@@ -912,6 +1024,28 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             );
           })}
 
+          {/* Full-Height Column Hit Targets (Guarantees 100% reliable tap/click coverage from top to bottom on mobile & desktop) */}
+          {stationColumns.map(col => (
+            <rect
+              key={`col-hit-${col.station.id}`}
+              x={col.left}
+              y={0}
+              width={col.width}
+              height={chartHeight}
+              fill="transparent"
+              className="cursor-pointer active:fill-amber-500/10"
+              pointerEvents="all"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNodeClick(col.station);
+              }}
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                handleNodeDoubleClick(col.station);
+              }}
+            />
+          ))}
+
           {/* Station Markers / Interactive Points */}
           {stations.map(s => {
             const x = getX(s.distanceFt);
@@ -932,24 +1066,19 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             return (
               <g
                 key={s.id}
-                className="cursor-pointer"
-                onClick={() => handleNodeClick(s)}
-                onDoubleClick={() => handleNodeDoubleClick(s)}
+                className="pointer-events-none"
               >
-                {/* Generous stable touch / mouse hit target */}
-                <circle cx={x} cy={y} r={18} fill="transparent" pointerEvents="all" />
-
                 {/* Hover halo ring */}
                 {isHovered && !isSelected && (
                   <circle
                     cx={x}
                     cy={y}
-                    r={12}
+                    r={14}
                     fill={dotFill}
                     fillOpacity={0.22}
                     stroke={dotFill}
                     strokeWidth="1.5"
-                    className="pointer-events-none transition-all duration-150"
+                    className="transition-all duration-150"
                   />
                 )}
 
@@ -958,12 +1087,12 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={11}
+                    r={13}
                     fill="#f59e0b"
                     fillOpacity={0.25}
                     stroke="#f59e0b"
                     strokeWidth="2.5"
-                    className="animate-pulse pointer-events-none"
+                    className="animate-pulse"
                   />
                 )}
 
@@ -972,12 +1101,12 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={11}
+                    r={13}
                     fill="#38bdf8"
                     fillOpacity={0.25}
                     stroke="#38bdf8"
                     strokeWidth="2.5"
-                    className="animate-pulse pointer-events-none"
+                    className="animate-pulse"
                   />
                 )}
 
@@ -986,12 +1115,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={9}
+                    r={10}
                     fill="none"
                     stroke="#a855f7"
                     strokeWidth="2"
                     strokeDasharray="2,2"
-                    className="pointer-events-none"
                   />
                 )}
 
@@ -1000,11 +1128,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={9}
+                    r={10}
                     fill="none"
                     stroke="#f59e0b"
                     strokeWidth="2"
-                    className="pointer-events-none"
                   />
                 )}
 
@@ -1013,11 +1140,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={9.5}
+                    r={10.5}
                     fill="none"
                     stroke="#10b981"
                     strokeWidth="2"
-                    className="pointer-events-none"
                   />
                 )}
 
@@ -1025,12 +1151,12 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 <circle
                   cx={x}
                   cy={y}
-                  r={isMeasured ? (isSelected || isHovered ? 7 : 5.5) : (isHovered ? 4.5 : 3.5)}
+                  r={isMeasured ? (isSelected || isHovered ? 8 : 6.5) : (isHovered ? 5.5 : 4.5)}
                   fill={s.completed ? '#10b981' : dotFill}
                   stroke={isStart ? '#f59e0b' : isEnd ? '#38bdf8' : '#000000'}
                   strokeWidth={isSelected ? '2' : '1.5'}
                   opacity={s.completed ? 0.6 : 1}
-                  className="transition-[r] duration-150 ease-out pointer-events-none"
+                  className="transition-[r] duration-150 ease-out"
                 />
               </g>
             );
