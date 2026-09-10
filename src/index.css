@@ -128,6 +128,12 @@ input, textarea {
   touch-action: pan-y;
 }
 
+/* Page setup for Print / PDF export: declared at root level so browser print dialog defaults to landscape */
+@page {
+  size: landscape;
+  margin: 0.25in;
+}
+
 /* Print optimization styles */
 @media screen {
   .print-report-container {
@@ -138,7 +144,7 @@ input, textarea {
 @media print {
   @page {
     size: landscape;
-    margin: 0.35in;
+    margin: 0.25in;
   }
 
   html, body {
@@ -148,6 +154,13 @@ input, textarea {
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    width: 100% !important;
+  }
+
+  #root {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
   }
 
   /* Completely hide the interactive web app screen during print */
@@ -168,6 +181,7 @@ input, textarea {
   .print-report-container table {
     width: 100% !important;
     page-break-inside: auto;
+    break-inside: auto;
   }
 
   .print-report-container tr {

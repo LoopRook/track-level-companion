@@ -22,8 +22,8 @@ export const PrintReport: React.FC<PrintReportProps> = ({
 
   // Dimensions for printable SVG graph in landscape orientation
   const width = 1000;
-  const height = 240;
-  const padding = { top: 32, right: 30, bottom: 40, left: 55 };
+  const height = 120;
+  const padding = { top: 14, right: 25, bottom: 24, left: 45 };
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
 
@@ -98,52 +98,52 @@ export const PrintReport: React.FC<PrintReportProps> = ({
     `±${tol.toFixed(3)}"`;
 
   return (
-    <div className="print-report-container p-6 bg-white text-black font-sans text-xs">
+    <div className="print-report-container p-0 bg-white text-black font-sans text-xs">
       {/* Report Header */}
-      <div className="border-b-2 border-black pb-3 mb-4">
+      <div className="border-b-2 border-black pb-1.5 mb-1.5">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-black tracking-tight text-black uppercase">
+            <h1 className="text-base font-black tracking-tight text-black uppercase leading-tight">
               {project.name || 'Track Section Profile'}
             </h1>
-            <p className="text-xs font-semibold text-zinc-600 mt-0.5">
+            <p className="text-[10.5px] font-semibold text-zinc-600 mt-0.5">
               Track Level Companion {APP_VERSION_LABEL} • Track Vertical Profile & Field Leveling Sheet
             </p>
           </div>
-          <div className="text-right font-mono text-[11px] text-zinc-700">
+          <div className="text-right font-mono text-[9.5px] text-zinc-700 leading-tight">
             <div><strong>Date:</strong> {project.date || new Date().toISOString().split('T')[0]}</div>
             <div><strong>Format:</strong> Field Sheet (Landscape)</div>
           </div>
         </div>
 
         {/* Metadata Summary Grid */}
-        <div className="grid grid-cols-4 gap-2 mt-3 pt-2.5 border-t border-zinc-300 font-mono text-[11px]">
-          <div className="p-1.5 bg-zinc-100 rounded border border-zinc-300">
-            <span className="text-[9px] uppercase font-bold text-zinc-500 block">Section Length</span>
-            <strong className="text-sm">{summary.lengthFt} ft</strong> ({summary.totalStations} ties)
+        <div className="grid grid-cols-4 gap-2 mt-1.5 pt-1 border-t border-zinc-300 font-mono text-[10px]">
+          <div className="py-0.5 px-2 bg-zinc-100 rounded border border-zinc-300">
+            <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight">Section Length</span>
+            <strong className="text-[11px]">{summary.lengthFt} ft</strong> ({summary.totalStations} ties)
           </div>
-          <div className="p-1.5 bg-zinc-100 rounded border border-zinc-300">
-            <span className="text-[9px] uppercase font-bold text-zinc-500 block">Grade</span>
-            <strong className="text-sm">
+          <div className="py-0.5 px-2 bg-zinc-100 rounded border border-zinc-300">
+            <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight">Grade</span>
+            <strong className="text-[11px]">
               {gradeInfo ? `${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%` : '0.00%'}
             </strong> ({project.gradeMode === 'end_to_end' ? 'End-to-End' : 'Target %'})
           </div>
-          <div className="p-1.5 bg-zinc-100 rounded border border-zinc-300">
-            <span className="text-[9px] uppercase font-bold text-zinc-500 block">On-Grade Margin</span>
-            <strong className="text-sm">{tolLabel}</strong>
+          <div className="py-0.5 px-2 bg-zinc-100 rounded border border-zinc-300">
+            <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight">On-Grade Margin</span>
+            <strong className="text-[11px]">{tolLabel}</strong>
           </div>
-          <div className="p-1.5 bg-zinc-100 rounded border border-zinc-300">
-            <span className="text-[9px] uppercase font-bold text-zinc-500 block">Field Status</span>
-            <strong>{summary.measuredCount}/{summary.totalStations} Shot</strong> • {summary.onGradeCount} On Grade
+          <div className="py-0.5 px-2 bg-zinc-100 rounded border border-zinc-300">
+            <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight">Field Status</span>
+            <strong className="text-[11px]">{summary.measuredCount}/{summary.totalStations} Shot</strong> • {summary.onGradeCount} On Grade
           </div>
         </div>
       </div>
 
       {/* SVG Vertical Profile Chart */}
-      <div className="border border-zinc-300 rounded-lg p-2 mb-4 bg-white break-inside-avoid">
-        <div className="flex items-center justify-between mb-1 text-[11px] font-bold px-1">
+      <div className="border border-zinc-300 rounded-md p-1 mb-1.5 bg-white break-inside-avoid">
+        <div className="flex items-center justify-between mb-0.5 text-[9.5px] font-bold px-1">
           <span>VERTICAL ELEVATION PROFILE (INCHES)</span>
-          <span className="text-zinc-600 font-mono">
+          <span className="text-zinc-600 font-mono text-[9px]">
             — Rail Head  •  - - Target Plane  •  ▲ Lift  •  ▼ Lower  •  ✓ On Grade
           </span>
         </div>
@@ -165,10 +165,10 @@ export const PrintReport: React.FC<PrintReportProps> = ({
                   strokeDasharray={isZero ? undefined : '3,3'}
                 />
                 <text
-                  x={padding.left - 6}
-                  y={y + 3.5}
+                  x={padding.left - 5}
+                  y={y + 3}
                   textAnchor="end"
-                  fontSize="9"
+                  fontSize="8"
                   fontFamily="monospace"
                   fill="#52525b"
                   fontWeight="bold"
@@ -248,7 +248,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={s.completed ? 4.5 : 4}
+                    r={s.completed ? 4 : 3.5}
                     fill={s.action === 'ok' ? '#059669' : s.action === 'lift' ? '#0284c7' : '#d97706'}
                     stroke="#ffffff"
                     strokeWidth="1.5"
@@ -259,9 +259,9 @@ export const PrintReport: React.FC<PrintReportProps> = ({
                 {isMeasured && badgeText && (
                   <text
                     x={x}
-                    y={y - 8}
+                    y={y - 6}
                     textAnchor="middle"
-                    fontSize="8"
+                    fontSize="7.5"
                     fontFamily="monospace"
                     fontWeight="bold"
                     fill={badgeColor}
@@ -275,15 +275,15 @@ export const PrintReport: React.FC<PrintReportProps> = ({
                   x1={x}
                   y1={padding.top + innerHeight}
                   x2={x}
-                  y2={padding.top + innerHeight + 4}
+                  y2={padding.top + innerHeight + 3}
                   stroke="#71717a"
                   strokeWidth="1"
                 />
                 <text
                   x={x}
-                  y={padding.top + innerHeight + 15}
+                  y={padding.top + innerHeight + 11}
                   textAnchor="middle"
-                  fontSize="8.5"
+                  fontSize="7.5"
                   fontFamily="monospace"
                   fill="#18181b"
                   fontWeight="bold"
@@ -297,9 +297,9 @@ export const PrintReport: React.FC<PrintReportProps> = ({
           {/* Bottom axis title */}
           <text
             x={width / 2}
-            y={height - 4}
+            y={height - 3}
             textAnchor="middle"
-            fontSize="8"
+            fontSize="7.5"
             fontFamily="sans-serif"
             fontWeight="bold"
             fill="#71717a"
@@ -311,26 +311,26 @@ export const PrintReport: React.FC<PrintReportProps> = ({
       </div>
 
       {/* Tie-by-Tie Leveling Schedule Table */}
-      <div className="break-inside-avoid">
-        <div className="flex items-center justify-between mb-1 px-1">
-          <h2 className="text-xs font-black uppercase text-black">
+      <div className="mt-1">
+        <div className="flex items-center justify-between mb-1 px-0.5">
+          <h2 className="text-[11px] font-black uppercase text-black">
             TIE-BY-TIE FIELD LEVELING SCHEDULE & READOUT TABLE
           </h2>
-          <span className="text-[10px] text-zinc-500 font-mono">
+          <span className="text-[9px] text-zinc-500 font-mono">
             Target Rod = Exact laser detector elevation when leveled
           </span>
         </div>
 
-        <table className="w-full border-collapse border border-zinc-400 font-mono text-[10.5px]">
+        <table className="w-full border-collapse border border-zinc-400 font-mono text-[9.5px]">
           <thead>
             <tr className="bg-zinc-200 text-black border-b border-zinc-400 text-left">
-              <th className="p-1.5 border-r border-zinc-300 w-16">Station</th>
-              <th className="p-1.5 border-r border-zinc-300 w-24">Last Reading</th>
-              <th className="p-1.5 border-r border-zinc-300 w-24">Target Rod</th>
-              <th className="p-1.5 border-r border-zinc-300 w-20">Rel. Elev</th>
-              <th className="p-1.5 border-r border-zinc-300">Required Action</th>
-              <th className="p-1.5 border-r border-zinc-300 w-20 text-center">Done [ ✓ ]</th>
-              <th className="p-1.5 w-32">Notes / Flags</th>
+              <th className="py-1 px-1.5 border-r border-zinc-300 w-[10%]">Station</th>
+              <th className="py-1 px-1.5 border-r border-zinc-300 w-[13%]">Last Reading</th>
+              <th className="py-1 px-1.5 border-r border-zinc-300 w-[13%]">Target Rod</th>
+              <th className="py-1 px-1.5 border-r border-zinc-300 w-[11%]">Rel. Elev</th>
+              <th className="py-1 px-1.5 border-r border-zinc-300 w-[25%]">Required Action</th>
+              <th className="py-1 px-1.5 border-r border-zinc-300 w-[7%] text-center">Done</th>
+              <th className="py-1 px-1.5 w-[21%]">Notes / Flags</th>
             </tr>
           </thead>
           <tbody>
@@ -343,27 +343,27 @@ export const PrintReport: React.FC<PrintReportProps> = ({
               return (
                 <tr
                   key={s.id}
-                  className={`border-b border-zinc-300 ${isEven ? 'bg-white' : 'bg-zinc-50'}`}
+                  className={`border-b border-zinc-300 break-inside-avoid ${isEven ? 'bg-white' : 'bg-zinc-50'}`}
                 >
-                  <td className="p-1.5 border-r border-zinc-300 font-bold text-black">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-300 font-bold text-black whitespace-nowrap">
                     {s.distanceFt} ft
                   </td>
-                  <td className="p-1.5 border-r border-zinc-300">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-300 whitespace-nowrap">
                     {s.readingInches !== null
                       ? formatMeasurement(s.readingInches, project.unitFormat, project.fractionResolution)
                       : '—'}
                   </td>
-                  <td className="p-1.5 border-r border-zinc-300 font-bold text-blue-900">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-300 font-bold text-blue-900 whitespace-nowrap">
                     {s.targetReadingInches !== null && s.targetReadingInches !== undefined
                       ? formatMeasurement(s.targetReadingInches, project.unitFormat, project.fractionResolution)
                       : '—'}
                   </td>
-                  <td className="p-1.5 border-r border-zinc-300">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-300 whitespace-nowrap">
                     {s.elevationInches !== null
                       ? formatMeasurement(s.elevationInches, project.unitFormat, project.fractionResolution)
                       : '—'}
                   </td>
-                  <td className="p-1.5 border-r border-zinc-300 font-bold">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-300 font-bold whitespace-nowrap">
                     {isOk && (
                       <span className="text-emerald-800">
                         ✓ {s.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : 'ON GRADE'}
@@ -381,12 +381,12 @@ export const PrintReport: React.FC<PrintReportProps> = ({
                     )}
                     {!isOk && !isLift && !isLower && <span>—</span>}
                   </td>
-                  <td className="p-1.5 border-r border-zinc-300 text-center">
-                    <span className="inline-block w-4 h-4 border border-zinc-500 rounded-sm text-center leading-3 font-bold text-emerald-700">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-300 text-center">
+                    <span className="inline-block w-3.5 h-3.5 border border-zinc-500 rounded-xs text-center leading-3 font-bold text-emerald-700">
                       {s.completed ? '✓' : ''}
                     </span>
                   </td>
-                  <td className="p-1.5 text-[10px] text-zinc-600">
+                  <td className="py-0.5 px-1.5 text-[9px] text-zinc-600 truncate">
                     {s.isTurningPoint && <span className="font-bold text-purple-800">[TP / Benchmark] </span>}
                     {s.isLocked && <span className="font-bold text-amber-800">[LOCKED Point] </span>}
                     {s.datumOffsetInches ? `Shift: ${s.datumOffsetInches >= 0 ? '+' : ''}${formatMeasurement(s.datumOffsetInches, project.unitFormat, project.fractionResolution)}` : ''}
@@ -399,10 +399,10 @@ export const PrintReport: React.FC<PrintReportProps> = ({
       </div>
 
       {/* Footer signoff block */}
-      <div className="mt-4 pt-3 border-t border-zinc-300 flex justify-between items-center text-[10px] text-zinc-500 font-mono">
+      <div className="mt-1.5 pt-1 border-t border-zinc-300 flex justify-between items-center text-[9px] text-zinc-500 font-mono break-inside-avoid">
         <div>Surveyed by: ________________________</div>
         <div>Tamped / Leveled by: ________________________</div>
-        <div>Page 1 of 1</div>
+        <div>Field Leveling Sheet • Track Level Companion</div>
       </div>
     </div>
   );
