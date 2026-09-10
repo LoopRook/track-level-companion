@@ -813,7 +813,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                     className="py-2.5 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5"
                   >
                     <FileSpreadsheet className="w-4 h-4" />
-                    <span>Load Demo 50ft</span>
+                    <span>Load Example 85ft</span>
                   </button>
 
                   <button

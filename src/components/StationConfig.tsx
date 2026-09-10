@@ -188,7 +188,15 @@ export const StationConfig: React.FC<StationConfigProps> = ({
 
         <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
           <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-            On Grade (Within {project.fractionResolution === 16 ? '1/16"' : '1/8"'})
+            On Grade (Within {
+              project.unitFormat === 'decimal_inches'
+                ? '0.05"'
+                : project.unitFormat === 'metric_mm'
+                ? '1.5mm'
+                : project.fractionResolution === 16
+                ? '1/16"'
+                : '1/8"'
+            })
           </span>
           <div className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">
             {summary.measuredCount >= 2
@@ -208,7 +216,13 @@ export const StationConfig: React.FC<StationConfigProps> = ({
             {summary.measuredCount >= 2 ? `${summary.liftCount} pts` : '—'}
             {summary.measuredCount >= 2 && summary.maxLift > 0 && (
               <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold ml-1.5">
-                (Max +{project.fractionResolution === 16 ? `${Math.round(summary.maxLift * 16)}/16"` : `${summary.maxLift.toFixed(2)}"`})
+                (Max +{project.unitFormat === 'decimal_inches'
+                  ? `${summary.maxLift.toFixed(2)}"`
+                  : project.unitFormat === 'metric_mm'
+                  ? `${(summary.maxLift * 25.4).toFixed(1)}mm`
+                  : project.fractionResolution === 16
+                  ? `${Math.round(summary.maxLift * 16)}/16"`
+                  : `${summary.maxLift.toFixed(2)}"`})
               </span>
             )}
             {summary.measuredCount < 2 && (
@@ -227,7 +241,13 @@ export const StationConfig: React.FC<StationConfigProps> = ({
             {summary.measuredCount >= 2 ? `${summary.lowerCount} pts` : '—'}
             {summary.measuredCount >= 2 && summary.maxLower > 0 && (
               <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold ml-1.5">
-                (Max -{project.fractionResolution === 16 ? `${Math.round(summary.maxLower * 16)}/16"` : `${summary.maxLower.toFixed(2)}"`})
+                (Max -{project.unitFormat === 'decimal_inches'
+                  ? `${summary.maxLower.toFixed(2)}"`
+                  : project.unitFormat === 'metric_mm'
+                  ? `${(summary.maxLower * 25.4).toFixed(1)}mm`
+                  : project.fractionResolution === 16
+                  ? `${Math.round(summary.maxLower * 16)}/16"`
+                  : `${summary.maxLower.toFixed(2)}"`})
               </span>
             )}
             {summary.measuredCount < 2 && (

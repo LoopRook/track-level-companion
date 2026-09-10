@@ -10,22 +10,34 @@ import { UserGuideModal } from './components/UserGuideModal';
 import { NewTrackModal } from './components/NewTrackModal';
 
 const INITIAL_STATIONS: StationPoint[] = [
-  { id: 'st-0', distanceFt: 0, readingInches: 14.0 },
-  { id: 'st-5', distanceFt: 5, readingInches: 14.25 },  // 1/4" dip
-  { id: 'st-10', distanceFt: 10, readingInches: 14.375 }, // 3/8" dip
-  { id: 'st-15', distanceFt: 15, readingInches: 14.125 }, // 1/8" dip
-  { id: 'st-20', distanceFt: 20, readingInches: 13.875 }, // 1/8" hump
-  { id: 'st-25', distanceFt: 25, readingInches: 14.0 },   // on grade
+  { id: 'st-0', distanceFt: 0, readingInches: 6.28 },
+  { id: 'st-5', distanceFt: 5, readingInches: 6.22 },
+  { id: 'st-10', distanceFt: 10, readingInches: 6.08 },
+  { id: 'st-15', distanceFt: 15, readingInches: 5.94 },
+  { id: 'st-20', distanceFt: 20, readingInches: 5.94 },
+  { id: 'st-25', distanceFt: 25, readingInches: 5.86 },
+  { id: 'st-30', distanceFt: 30, readingInches: 5.78 },
+  { id: 'st-35', distanceFt: 35, readingInches: 5.63 },
+  { id: 'st-40', distanceFt: 40, readingInches: 5.48 },
+  { id: 'st-45', distanceFt: 45, readingInches: 5.2 },
+  { id: 'st-50', distanceFt: 50, readingInches: 4.9 },
+  { id: 'st-55', distanceFt: 55, readingInches: 4.74 },
+  { id: 'st-60', distanceFt: 60, readingInches: 4.48 },
+  { id: 'st-65', distanceFt: 65, readingInches: 4.18 },
+  { id: 'st-70', distanceFt: 70, readingInches: 3.94 },
+  { id: 'st-75', distanceFt: 75, readingInches: 3.76 },
+  { id: 'st-80', distanceFt: 80, readingInches: 3.66 },
+  { id: 'st-85', distanceFt: 85, readingInches: 3.42 },
 ];
 
 const DEFAULT_PROJECT: TrackProject = {
-  id: 'default-project',
+  id: 'default-project-v2',
   name: 'North Loop Tangent',
   date: new Date().toISOString().split('T')[0],
   gauge: '7 1/4"',
-  unitFormat: 'feet_inches_fraction',
+  unitFormat: 'decimal_inches',
   fractionResolution: 16,
-  toleranceInches: 0.0625, // 1/16"
+  toleranceInches: 0.05,
   stationIntervalFt: 5,
   laserDatumMode: 'relative_to_first',
   gradeMode: 'target_grade',
@@ -38,7 +50,15 @@ export const App: React.FC = () => {
   const [project, setProject] = useState<TrackProject>(() => {
     try {
       const saved = localStorage.getItem('track_level_companion_active');
-      return saved ? JSON.parse(saved) : DEFAULT_PROJECT;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // If it's the old default demo project, refresh to the new decimal example values
+        if (parsed.id === 'default-project' || parsed.id === 'default-project-v1') {
+          return DEFAULT_PROJECT;
+        }
+        return parsed;
+      }
+      return DEFAULT_PROJECT;
     } catch {
       return DEFAULT_PROJECT;
     }
@@ -405,6 +425,7 @@ export const App: React.FC = () => {
       ...project,
       name: 'New Track Section',
       date: new Date().toISOString().split('T')[0],
+      unitFormat: 'decimal_inches',
       stations: [
         { id: `st-${Date.now()}-0`, distanceFt: 0, readingInches: null }
       ]
@@ -455,8 +476,7 @@ export const App: React.FC = () => {
       }
     } else if (mode === 'clear_readings') {
       newStations = project.stations.map(s => ({
-        id: s.id,
-        distanceFt: s.distanceFt,
+        ...s,
         readingInches: null,
         completed: false,
         isLocked: false,
@@ -477,28 +497,21 @@ export const App: React.FC = () => {
     setActiveEditingStation(null);
   };
 
-  // Load sample 50ft track with realistic dip
+  // Load sample 85ft track with realistic decimal values
   const handleLoadDemoTrack = () => {
     setProject({
       ...project,
-      name: 'Sample 50ft Track (West Curve)',
+      name: 'Sample 85ft Section (Decimal Inches)',
       date: new Date().toISOString().split('T')[0],
       gradeMode: 'target_grade',
       targetGradePercent: 0.0,
       stationIntervalFt: 5,
-      stations: [
-        { id: 'demo-0', distanceFt: 0, readingInches: 14.0 },
-        { id: 'demo-5', distanceFt: 5, readingInches: 14.125 }, // 1/8" dip
-        { id: 'demo-10', distanceFt: 10, readingInches: 14.375 }, // 3/8" dip
-        { id: 'demo-15', distanceFt: 15, readingInches: 14.5 },   // 1/2" dip (sag point)
-        { id: 'demo-20', distanceFt: 20, readingInches: 14.25 },  // 1/4" dip
-        { id: 'demo-25', distanceFt: 25, readingInches: 14.0 },   // on grade
-        { id: 'demo-30', distanceFt: 30, readingInches: 13.875 }, // 1/8" hump
-        { id: 'demo-35', distanceFt: 35, readingInches: 13.75, isLocked: true },  // 1/4" hump (bridge entry / locked tie)
-        { id: 'demo-40', distanceFt: 40, readingInches: 13.875 },
-        { id: 'demo-45', distanceFt: 45, readingInches: 14.0 },
-        { id: 'demo-50', distanceFt: 50, readingInches: 14.0 },
-      ]
+      unitFormat: 'decimal_inches',
+      toleranceInches: 0.05,
+      stations: INITIAL_STATIONS.map((s, idx) => ({
+        ...s,
+        id: `demo-${idx * 5}`,
+      })),
     });
   };
 

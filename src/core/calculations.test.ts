@@ -585,6 +585,59 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(calculated[2].targetElevationInches).toBeNull();
     expect(calculated[1].targetReadingInches).toBeNull();
   });
+
+  it('correctly calculates track profile for the 18 decimal inches example stations', () => {
+    const decimalReadings = [
+      6.28, 6.22, 6.08, 5.94, 5.94, 5.86, 5.78, 5.63, 5.48,
+      5.2, 4.9, 4.74, 4.48, 4.18, 3.94, 3.76, 3.66, 3.42
+    ];
+
+    const decimalProject: TrackProject = {
+      ...baseProject,
+      unitFormat: 'decimal_inches',
+      stationIntervalFt: 5,
+      gradeMode: 'end_to_end',
+      toleranceInches: 0.05,
+      stations: decimalReadings.map((reading, idx) => ({
+        id: `st-${idx * 5}`,
+        distanceFt: idx * 5,
+        readingInches: reading,
+      })),
+    };
+
+    const calculated = calculateTrackProfile(decimalProject);
+    expect(calculated).toHaveLength(18);
+
+    // Station 0: 0 ft, reading 6.28" -> elevation 0
+    expect(calculated[0].distanceFt).toBe(0);
+    expect(calculated[0].readingInches).toBe(6.28);
+    expect(calculated[0].elevationInches).toBeCloseTo(0.0, 3);
+    expect(calculated[0].targetElevationInches).toBeCloseTo(0.0, 3);
+    expect(calculated[0].targetReadingInches).toBeCloseTo(6.28, 3);
+    expect(calculated[0].action).toBe('ok');
+
+    // Station 17: 85 ft, reading 3.42" -> elevation 6.28 - 3.42 = +2.86"
+    expect(calculated[17].distanceFt).toBe(85);
+    expect(calculated[17].readingInches).toBe(3.42);
+    expect(calculated[17].elevationInches).toBeCloseTo(2.86, 3);
+    expect(calculated[17].targetElevationInches).toBeCloseTo(2.86, 3);
+    expect(calculated[17].targetReadingInches).toBeCloseTo(3.42, 3);
+    expect(calculated[17].action).toBe('ok');
+
+    // Intermediate Station 8: 40 ft, reading 5.48" -> actual elevation 6.28 - 5.48 = +0.80"
+    // End-to-end target elevation at 40 ft: (40 / 85) * 2.86 = 1.34588"
+    // Lift needed = 1.34588 - 0.80 = +0.54588"
+    expect(calculated[8].distanceFt).toBe(40);
+    expect(calculated[8].elevationInches).toBeCloseTo(0.80, 2);
+    expect(calculated[8].targetElevationInches).toBeCloseTo(1.346, 2);
+    expect(calculated[8].liftInches).toBeGreaterThan(0.5);
+    expect(calculated[8].action).toBe('lift');
+
+    const summary = getTrackSummary(calculated);
+    expect(summary.totalStations).toBe(18);
+    expect(summary.measuredCount).toBe(18);
+    expect(summary.lengthFt).toBe(85);
+  });
 });
 
 

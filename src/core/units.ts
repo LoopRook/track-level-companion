@@ -195,7 +195,7 @@ export function formatInchesFraction(decimalInches: number | null | undefined, r
  */
 export function formatMeasurement(
   decimalInches: number | null | undefined,
-  format: UnitFormat = 'feet_inches_fraction',
+  format: UnitFormat = 'decimal_inches',
   resolution: number = 16
 ): string {
   if (decimalInches === null || decimalInches === undefined || isNaN(decimalInches)) return '—';
@@ -205,12 +205,17 @@ export function formatMeasurement(
       return formatFeetInches(decimalInches, resolution);
     case 'inches_fraction':
       return formatInchesFraction(decimalInches, resolution);
-    case 'decimal_inches':
-      return `${decimalInches >= 0 ? '' : '-'}${Math.abs(decimalInches).toFixed(3)}"`;
+    case 'decimal_inches': {
+      const sign = decimalInches >= 0 ? '' : '-';
+      const abs = Math.abs(decimalInches);
+      const str3 = abs.toFixed(3);
+      const cleaned = str3.endsWith('0') ? abs.toFixed(2) : str3;
+      return `${sign}${cleaned}"`;
+    }
     case 'metric_mm':
       return `${(decimalInches * 25.4).toFixed(1)} mm`;
     default:
-      return formatFeetInches(decimalInches, resolution);
+      return `${decimalInches >= 0 ? '' : '-'}${Math.abs(decimalInches).toFixed(2)}"`;
   }
 }
 

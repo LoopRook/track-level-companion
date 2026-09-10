@@ -63,7 +63,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   datumOffsetInches,
   targetReadingInches,
   actionText,
-  unitFormat = 'feet_inches_fraction',
+  unitFormat = 'decimal_inches',
   fractionResolution = 16,
   stationIndex,
   totalStations,
@@ -74,8 +74,6 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 }) => {
   const [useDirectInput, setUseDirectInput] = useState(false);
   const [directText, setDirectText] = useState('');
-
-  // Station navigation feedback & animation states
   const [navDirection, setNavDirection] = useState<'next' | 'prev' | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; id: number } | null>(null);
   const [pulseDistance, setPulseDistance] = useState(false);
@@ -105,7 +103,8 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         setTotalInchesOnly(parts.feet * 12 + parts.inches);
         setNumerator(parts.numerator);
         setDenominator(parts.denominator);
-        setDecimalInputStr(currentReadingInches.toFixed(3));
+        const str = currentReadingInches.toString();
+        setDecimalInputStr(str.includes('.') && str.split('.')[1].length > 3 ? currentReadingInches.toFixed(3) : str);
         setMetricInputStr((currentReadingInches * 25.4).toFixed(1));
         setDirectText(formatMeasurement(currentReadingInches, unitFormat, fractionResolution));
       } else {
