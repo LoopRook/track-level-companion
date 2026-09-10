@@ -9,21 +9,31 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: 'auto',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'],
       manifest: {
         short_name: 'TrackLevel',
         name: 'Track Level Companion',
         icons: [
           {
-            src: 'favicon.svg',
-            type: 'image/svg+xml',
-            sizes: 'any',
+            src: 'icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: 'icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: 'icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
           },
           {
             src: 'favicon.svg',
             type: 'image/svg+xml',
-            sizes: '192x192 512x512',
-            purpose: 'any maskable',
+            sizes: 'any',
           },
         ],
         start_url: './',
