@@ -57,51 +57,68 @@ export const StationConfig: React.FC<StationConfigProps> = ({
   return (
     <div className="space-y-2.5">
       {/* Top Navbar */}
-      <header className="bg-white dark:bg-black text-zinc-900 dark:text-white rounded-2xl p-3.5 sm:p-4 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 transition-colors">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 dark:bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-500 shadow-sm">
-            <Compass className="w-5 h-5 stroke-[2.2]" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={project.name}
-                onChange={(e) => onChangeProject({ name: e.target.value })}
-                className="bg-transparent font-extrabold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 rounded px-1.5 -ml-1.5 py-0.5 outline-none transition"
-                placeholder="Track Section Name"
-              />
+      <header className="bg-white dark:bg-black text-zinc-900 dark:text-white rounded-2xl p-3.5 sm:p-4 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
+        {/* Title & Mobile Theme Toggle Row */}
+        <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 dark:bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-500 shadow-sm shrink-0">
+              <Compass className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <div className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-300 font-medium">
-              <span>Track Level Companion • {summary.lengthFt} ft Section</span>
-              {!isOnline ? (
-                <span
-                  className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
-                  title="Offline mode: all changes persist in browser storage"
-                >
-                  <WifiOff className="w-3 h-3 text-amber-500" />
-                  <span>Offline</span>
-                </span>
-              ) : (
-                <span
-                  className="hidden sm:flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400"
-                  title="Service Worker active: full offline support enabled"
-                >
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                  <span>Offline Ready</span>
-                </span>
-              )}
+            <div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={project.name}
+                  onChange={(e) => onChangeProject({ name: e.target.value })}
+                  className="bg-transparent font-extrabold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 rounded px-1.5 -ml-1.5 py-0.5 outline-none transition w-44 sm:w-auto truncate"
+                  placeholder="Track Section Name"
+                />
+              </div>
+              <div className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-300 font-medium">
+                <span>Track Level Companion • {summary.lengthFt} ft Section</span>
+                {!isOnline ? (
+                  <span
+                    className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                    title="Offline mode: all changes persist in browser storage"
+                  >
+                    <WifiOff className="w-3 h-3 text-amber-500" />
+                    <span>Offline</span>
+                  </span>
+                ) : (
+                  <span
+                    className="hidden sm:flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400"
+                    title="Service Worker active: full offline support enabled"
+                  >
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    <span>Offline Ready</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Theme Toggle on mobile */}
+          <button
+            onClick={onToggleDarkMode}
+            className="sm:hidden p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0"
+            title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle Sunlight Mode"
+          >
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-zinc-600" />
+            )}
+          </button>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           {/* Start New Track */}
           <button
             type="button"
             onClick={onOpenNewTrackModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition shadow-sm active:scale-95"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition shadow-sm active:scale-95"
             title="Start New Track (Blank, Pre-Generated Grid, or Clear Readings)"
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
@@ -112,7 +129,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <button
             type="button"
             onClick={onOpenGuideModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95"
             title="Open Field Guide & Feature Tutorial"
           >
             <BookOpen className="w-3.5 h-3.5 text-amber-500" />
@@ -123,16 +140,16 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <button
             type="button"
             onClick={onOpenDataModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95"
           >
             <Sliders className="w-3.5 h-3.5 text-amber-500" />
             <span>Files / Export</span>
           </button>
 
-          {/* Theme Toggle (Sunlight mode) */}
+          {/* Theme Toggle on desktop */}
           <button
             onClick={onToggleDarkMode}
-            className="p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300"
+            className="hidden sm:flex p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0"
             title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle Sunlight Mode"
           >

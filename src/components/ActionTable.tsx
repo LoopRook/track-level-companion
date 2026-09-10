@@ -103,10 +103,27 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             Tap row to record reading or adjust shims
           </p>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        {/* Quick Toolbar */}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 w-full sm:w-auto">
+          <button
+            onClick={onAddNextStation}
+            className="text-xs font-bold px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition flex items-center justify-center gap-1 shadow-sm active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Add Next</span>
+          </button>
+          {onExtendTrack && (
+            <button
+              onClick={() => setIsExtendModalOpen(true)}
+              className="text-xs font-semibold px-2 sm:px-2.5 py-2 sm:py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center gap-1"
+              title="Add a 50ft or 100ft section of stations in one click"
+            >
+              <Layers className="w-3.5 h-3.5 text-amber-500" />
+              <span>+ Extend</span>
+            </button>
+          )}
           {onSetTurningPoint && (
             <button
-              type="button"
               onClick={() => {
                 const measured = stations.filter(s => s.readingInches !== null);
                 const target = (measured.length > 0 ? measured[measured.length - 1] : stations[0]) || null;
@@ -116,35 +133,18 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   setTpError(null);
                 }
               }}
-              className="text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition flex items-center gap-1"
+              className="text-xs font-semibold px-2 sm:px-2.5 py-2 sm:py-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition flex items-center justify-center gap-1"
               title="Pick up rotary laser and relocate forward: set turning point benchmark"
             >
               <Flag className="w-3.5 h-3.5 text-purple-500" />
-              <span>Move Laser (Datum)</span>
-            </button>
-          )}
-          {onExtendTrack && (
-            <button
-              onClick={() => setIsExtendModalOpen(true)}
-              className="text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1"
-              title="Add a 50ft or 100ft section of stations in one click"
-            >
-              <Layers className="w-3.5 h-3.5 text-amber-500" />
-              <span>+ Extend</span>
+              <span>Move Laser</span>
             </button>
           )}
           <button
             onClick={onInsertCustomStation}
-            className="text-xs font-semibold px-2 sm:px-2.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            className="text-xs font-semibold px-2 sm:px-2.5 py-2 sm:py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center"
           >
             + Custom Pt
-          </button>
-          <button
-            onClick={onAddNextStation}
-            className="text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition flex items-center gap-1 shadow-sm active:scale-95"
-          >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Add Next</span>
           </button>
         </div>
       </div>
