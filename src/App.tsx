@@ -8,6 +8,7 @@ import { FractionKeypad } from './components/FractionKeypad';
 import { DataManagementModal } from './components/DataManagementModal';
 import { UserGuideModal } from './components/UserGuideModal';
 import { NewTrackModal } from './components/NewTrackModal';
+import { useBodyScrollLock } from './core/useBodyScrollLock';
 
 const INITIAL_STATIONS: StationPoint[] = [
   { id: 'st-0', distanceFt: 0, readingInches: 6.28 },
@@ -82,6 +83,8 @@ export const App: React.FC = () => {
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isNewTrackModalOpen, setIsNewTrackModalOpen] = useState(false);
+
+  useBodyScrollLock(isKeypadOpen || isDataModalOpen || isGuideOpen || isNewTrackModalOpen);
 
   // Sync dark mode class
   useEffect(() => {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CalculatedStation, UnitFormat } from '../core/types';
 import { formatMeasurement, parseMeasurement } from '../core/units';
 import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock } from 'lucide-react';
+import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
 interface ActionTableProps {
   stations: CalculatedStation[];
@@ -71,6 +72,8 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   const [turningPointStation, setTurningPointStation] = useState<CalculatedStation | null>(null);
   const [tpNewReadingStr, setTpNewReadingStr] = useState('');
   const [tpError, setTpError] = useState<string | null>(null);
+
+  useBodyScrollLock(isExtendModalOpen || !!turningPointStation);
 
   const lastDist = stations.length > 0 ? stations[stations.length - 1].distanceFt : 0;
   const firstDist = stations.length > 0 ? stations[0].distanceFt : 0;
@@ -779,8 +782,14 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
       {/* Extend Track Batch Modal */}
       {isExtendModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overscroll-none touch-none"
+          onClick={() => setIsExtendModalOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl max-h-[90vh] modal-scroll-container overscroll-contain touch-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Layers className="w-4 h-4 text-amber-500" />
               <span>Extend Track Profile</span>
@@ -890,8 +899,14 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
       {/* Relocate Laser / Turning Point Modal */}
       {turningPointStation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overscroll-none touch-none"
+          onClick={() => setTurningPointStation(null)}
+        >
+          <div
+            className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl max-h-[90vh] modal-scroll-container overscroll-contain touch-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Flag className="w-4 h-4 text-purple-500" />
               <span>Relocate Laser (Datum Shift)</span>

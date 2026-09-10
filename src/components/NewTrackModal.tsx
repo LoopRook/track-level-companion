@@ -9,6 +9,7 @@ import {
   Bookmark,
   Plus
 } from 'lucide-react';
+import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
 interface NewTrackModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
   currentProject,
   onCreateNewTrack,
 }) => {
+  useBodyScrollLock(isOpen);
   const hasMeasuredReadings = currentProject.stations.some(s => s.readingInches !== null);
 
   const [name, setName] = useState<string>('New Track Section');
@@ -52,11 +54,17 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4">
-      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col transition-colors animate-in fade-in zoom-in-95 duration-150">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overscroll-none touch-none"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] overscroll-contain touch-auto transition-colors animate-in fade-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Modal Header */}
-        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
+        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
@@ -80,7 +88,7 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
         </div>
 
         {/* Modal Body Form */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 overflow-y-auto max-h-[80vh]">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 modal-scroll-container flex-1 min-h-0">
           {/* Project Name Field */}
           <div>
             <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">

@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Plus
 } from 'lucide-react';
+import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
 interface DataManagementModalProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   onLoadDemoTrack,
   onOpenNewTrack,
 }) => {
+  useBodyScrollLock(isOpen);
   const [activeTab, setActiveTab] = useState<'export' | 'import' | 'saved'>('export');
   const [savedProjects, setSavedProjects] = useState<TrackProject[]>(() => {
     try {
@@ -306,10 +308,16 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
     : 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4">
-      <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transition-colors">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overscroll-none touch-none"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] overscroll-contain touch-auto transition-colors"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
+        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-2">
             <FolderOpen className="w-5 h-5 text-amber-500" />
             <h2 className="text-base sm:text-lg font-bold">Track Profiles & CSV</h2>
@@ -323,7 +331,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 px-3 pt-2 gap-1 text-xs font-bold">
+        <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 px-3 pt-2 gap-1 text-xs font-bold shrink-0">
           <button
             onClick={() => { setActiveTab('export'); setPendingCsvStations(null); }}
             className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
@@ -364,7 +372,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         {/* Global Feedback Banner */}
         {feedback && (
           <div
-            className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b ${
+            className={`px-4 py-2 text-xs font-bold flex items-center gap-2 border-b shrink-0 ${
               feedback.type === 'success'
                 ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
                 : 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30'
@@ -376,7 +384,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         )}
 
         {/* Content Body */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-sm flex-1">
+        <div className="p-4 sm:p-5 modal-scroll-container flex-1 min-h-0 space-y-4 text-sm">
           {/* TAB 1: EXPORT CSV */}
           {activeTab === 'export' && (
             <div className="space-y-4">

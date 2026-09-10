@@ -18,6 +18,7 @@ import {
   Plus,
   Ruler
 } from 'lucide-react';
+import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
 interface UserGuideModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ interface UserGuideModalProps {
 }
 
 export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose }) => {
+  useBodyScrollLock(isOpen);
   const [currentStep, setCurrentStep] = useState<number>(0);
   // Interactive state for Animation 1: Rod & Laser
   const [interactiveDip, setInteractiveDip] = useState<'dip' | 'level' | 'hump'>('dip');
@@ -67,11 +69,17 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4">
-      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4 overscroll-none touch-none"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] overscroll-contain touch-auto transition-colors"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Modal Header */}
-        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
+        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-500">
               <BookOpen className="w-4 h-4" />
@@ -94,7 +102,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Step Tabs Navigation - Desktop (sm and up) */}
-        <div className="hidden sm:flex overflow-x-auto border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-2 pt-2 gap-1 text-xs font-bold scrollbar-none">
+        <div className="hidden sm:flex overflow-x-auto border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-2 pt-2 gap-1 text-xs font-bold scrollbar-none shrink-0">
           {steps.map((s, idx) => (
             <button
               key={s.id}
@@ -112,7 +120,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Step Navigation - Mobile (Zero horizontal scrolling: 5-column grid fitting 100% width) */}
-        <div className="grid grid-cols-5 gap-1 p-1.5 bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 sm:hidden">
+        <div className="grid grid-cols-5 gap-1 p-1.5 bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 sm:hidden shrink-0">
           {steps.map((s, idx) => (
             <button
               key={s.id}
@@ -132,7 +140,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Step Content Body */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-sm flex-1">
+        <div className="p-4 sm:p-5 modal-scroll-container flex-1 min-h-0 space-y-4 text-sm">
           
           {/* ================= STEP 0: LASER RULE & INTERACTIVE ROD ================= */}
           {currentStep === 0 && (
@@ -635,7 +643,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Modal Footer Navigation */}
-        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
           <button
             type="button"
             disabled={currentStep === 0}

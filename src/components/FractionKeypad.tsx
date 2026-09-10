@@ -8,6 +8,7 @@ import {
   partsToInches,
 } from '../core/units';
 import { Check, X, ArrowRight, ArrowLeft, Keyboard, SlidersHorizontal, Target, Delete, CheckCircle2 } from 'lucide-react';
+import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
 interface FractionKeypadProps {
   isOpen: boolean;
@@ -72,6 +73,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   onSaveAndPrev,
   onClose,
 }) => {
+  useBodyScrollLock(isOpen);
   const [useDirectInput, setUseDirectInput] = useState(false);
   const [directText, setDirectText] = useState('');
   const [navDirection, setNavDirection] = useState<'next' | 'prev' | null>(null);
@@ -284,10 +286,16 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   const fractionsList = fractionResolution === 8 ? FRACTIONS_8 : FRACTIONS_16;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3">
-      <div className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh] transition-colors">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 overscroll-none touch-none"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh] overscroll-contain touch-auto transition-colors"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header with Station & Target Measurement info */}
-        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 py-3 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
+        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 py-3 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold whitespace-nowrap shrink-0">Recording Station</span>
@@ -342,7 +350,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         {/* Animated Station Content Container */}
         <div
           key={`${stationDistanceFt}-${navDirection || 'init'}`}
-          className={`flex-1 flex flex-col overflow-hidden ${
+          className={`flex-1 min-h-0 flex flex-col overflow-hidden ${
             navDirection === 'next'
               ? 'animate-slide-in-right'
               : navDirection === 'prev'
@@ -499,7 +507,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         </div>
 
         {/* Picker / Input Area - Adapts completely to selected unit format */}
-        <div className="p-4 overflow-y-auto flex-1 space-y-3.5">
+        <div className="p-4 modal-scroll-container flex-1 min-h-0 space-y-3.5">
           {useDirectInput ? (
             <div className="space-y-2 py-4">
               <label className="block text-sm font-semibold text-zinc-700 dark:text-zinc-300">

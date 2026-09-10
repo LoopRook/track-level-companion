@@ -120,3 +120,12 @@ input, textarea {
   animation: badgePulseHighlight 0.35s ease-out both;
 }
 
+/* Mobile modal scroll containment & momentum touch scrolling */
+.modal-scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+
