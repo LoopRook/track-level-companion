@@ -26,7 +26,7 @@ describe('CSV Import, Export & Combine Operations', () => {
     const csv = exportTrackToCSV(sampleProject);
     const lines = csv.trim().split('\n');
 
-    expect(lines[0]).toBe('Station (ft),Laser Reading (in),Laser Reading (ft/in),Completed,Datum Offset (in),Locked,Notes');
+    expect(lines[0]).toBe('Station (ft),Last Reading (in),Last Reading (ft/in),Completed,Datum Offset (in),Locked,Notes');
     expect(lines.length).toBe(4); // header + 3 stations
 
     // Station 0
@@ -137,7 +137,7 @@ describe('CSV Import, Export & Combine Operations', () => {
 
   it('generates a valid CSV template that parses seamlessly back into station points', () => {
     const csv = generateCSVTemplate(50, 5);
-    expect(csv).toContain('Station (ft),Laser Reading,Completed,Locked,Notes');
+    expect(csv).toContain('Station (ft),Last Reading,Completed,Locked,Notes');
 
     const parsed = parseTrackFromCSV(csv);
     expect(parsed.length).toBe(11); // 0, 5, 10, ..., 50 = 11 stations
@@ -150,7 +150,7 @@ describe('CSV Import, Export & Combine Operations', () => {
 
   it('generates a Google Sheets TSV template that parses seamlessly', () => {
     const tsv = generateGoogleSheetsTSVTemplate(30, 10);
-    expect(tsv).toContain("Station (ft)\tLaser Reading\tCompleted\tLocked\tNotes");
+    expect(tsv).toContain("Station (ft)\tLast Reading\tCompleted\tLocked\tNotes");
 
     const parsed = parseTrackFromCSV(tsv);
     expect(parsed.length).toBe(4); // 0, 10, 20, 30

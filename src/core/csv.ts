@@ -75,7 +75,7 @@ export function splitCSVLine(line: string, delimiter?: string): string[] {
  * Generates a clean, standard CSV template that users can download or copy to Google Drive / Sheets.
  */
 export function generateCSVTemplate(lengthFt: number = 50, intervalFt: number = 5): string {
-  const headers = ['Station (ft)', 'Laser Reading', 'Completed', 'Locked', 'Notes'];
+  const headers = ['Station (ft)', 'Last Reading', 'Completed', 'Locked', 'Notes'];
   const rows: string[] = [];
 
   for (let dist = 0; dist <= lengthFt; dist += intervalFt) {
@@ -90,7 +90,7 @@ export function generateCSVTemplate(lengthFt: number = 50, intervalFt: number = 
 
   return [
     '# Track Level Companion - Standard Field Data Template',
-    '# Open in Google Sheets or Excel. Fill in Laser Readings, then re-upload.',
+    '# Open in Google Sheets or Excel. Fill in Last Readings, then re-upload.',
     '# Accepted reading formats: 1\' 4 3/8", 16 3/8", 14.375, or 365mm',
     headers.join(','),
     ...rows,
@@ -101,7 +101,7 @@ export function generateCSVTemplate(lengthFt: number = 50, intervalFt: number = 
  * Generates a tab-separated (TSV) clipboard-ready format for instant paste into Google Sheets.
  */
 export function generateGoogleSheetsTSVTemplate(lengthFt: number = 50, intervalFt: number = 5): string {
-  const headers = ['Station (ft)', 'Laser Reading', 'Completed', 'Locked', 'Notes'];
+  const headers = ['Station (ft)', 'Last Reading', 'Completed', 'Locked', 'Notes'];
   const rows: string[] = [];
 
   for (let dist = 0; dist <= lengthFt; dist += intervalFt) {
@@ -121,8 +121,8 @@ export function generateGoogleSheetsTSVTemplate(lengthFt: number = 50, intervalF
 export function exportTrackToCSV(project: TrackProject): string {
   const headers = [
     'Station (ft)',
-    'Laser Reading (in)',
-    'Laser Reading (ft/in)',
+    'Last Reading (in)',
+    'Last Reading (ft/in)',
     'Completed',
     'Datum Offset (in)',
     'Locked',
@@ -192,9 +192,9 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
         distIdx = idx;
       } else if (h.includes('(ft/in)') || h.includes('ft/in') || h.includes('fraction') || h.includes('feet/in')) {
         readingFtInIdx = idx;
-      } else if (h.includes('reading (in)') || h.includes('laser (in)') || (h.includes('reading') && h.includes('(in)')) || h.includes('decimal')) {
+      } else if (h.includes('reading (in)') || h.includes('last (in)') || h.includes('laser (in)') || (h.includes('reading') && h.includes('(in)')) || h.includes('decimal')) {
         readingInIdx = idx;
-      } else if (h.includes('reading') || h.includes('laser') || h.includes('rod')) {
+      } else if (h.includes('reading') || h.includes('laser') || h.includes('rod') || h.includes('last')) {
         readingInIdx = idx;
       } else if (h.includes('complete') || h.includes('done') || h.includes('status')) {
         completedIdx = idx;

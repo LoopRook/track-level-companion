@@ -553,6 +553,8 @@ export const App: React.FC = () => {
         actionText={activeEditingStation?.actionText}
         unitFormat={project.unitFormat}
         fractionResolution={project.fractionResolution}
+        stationIndex={activeEditingStation ? project.stations.findIndex(s => s.id === activeEditingStation.id) + 1 : undefined}
+        totalStations={project.stations.length}
         onSave={handleSaveStationReading}
         onSaveAndNext={handleSaveAndNext}
         onSaveAndPrev={handleSaveAndPrev}

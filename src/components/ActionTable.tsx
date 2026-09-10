@@ -354,7 +354,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               <div className="grid grid-cols-2 gap-2 py-1.5 px-2.5 bg-zinc-100/60 dark:bg-zinc-900/60 rounded-xl mb-2 text-xs">
                 <div>
                   <span className="text-[10px] text-zinc-400 dark:text-zinc-300 block uppercase font-bold">
-                    {s.isTurningPoint ? 'Laser Reading (TP)' : 'Laser Reading'}
+                    {s.isTurningPoint ? 'Last Reading (TP)' : 'Last Reading'}
                   </span>
                   {s.isTurningPoint ? (
                     <div className="font-mono text-xs">
@@ -499,7 +499,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-300 bg-zinc-100/70 dark:bg-zinc-950 font-bold">
               <th className="py-2.5 px-3 w-10 text-center">Status</th>
               <th className="py-2.5 px-3">Station</th>
-              <th className="py-2.5 px-3">Laser Reading</th>
+              <th className="py-2.5 px-3">Last Reading</th>
               {(displayMode === 'target_reading' || displayMode === 'both') && (
                 <th
                   className="py-2.5 px-3 cursor-pointer hover:text-amber-500 transition select-none"
@@ -930,7 +930,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
               <div className="space-y-2 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
                 <div className="flex justify-between items-center pb-1 border-b border-zinc-200 dark:border-zinc-800">
-                  <span className="text-zinc-500">Old Laser Reading:</span>
+                  <span className="text-zinc-500">Old Reading on Benchmark:</span>
                   <span className="font-bold text-zinc-900 dark:text-zinc-100">
                     {turningPointStation.readingInches !== null
                       ? formatMeasurement(turningPointStation.readingInches, unitFormat, fractionResolution)
@@ -938,7 +938,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   </span>
                 </div>
                 <div className="space-y-1.5 pt-1">
-                  <label className="text-zinc-500 font-bold block">New Laser Reading on this tie:</label>
+                  <label className="text-zinc-500 font-bold block">New Reading from Relocated Laser:</label>
                   <input
                     type="text"
                     value={tpNewReadingStr}

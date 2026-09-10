@@ -7,7 +7,7 @@ import {
   formatMeasurement,
   partsToInches,
 } from '../core/units';
-import { Check, X, ArrowRight, ArrowLeft, Keyboard, SlidersHorizontal, Target, Delete } from 'lucide-react';
+import { Check, X, ArrowRight, ArrowLeft, Keyboard, SlidersHorizontal, Target, Delete, CheckCircle2 } from 'lucide-react';
 
 interface FractionKeypadProps {
   isOpen: boolean;
@@ -18,6 +18,8 @@ interface FractionKeypadProps {
   actionText?: string;
   unitFormat?: UnitFormat;
   fractionResolution?: 16 | 8 | 32;
+  stationIndex?: number;
+  totalStations?: number;
   onSave: (valInches: number | null) => void;
   onSaveAndNext?: (valInches: number | null) => void;
   onSaveAndPrev?: (valInches: number | null) => void;
@@ -63,6 +65,8 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   actionText,
   unitFormat = 'feet_inches_fraction',
   fractionResolution = 16,
+  stationIndex,
+  totalStations,
   onSave,
   onSaveAndNext,
   onSaveAndPrev,
@@ -70,6 +74,12 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 }) => {
   const [useDirectInput, setUseDirectInput] = useState(false);
   const [directText, setDirectText] = useState('');
+
+  // Station navigation feedback & animation states
+  const [navDirection, setNavDirection] = useState<'next' | 'prev' | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; id: number } | null>(null);
+  const [pulseDistance, setPulseDistance] = useState(false);
+  const prevDistRef = React.useRef(stationDistanceFt);
 
   // Feet & Inches fractional state
   const [feet, setFeet] = useState(0);
@@ -106,6 +116,32 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
       }
     }
   }, [isOpen, currentReadingInches, unitFormat, fractionResolution]);
+
+  // Pulse animation on distance change
+  useEffect(() => {
+    if (prevDistRef.current !== stationDistanceFt) {
+      setPulseDistance(true);
+      const timer = setTimeout(() => setPulseDistance(false), 400);
+      prevDistRef.current = stationDistanceFt;
+      return () => clearTimeout(timer);
+    }
+  }, [stationDistanceFt]);
+
+  // Auto-dismiss feedback toast
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 2400);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
+
+  // Clean up when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setToastMessage(null);
+      setNavDirection(null);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -174,8 +210,48 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   };
 
   const handleSaveAndNext = () => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(35);
+      } catch (_) {}
+    }
+
+    const savedFormatted = currentComputedInches !== null
+      ? formatMeasurement(currentComputedInches, unitFormat, fractionResolution)
+      : 'Cleared';
+
+    setNavDirection('next');
+    setToastMessage({
+      text: `✓ Saved ${stationDistanceFt} ft (${savedFormatted})`,
+      id: Date.now(),
+    });
+
     if (onSaveAndNext) {
       onSaveAndNext(currentComputedInches);
+    } else {
+      onSave(currentComputedInches);
+    }
+  };
+
+  const handleSaveAndPrev = () => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(35);
+      } catch (_) {}
+    }
+
+    const savedFormatted = currentComputedInches !== null
+      ? formatMeasurement(currentComputedInches, unitFormat, fractionResolution)
+      : 'Cleared';
+
+    setNavDirection('prev');
+    setToastMessage({
+      text: `✓ Saved ${stationDistanceFt} ft (${savedFormatted})`,
+      id: Date.now(),
+    });
+
+    if (onSaveAndPrev) {
+      onSaveAndPrev(currentComputedInches);
     } else {
       onSave(currentComputedInches);
     }
@@ -191,6 +267,11 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Recording Station</span>
+              {stationIndex !== undefined && totalStations !== undefined && (
+                <span className="text-[10px] uppercase font-bold text-zinc-600 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.2 rounded">
+                  Tie {stationIndex} of {totalStations}
+                </span>
+              )}
               <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1.5 py-0.2 rounded border border-amber-500/30">
                 {unitFormat === 'decimal_inches'
                   ? 'Decimal In'
@@ -202,7 +283,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span className="text-xl font-extrabold text-amber-500 dark:text-amber-400 font-mono">
+              <span className={`text-xl font-extrabold text-amber-500 dark:text-amber-400 font-mono inline-block rounded-md px-1 -ml-1 transition-all ${pulseDistance ? 'animate-pulse-highlight bg-amber-500/20 ring-2 ring-amber-400' : ''}`}>
                 {stationDistanceFt} ft
               </span>
               {targetReadingInches !== null && targetReadingInches !== undefined && (
@@ -223,11 +304,42 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
           </button>
         </div>
 
-        {/* Live Readout Display */}
-        <div className="bg-zinc-50 dark:bg-black p-4 border-b border-zinc-200 dark:border-zinc-800/80 flex flex-col items-center">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1">
-            Tape / Rod Reading
-          </span>
+        {/* Animated Saved Toast Banner */}
+        {toastMessage && (
+          <div
+            key={toastMessage.id}
+            className="animate-station-toast bg-emerald-500/15 border-b border-emerald-500/30 px-4 py-2 flex items-center justify-center gap-2 text-emerald-700 dark:text-emerald-300 text-xs font-bold shrink-0"
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>{toastMessage.text}</span>
+          </div>
+        )}
+
+        {/* Animated Station Content Container */}
+        <div
+          key={`${stationDistanceFt}-${navDirection || 'init'}`}
+          className={`flex-1 flex flex-col overflow-hidden ${
+            navDirection === 'next'
+              ? 'animate-slide-in-right'
+              : navDirection === 'prev'
+              ? 'animate-slide-in-left'
+              : ''
+          }`}
+        >
+          {/* Live Readout Display */}
+          <div className="bg-zinc-50 dark:bg-black p-4 border-b border-zinc-200 dark:border-zinc-800/80 flex flex-col items-center shrink-0">
+            <div className="flex items-center justify-between w-full max-w-xs mb-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              <span>Tape / Rod Reading</span>
+              {currentReadingInches !== null ? (
+                <span className="font-mono text-zinc-600 dark:text-zinc-300 font-semibold normal-case">
+                  Last: {formatMeasurement(currentReadingInches, unitFormat, fractionResolution)}
+                </span>
+              ) : (
+                <span className="font-mono text-amber-600 dark:text-amber-400/80 font-normal italic normal-case">
+                  New Reading
+                </span>
+              )}
+            </div>
           <div className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight text-center">
             {currentComputedInches !== null ? (
               <>
@@ -613,16 +725,18 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
             </>
           )}
         </div>
+        {/* End of Animated Station Content Container */}
+        </div>
 
         {/* Footer Actions */}
-        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2">
+        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 shrink-0">
           {onSaveAndPrev && (
             <button
-              onClick={() => onSaveAndPrev(currentComputedInches)}
-              className="px-3 py-3 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition active:scale-95 flex items-center justify-center"
+              onClick={handleSaveAndPrev}
+              className="group px-3 py-3 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition active:scale-95 flex items-center justify-center"
               title="Save and go to previous station"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1 group-active:-translate-x-2" />
             </button>
           )}
 
@@ -637,10 +751,10 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
           {onSaveAndNext && (
             <button
               onClick={handleSaveAndNext}
-              className="flex-1 py-3 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-extrabold text-sm shadow-md hover:bg-zinc-800 dark:hover:bg-zinc-100 transition active:scale-98 flex items-center justify-center gap-1.5"
+              className="group flex-1 py-3 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-extrabold text-sm shadow-md hover:bg-zinc-800 dark:hover:bg-zinc-100 transition active:scale-98 flex items-center justify-center gap-1.5"
             >
-              Next Station
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              <span>Next Station</span>
+              <ArrowRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-1 group-active:translate-x-2" />
             </button>
           )}
         </div>

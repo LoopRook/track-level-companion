@@ -219,7 +219,7 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
                   Clear Readings Only (Keep Stations)
                 </h4>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                  Preserves your existing station chainage ({currentProject.stations.length} ties), intervals, and notes, but clears all laser readings so you can re-survey the exact same stretch.
+                  Preserves your existing station chainage ({currentProject.stations.length} ties), intervals, and notes, but clears all last recorded readings so you can re-survey the exact same stretch.
                 </p>
               </div>
             </div>
