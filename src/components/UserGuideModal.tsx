@@ -47,9 +47,9 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
       icon: Compass,
     },
     {
-      id: 'slope-modes',
-      title: '2. The 2 Target Slope Modes',
-      shortTitle: 'Slope Modes',
+      id: 'grade-modes',
+      title: '2. Target Grade Modes',
+      shortTitle: 'Grade Modes',
       icon: Sliders,
     },
     {
@@ -65,9 +65,9 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
       icon: Layers,
     },
     {
-      id: 'field-tips',
-      title: '5. Station Buttons, Tolerances & Field Tips',
-      shortTitle: 'Buttons & Tips',
+      id: 'station-controls',
+      title: '5. Station Controls, Tolerances & Settings',
+      shortTitle: 'Controls',
       icon: CheckCircle2,
     },
   ];
@@ -137,7 +137,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
             >
               <s.icon className="w-3.5 h-3.5 shrink-0" />
               <span className="text-[10px] leading-tight truncate max-w-full">
-                {idx === 0 ? 'Laser' : idx === 1 ? 'Slope' : idx === 2 ? 'Move' : idx === 3 ? 'Chart' : 'Tips'}
+                {idx === 0 ? 'Laser' : idx === 1 ? 'Grade' : idx === 2 ? 'Move' : idx === 3 ? 'Chart' : 'Controls'}
               </span>
             </button>
           ))}
@@ -267,21 +267,21 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
 
                 {/* Unit Format Note */}
                 <div className="p-2.5 bg-zinc-100 dark:bg-zinc-900 rounded-xl text-zinc-600 dark:text-zinc-400 text-[11px] border border-zinc-200 dark:border-zinc-800">
-                  <strong>Units & Decimals:</strong> Track Level Companion defaults to <strong>Decimal Inches</strong> (e.g. <code>6.28"</code>, <code>5.86"</code>), but seamlessly supports <strong>Fractional Inches (16ths)</strong>, <strong>Total Inches</strong>, and <strong>Metric (mm)</strong> via the header dropdown.
+                  <strong>Units & Decimals:</strong> Track Level Companion defaults to <strong>Decimal Inches</strong> (e.g. <code>6.28"</code>, <code>5.86"</code>), but supports <strong>Fractional Inches (16ths)</strong>, <strong>Total Inches</strong>, and <strong>Metric (mm)</strong> via the header dropdown.
                 </div>
               </div>
             </div>
           )}
 
-          {/* ================= STEP 1: THE 2 TARGET SLOPE MODES ================= */}
+          {/* ================= STEP 1: TARGET GRADE MODES ================= */}
           {currentStep === 1 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100">
-                  The 2 Target Slope Modes
+                  Target Grade Modes
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-                  Choose between a continuous slope line or an anchor-based stringline in the alignment bar:
+                  Choose between a fixed grade percentage or an anchor-based stringline in the alignment bar:
                 </p>
               </div>
 
@@ -300,7 +300,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     <span className="text-[10px] px-1.5 py-0.5 bg-amber-500/20 text-amber-500 rounded font-mono">0.0%, 0.5%, 1.0%, 1.5%</span>
                   </div>
                   <span className="text-[11px] opacity-80 block mt-1">
-                    Projects a continuous pitch from Station 0. Includes dead-flat 0.0% benchmark.
+                    Projects a continuous pitch from Station 0. Includes 0.0% flat benchmark.
                   </span>
                 </button>
 
@@ -322,7 +322,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 </button>
               </div>
 
-              {/* Visual Diagram for Selected Slope Mode */}
+              {/* Visual Diagram for Selected Grade Mode */}
               <div className="p-4 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
                 <div className="h-40 bg-zinc-100 dark:bg-zinc-900 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 relative flex items-center justify-center">
                   <svg viewBox="0 0 450 140" className="w-full h-full p-2">
@@ -353,7 +353,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     <circle cx="400" cy="65" r="4" fill="#eab308" />
                     <text x="390" y="55" fill="#eab308" fontSize="8" fontWeight="bold">50 ft</text>
 
-                    {/* Target Slope Line (Green Dash) */}
+                    {/* Target Grade Line (Green Dash) */}
                     {activeSlopeDemo === 'grade_percent' ? (
                       <line x1="40" y1="70" x2="420" y2="70" stroke="#10b981" strokeWidth="3" strokeDasharray="6 3" />
                     ) : (
@@ -370,11 +370,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 <div className="text-xs space-y-1.5 leading-relaxed">
                   {activeSlopeDemo === 'grade_percent' ? (
                     <p className="text-zinc-700 dark:text-zinc-300">
-                      <strong>Grade % Mode:</strong> Holds Station 0 as your benchmark. Tap <strong>0.0%</strong> for a dead-flat line across yard tracks, or choose <strong>0.5%</strong>, <strong>1.0%</strong>, or <strong>1.5%</strong>. You can also tap directly into the slope box to type any custom grade (e.g. <code>0.25%</code>, <code>-0.75%</code>), or use the <strong>"📐 Evaluate Grade"</strong> tool on the chart to apply a measured track section slope with one click.
+                      <strong>Grade % Mode:</strong> Holds Station 0 as your benchmark. Tap <strong>0.0%</strong> for a level line across yard tracks, or choose <strong>0.5%</strong>, <strong>1.0%</strong>, or <strong>1.5%</strong>. You can also tap directly into the grade input to type any custom grade (e.g. <code>0.25%</code>, <code>-0.75%</code>), or use the <strong>"📐 Evaluate Grade"</strong> tool on the chart to apply a measured track section grade.
                     </p>
                   ) : (
                     <p className="text-zinc-700 dark:text-zinc-300">
-                      <strong>End-to-End Mode:</strong> Stretches straight chords between your starting tie and ending tie, anchoring through any intermediate <strong>Locked Ties (🔒)</strong>. The app displays the resulting grade percentage in the top alignment bar and on-screen slope badges directly along each chord of the graph (e.g. <code>+0.67% ↗</code>, <code>-0.50% ↘</code>). If a locked obstacle sits high, expand your survey further down the line with <strong>+ Extend</strong> to feather the rise and fall across more ties.
+                      <strong>End-to-End Mode:</strong> Connects straight chords between your starting tie and ending tie, anchoring through any intermediate <strong>Locked Ties (🔒)</strong>. The app displays the resulting grade percentage in the top alignment bar and on-screen grade badges directly along each chord of the graph (e.g. <code>+0.67% ↗</code>, <code>-0.50% ↘</code>). If a locked obstacle sits high, expand your survey further down the line with <strong>+ Extend</strong> to distribute the rise and fall across more stations.
                     </p>
                   )}
                 </div>
@@ -448,10 +448,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                   </strong>
                   <ul className="list-disc list-inside text-zinc-700 dark:text-zinc-300 space-y-1 text-[11px]">
                     <li>
-                      <strong>All earlier stations convert to Laser 2 (+6"):</strong> Station 0 updates from <code>1' 2"</code> to <code>1' 8"</code>. If you walk back to Station 0 with your rod right now, <strong>the number on your screen matches your rod receiver!</strong>
+                      <strong>All earlier stations convert to Laser 2 (+6"):</strong> Station 0 updates from <code>1' 2"</code> to <code>1' 8"</code> to reflect the new laser elevation.
                     </li>
                     <li>
-                      <strong>Zero mental math:</strong> Enter future ties directly on the active laser scale without subtracting offsets.
+                      <strong>Direct entry:</strong> Enter subsequent stations directly against the active laser without manual offset math.
                     </li>
                     <li>
                       <strong>Revert Button:</strong> If you made an entry typo on the turning point, tap <strong>"Revert Laser Move"</strong> in the purple banner to undo.
@@ -470,7 +470,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                   Extending Track & Profile Chart Controls
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
-                  Easily expand your survey in either direction, evaluate grades, and inspect the track profile:
+                  Expand your survey in either direction, evaluate grades, and inspect the track profile:
                 </p>
               </div>
 
@@ -482,34 +482,31 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                       <Ruler className="w-4 h-4 stroke-[2.5]" />
                       <span>Subset Grade Evaluation Tool ("Evaluate Grade")</span>
                     </h4>
-                    <span className="text-[10px] bg-sky-500/15 text-sky-700 dark:text-sky-300 font-bold px-2 py-0.5 rounded-full border border-sky-500/30 whitespace-nowrap shrink-0">
-                      New Tool
-                    </span>
                   </div>
                   <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Evaluate the exact slope, elevation difference, and chord line between <strong>any two stations</strong> along the track:
+                    Evaluate the grade, elevation difference, and chord line between <strong>any two stations</strong> along the track:
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                     <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                       <strong className="text-zinc-900 dark:text-zinc-100 block">How to Select Stations:</strong>
                       <span className="text-zinc-500 block">
-                        Tap <strong>"Evaluate Grade"</strong> (or <strong>"Grade"</strong> on mobile) to pick Start & End from dropdowns, or simply tap two stations on the graph. On mobile, press and drag across ties to scrub with live preview!
+                        Tap <strong>"Evaluate Grade"</strong> (or <strong>"Grade"</strong> on mobile) to select Start and End stations from dropdowns, or tap two station nodes on the graph.
                       </span>
                     </div>
                     <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
-                      <strong className="text-zinc-900 dark:text-zinc-100 block">Live Calculations & 1-Click Apply:</strong>
+                      <strong className="text-zinc-900 dark:text-zinc-100 block">Calculations & Target Setting:</strong>
                       <span className="text-zinc-500 block">
-                        Displays <strong>Span</strong>, <strong>Rise / Fall</strong>, <strong>Chord Grade %</strong>, and <strong>Best-Fit Regression %</strong>. Tap <strong>"Apply as Target"</strong> to instantly set this slope as your survey target in Grade % mode.
+                        Displays <strong>Span</strong>, <strong>Rise / Fall</strong>, <strong>Chord Grade %</strong>, and <strong>Best-Fit Regression %</strong>. Tap <strong>"Apply as Target"</strong> to set this grade as your survey target in Grade % mode.
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Profile Chart Controls & Mobile Touch Gestures */}
+                {/* Profile Chart Controls */}
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
                   <h4 className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                     <Spline className="w-4 h-4 text-amber-500" />
-                    <span>Vertical Profile Chart Controls & Touch Gestures</span>
+                    <span>Vertical Profile Chart Controls</span>
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
                     <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -518,11 +515,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     </div>
                     <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
                       <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Zoom (1x / 3x / 8x / 15x)</strong>
-                      <span className="text-zinc-500">1x is true scale. 3x is standard gentle view. 8x and 15x exaggerate micro-leveling.</span>
+                      <span className="text-zinc-500">1x is true scale. 3x is standard view. 8x and 15x exaggerate micro-leveling.</span>
                     </div>
                     <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Touch Tap & Scrub</strong>
-                      <span className="text-zinc-500">Full-height hit zones make tapping easy. Tap node to inspect or tap <strong>[✏️ Edit]</strong> to open keypad.</span>
+                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Tap to Inspect</strong>
+                      <span className="text-zinc-500">Tap any station node to inspect elevation, target, and required adjustment, or tap <strong>[Edit]</strong> to open the rod keypad.</span>
                     </div>
                   </div>
                 </div>
@@ -540,8 +537,8 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                       Tap <strong>+ Extend</strong> in the checklist toolbar to add stations in bulk:
                     </p>
                     <ul className="list-disc list-inside text-zinc-600 dark:text-zinc-400 space-y-0.5 text-[11px]">
-                      <li><strong>Ahead (Forward →):</strong> Appends new stations after the end of your track (+25', +50', +100').</li>
-                      <li><strong>Behind 0 (Backward ←):</strong> Inserts negative stations (<code>-5 ft, -10 ft...</code>) before Station 0 for feathering runouts into undisturbed track.</li>
+                      <li><strong>Ahead (Forward →):</strong> Appends new stations after the end of your track (+25', +50', +100', or custom distance).</li>
+                      <li><strong>Behind 0 (Backward ←):</strong> Inserts negative stations (<code>-5 ft, -10 ft...</code>) before Station 0 for runouts into existing track.</li>
                     </ul>
                   </div>
                 </div>
@@ -560,15 +557,15 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
           )}
 
           {/* ================= STEP 4: KEYPAD & EXPORT ================= */}
-          {/* ================= STEP 4: STATION ACTIONS, TOLERANCES & FIELD TIPS ================= */}
+          {/* ================= STEP 4: STATION ACTIONS, TOLERANCES & SETTINGS ================= */}
           {currentStep === 4 && (
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100">
-                  Station Controls, Leveling Margins & Pro Tips
+                  Station Controls & Leveling Margins
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
-                  Everything you need to know about trackside tie actions, live steam tolerances, and field workflows:
+                  Station actions, leveling tolerances, and display settings:
                 </p>
               </div>
 
@@ -592,7 +589,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     <div className="space-y-0.5">
                       <strong className="text-zinc-900 dark:text-zinc-100 block">Status (Checkmark / Circle)</strong>
                       <p className="text-zinc-500 leading-relaxed text-[11px]">
-                        Tap once you level/tamp that tie. Strikes through the distance and increments the tie completion counter (<code className="text-emerald-500 font-mono">✓ X/Y</code>) in the header.
+                        Mark station as adjusted or tamped. Strikes through the distance and increments the completion counter (<code className="text-emerald-500 font-mono">✓ X/Y</code>) in the header.
                       </p>
                     </div>
                   </div>
@@ -681,7 +678,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     </div>
                   </div>
                   <p className="text-[11px] text-zinc-500">
-                    💡 You can customize your leveling margin anytime in <strong>⚙ Settings</strong> in the top header.
+                    Leveling margins can be adjusted under <strong>Settings</strong> in the top header.
                   </p>
                 </div>
               </div>
@@ -693,17 +690,17 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     Target Rod vs. Relative Elev
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Toggle between <strong>Target Rod</strong>, <strong>Relative Elev</strong>, or <strong>Both</strong>. Target Rod tells you exactly what reading your laser receiver should hit when the tie is leveled!
+                    Toggle between <strong>Target Rod</strong>, <strong>Relative Elev</strong>, or <strong>Both</strong>. Target Rod displays the expected rod reading when the tie is brought to target grade.
                   </p>
                 </div>
 
                 {/* Adaptive Keypad */}
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block">
-                    ⚡ Adaptive Touch Keypad (Decimal Default)
+                    Touch Keypad
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Defaults to <strong>Decimal Inches</strong> with rapid ±0.1" and ±1.0" steppers. Automatically adapts if you switch to 16th fractions, total inches, or metric mm.
+                    Supports decimal inches, fractional 16ths, total inches, and metric (mm) with step buttons.
                   </p>
                 </div>
 
@@ -711,10 +708,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                    Station Advance Feedback
+                    Station Advance
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Tapping <strong>Next Station (→)</strong> provides immediate tactile visual feedback and glow transition so you always know your reading saved and you're at the next tie.
+                    Saving a reading advances to the next station automatically with clear visual transition.
                   </p>
                 </div>
 
@@ -722,10 +719,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
                     <Download className="w-3.5 h-3.5 text-emerald-500" />
-                    Google Sheets & CSV Template
+                    Spreadsheet Export & Import
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Download a clean spreadsheet template or 1-click copy TSV to paste directly into Google Sheets. Take readings trackside and re-upload in seconds.
+                    Export or import CSV and TSV formats for track data management in Google Sheets or Excel.
                   </p>
                 </div>
 
@@ -733,10 +730,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
                     <Sun className="w-3.5 h-3.5 text-amber-500" />
-                    Bright Sunlight Mode
+                    High Contrast / Sunlight Theme
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Working under intense glare? Tap the Sun/Moon toggle in the header for high-contrast daylight visibility.
+                    Toggle between light and dark modes for daylight legibility trackside.
                   </p>
                 </div>
 
@@ -744,17 +741,17 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
                     <Plus className="w-3.5 h-3.5 text-amber-500 stroke-[3]" />
-                    + New Track / Safety Backup
+                    Track Reset & Backup
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Tap <strong>+ New Track</strong> in the header to start a blank survey at Station 0, generate an empty grid, or wipe readings with automatic safety backup.
+                    Create a new track section or reset readings with automatic backup in browser storage.
                   </p>
                 </div>
               </div>
 
               {/* Offline Support */}
               <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-                ✓ <strong>100% Offline PWA:</strong> Track Level Companion operates completely offline without internet or cellular data. Install it to your home screen and survey deep in rail cuts with zero reception.
+                <strong>Offline Capable:</strong> Track Level Companion runs locally in your browser and functions without an internet connection.
               </div>
             </div>
           )}
@@ -797,9 +794,9 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold transition shadow-sm active:scale-95"
+              className="px-4 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-200 dark:hover:bg-white text-white dark:text-black text-xs font-extrabold transition shadow-sm active:scale-95"
             >
-              Got It!
+              Close
             </button>
           )}
         </div>

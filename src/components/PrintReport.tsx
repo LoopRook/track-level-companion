@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { TrackProject, CalculatedStation } from '../core/types';
 import { formatMeasurement } from '../core/units';
 import { calculateGradeInfo } from '../core/calculations';
+import { APP_VERSION_LABEL } from '../core/version';
 import { StationSummaryData } from './StationConfig';
 
 export interface PrintReportProps {
@@ -106,7 +107,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
               {project.name || 'Track Section Profile'}
             </h1>
             <p className="text-xs font-semibold text-zinc-600 mt-0.5">
-              Track Level Companion • Track Vertical Profile & Field Leveling Sheet
+              Track Level Companion {APP_VERSION_LABEL} • Track Vertical Profile & Field Leveling Sheet
             </p>
           </div>
           <div className="text-right font-mono text-[11px] text-zinc-700">

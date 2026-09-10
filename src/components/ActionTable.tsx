@@ -1013,11 +1013,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       </div>
                       <p className="text-[11px] leading-tight text-purple-700 dark:text-purple-400">
                         {shift !== 0
-                          ? `All previously measured stations (0 ft to ${turningPointStation.distanceFt} ft) will convert to your new laser's scale (${shift >= 0 ? '+' : ''}${formatMeasurement(shift, unitFormat, fractionResolution)}). ${st0NewReading !== null ? `If you walk back to Station 0 with your rod right now, it will read ${formatMeasurement(st0NewReading, unitFormat, fractionResolution)} to match your active laser!` : ''}`
-                          : `Both setups are at the exact same height (0" shift).`}
+                          ? `Previously measured stations (0 ft to ${turningPointStation.distanceFt} ft) will convert to your active laser's scale (${shift >= 0 ? '+' : ''}${formatMeasurement(shift, unitFormat, fractionResolution)}). ${st0NewReading !== null ? `Station 0 rod reading equivalent: ${formatMeasurement(st0NewReading, unitFormat, fractionResolution)}.` : ''}`
+                          : `Both setups are at the same elevation (0" shift).`}
                       </p>
                       <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">
-                        All physical elevations, target slopes, and track lifts remain 100% physically identical.
+                        All physical elevations, target grades, and track adjustments remain identical.
                       </p>
                     </div>
                   );

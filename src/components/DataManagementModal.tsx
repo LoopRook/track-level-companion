@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
+import { APP_VERSION_LABEL } from '../core/version';
 
 interface DataManagementModalProps {
   isOpen: boolean;
@@ -98,7 +99,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
     setSavedProjects(updated);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      showNotification(`Saved "${trimmedName}" to browser storage!`);
+      showNotification(`Saved "${trimmedName}" to browser storage.`);
     } catch (e) {
       console.error('Failed to save to localStorage', e);
       showNotification('Could not save to storage.', 'error');
@@ -134,7 +135,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
             files: [file],
             title: targetProj.name,
           });
-          showNotification(`Shared "${filename}"!`);
+          showNotification(`Shared "${filename}".`);
           return;
         }
       } catch (err) {
@@ -156,7 +157,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }, 500);
-      showNotification(`Downloaded "${filename}"!`);
+      showNotification(`Downloaded "${filename}".`);
     } catch {
       showNotification('Download failed. You can copy CSV text below.', 'error');
     }
@@ -168,7 +169,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(csvContent);
-        showNotification('✓ Copied CSV data to clipboard!');
+        showNotification('Copied CSV data to clipboard.');
         return;
       }
       throw new Error('Clipboard API not available');
@@ -181,7 +182,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      showNotification('✓ Copied CSV data to clipboard!');
+      showNotification('Copied CSV data to clipboard.');
     }
   };
 
@@ -202,7 +203,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       }, 500);
-      showNotification(`Downloaded "${filename}"! Open in Excel or Google Drive.`);
+      showNotification(`Downloaded "${filename}".`);
     } catch {
       showNotification('Failed to download template.', 'error');
     }
@@ -214,7 +215,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       const tsv = generateGoogleSheetsTSVTemplate(50, currentProject.stationIntervalFt || 5);
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(tsv);
-        showNotification('✓ Copied template! Paste (Ctrl+V) directly into Google Sheets.');
+        showNotification('Copied template to clipboard.');
         return;
       }
       throw new Error('Clipboard API not available');
@@ -227,7 +228,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      showNotification('✓ Copied template! Paste (Ctrl+V) directly into Google Sheets.');
+      showNotification('Copied template to clipboard.');
     }
   };
 
@@ -264,7 +265,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         name: sourceName.replace(/\.[^/.]+$/, ''),
         stations,
       });
-      showNotification(`✓ Loaded ${stations.length} stations!`);
+      showNotification(`Loaded ${stations.length} stations.`);
       onClose();
     } else {
       // Ask user to choose Replace or Merge
@@ -279,7 +280,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       ...currentProject,
       stations: pendingCsvStations.stations,
     });
-    showNotification(`✓ Replaced track with ${pendingCsvStations.stations.length} stations.`);
+    showNotification(`Replaced track with ${pendingCsvStations.stations.length} stations.`);
     setPendingCsvStations(null);
     onClose();
   };
@@ -292,7 +293,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       ...currentProject,
       stations: combined,
     });
-    showNotification(`✓ Merged ${pendingCsvStations.stations.length} stations onto track (now ${combined.length} total).`);
+    showNotification(`Merged ${pendingCsvStations.stations.length} stations onto track (${combined.length} total).`);
     setPendingCsvStations(null);
     onClose();
   };
@@ -304,7 +305,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       ...currentProject,
       stations: combined,
     });
-    showNotification(`✓ Merged "${saved.name}" onto track (now ${combined.length} stations).`);
+    showNotification(`Merged "${saved.name}" onto track (${combined.length} stations).`);
     onClose();
   };
 
@@ -620,7 +621,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                     <div className="p-3 bg-amber-500/10 dark:bg-amber-500/5 rounded-2xl border border-amber-500/20 flex items-center justify-between gap-3">
                       <div>
                         <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                          Starting a brand new track section?
+                          Start a new track section:
                         </div>
                         <div className="text-[11px] text-zinc-500">
                           Clear the current project and generate a blank field survey or custom grid.
@@ -680,7 +681,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                         <li>Click <strong>Copy for Google Sheets</strong> (or download CSV and upload to Google Drive).</li>
                         <li>Open a new sheet in Google Sheets and press <kbd className="px-1 py-0.2 bg-zinc-200 dark:bg-zinc-800 rounded font-mono">Ctrl+V</kbd> to paste columns.</li>
                         <li>Record laser measurements trackside in column B (e.g. <span className="font-mono">1' 4 3/8"</span>, <span className="font-mono">14.375</span>, or <span className="font-mono">365mm</span>).</li>
-                        <li>Export as CSV from Google Sheets (or copy the cells) and upload/paste it right back into this tab!</li>
+                        <li>Export as CSV from Google Sheets (or copy the table) and upload or paste it into this tab.</li>
                       </ol>
                     </div>
                   </div>
@@ -877,7 +878,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                 ? 'Checking for updates...'
                 : modalUpdateStatus === 'updated'
                 ? 'App is up to date ✓'
-                : 'Track Level Companion v0.9.0 Beta • Check for Updates'}
+                : `Track Level Companion ${APP_VERSION_LABEL} • Check for Updates`}
             </span>
           </button>
           <button

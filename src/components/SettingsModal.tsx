@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TrackProject, UnitFormat } from '../core/types';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
+import { APP_VERSION_LABEL } from '../core/version';
 import { Settings, X, Check, RefreshCw, Sliders, Hash, ShieldCheck } from 'lucide-react';
 
 export interface SettingsModalProps {
@@ -233,7 +234,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   Track Level Companion
                 </span>
                 <span className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-400 font-extrabold px-1.5 py-0.5 rounded border border-amber-500/30">
-                  v0.9.0 Beta
+                  {APP_VERSION_LABEL}
                 </span>
               </div>
               <button

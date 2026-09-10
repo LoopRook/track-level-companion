@@ -5,7 +5,6 @@ import {
   Compass,
   Layers,
   RotateCcw,
-  Sparkles,
   Bookmark,
   Plus
 } from 'lucide-react';
@@ -67,7 +66,7 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
         <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center">
-              <Sparkles className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[3]" />
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-extrabold text-zinc-900 dark:text-white">

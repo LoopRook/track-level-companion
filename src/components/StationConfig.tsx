@@ -360,7 +360,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
                 ? 'bg-zinc-900 dark:bg-zinc-800 text-white dark:text-amber-400 shadow-sm'
                 : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
-            title="Target a specific grade or slope across the section (e.g. 0.0% flat)"
+            title="Target a specific grade across the section (e.g. 0.0% flat)"
           >
             Grade %
           </button>
@@ -378,10 +378,10 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
           </button>
         </div>
 
-        {/* If Grade % is selected, show slope input */}
+        {/* If Grade % is selected, show grade input */}
         {project.gradeMode === 'target_grade' && (
           <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 h-8">
-            <span className="text-zinc-500 font-medium text-xs">Slope:</span>
+            <span className="text-zinc-500 font-medium text-xs">Grade:</span>
             <div className="flex items-center">
               <input
                 type="number"

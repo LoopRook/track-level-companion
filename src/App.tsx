@@ -9,6 +9,7 @@ import { DataManagementModal } from './components/DataManagementModal';
 import { UserGuideModal } from './components/UserGuideModal';
 import { NewTrackModal } from './components/NewTrackModal';
 import { SettingsModal } from './components/SettingsModal';
+import { BetaNoticeModal } from './components/BetaNoticeModal';
 import { PrintReport } from './components/PrintReport';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { useBodyScrollLock } from './core/useBodyScrollLock';
@@ -93,8 +94,22 @@ export const App: React.FC = () => {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isNewTrackModalOpen, setIsNewTrackModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isBetaNoticeOpen, setIsBetaNoticeOpen] = useState<boolean>(() => {
+    try {
+      return !localStorage.getItem('tlc_beta_notice_dismissed');
+    } catch {
+      return false;
+    }
+  });
 
-  useBodyScrollLock(isKeypadOpen || isDataModalOpen || isGuideOpen || isNewTrackModalOpen || isSettingsOpen);
+  useBodyScrollLock(
+    isKeypadOpen ||
+    isDataModalOpen ||
+    isGuideOpen ||
+    isNewTrackModalOpen ||
+    isSettingsOpen ||
+    isBetaNoticeOpen
+  );
 
   // Desktop PWA Installation
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -685,6 +700,12 @@ export const App: React.FC = () => {
         <UserGuideModal
           isOpen={isGuideOpen}
           onClose={() => setIsGuideOpen(false)}
+        />
+
+        {/* First Launch Beta Notice Modal */}
+        <BetaNoticeModal
+          isOpen={isBetaNoticeOpen}
+          onClose={() => setIsBetaNoticeOpen(false)}
         />
 
         {/* Opt-in PWA Update Notification Toast */}

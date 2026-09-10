@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { RefreshCw, X, Sparkles } from 'lucide-react';
+import { RefreshCw, X } from 'lucide-react';
 
 let globalSWRegistration: ServiceWorkerRegistration | null = null;
 
@@ -84,7 +84,7 @@ export const UpdatePrompt: React.FC = () => {
     <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-50 animate-in fade-in slide-in-from-bottom-5 duration-300">
       <div className="bg-zinc-900 dark:bg-zinc-950 text-white p-3.5 sm:p-4 rounded-2xl shadow-2xl border border-amber-500/40 flex items-start gap-3">
         <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-          <Sparkles className="w-5 h-5" />
+          <RefreshCw className="w-5 h-5" />
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-extrabold text-sm text-zinc-100 flex items-center gap-1.5">
