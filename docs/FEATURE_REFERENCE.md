@@ -30,6 +30,9 @@ Located in `src/components/StationConfig.tsx`.
 - **Slope Controls (Visible when `Grade %` is active):**
   - Number input (`<input type="number" step="0.1">`) bound to `project.targetGradePercent`. User can type any custom percentage.
   - Quick Preset Buttons: **`0.0%`** (dead level benchmark), **`0.5%`**, **`1.0%`**, and **`1.5%`**.
+- **Resulting Grade Readouts (Visible when `End-to-End` is active):**
+  - Displays computed resulting grade: e.g. `Grade: +0.42% (+2.5" over 50ft)`.
+  - When intermediate ties are locked (e.g. over a root), displays **`Net: X.XX%`** and individual chord segment slopes between locked ties (e.g. `0'-25': +0.67%`, `25'-50': -0.50%`).
 - **Station Interval Dropdown:** Options for `1 ft (fine)`, `2 ft`, `5 ft (standard)`, `10 ft`.
 - **Units Dropdown:** Options for `Ft, In & 1/16"`, `Inches & 1/16"`, `Decimal In`, `Metric (mm)`.
 
@@ -42,6 +45,7 @@ Located in `src/components/StationConfig.tsx`.
 Located in `src/components/ProfileChart.tsx`.
 
 #### Toolbar Controls:
+- **Header Grade Readout Pill:** Reports overall section grade (e.g. `End-to-End: +0.25% (2 chords)` or `Grade: +1.00%`).
 - **Curve vs Straight Mode:**
   - **`Curve` (`<Spline />`):** Uses Fritsch-Carlson Monotone Cubic Spline (`getSmoothSplinePath()`). Guarantees smooth curvature passing through every point without overshoot or artificial waves.
   - **`Straight` (`<TrendingUp />`):** Draws straight point-to-point chords between adjacent stations.
@@ -55,10 +59,11 @@ Located in `src/components/ProfileChart.tsx`.
   - **`Expand` (`<Maximize2 />`):** SVG width expands dynamically to enable horizontal scrolling for long tracks.
 
 #### Active Station Banner:
-- Appears when a station is clicked or hovered: displays distance, reading, elevation, status badge, and an **`Edit`** button that directly opens the `FractionKeypad`.
+- Appears when a station is clicked or hovered: displays distance, reading, elevation, local design grade, status badge, and an **`Edit`** button that directly opens the `FractionKeypad`.
 
 #### Visual Legend & Elements:
 - **Green Dashed Line:** Target Grade Line.
+- **On-Graph Grade Slope Badges:** Rendered directly along each chord segment of the green dashed target line (e.g. `+0.67% ↗`, `-0.50% ↘`, `0.00% Grade →`).
 - **Solid White / Charcoal Line:** Rail Head Profile.
 - **Sky Blue Dots:** Low spots requiring LIFT.
 - **Amber Dots:** High spots requiring LOWER.

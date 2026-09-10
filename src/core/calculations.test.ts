@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseMeasurement, formatFeetInches, formatInchesFraction, reduceFraction } from './units';
-import { calculateTrackProfile, getTrackSummary } from './calculations';
+import { calculateTrackProfile, getTrackSummary, calculateGradeInfo } from './calculations';
 import { TrackProject } from './types';
 
 describe('Units and Fraction Parsing', () => {
@@ -477,5 +477,65 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(calculated[4].readingInches).toBeNull();
     expect(calculated[4].elevationInches).toBeNull();
   });
+
+  it('calculates end-to-end grade accurately when there are no intermediate locked points', () => {
+    const project: TrackProject = {
+      ...baseProject,
+      gradeMode: 'end_to_end',
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 15.0 },    // Elev 0.0"
+        { id: '25', distanceFt: 25, readingInches: 13.5 },  // Elev +1.5"
+        { id: '50', distanceFt: 50, readingInches: 12.0 },  // Elev +3.0" (rises 3" over 50ft = +0.50%)
+      ],
+    };
+
+    const calculated = calculateTrackProfile(project);
+    const gradeInfo = calculateGradeInfo(calculated, 'end_to_end');
+
+    expect(gradeInfo).not.toBeNull();
+    expect(gradeInfo!.overallGradePercent).toBeCloseTo(0.50, 2);
+    expect(gradeInfo!.overallElevChangeInches).toBeCloseTo(3.0, 2);
+    expect(gradeInfo!.totalLengthFt).toBe(50);
+    expect(gradeInfo!.hasLockedPoints).toBe(false);
+    expect(gradeInfo!.segments.length).toBe(1);
+    expect(gradeInfo!.segments[0].gradePercent).toBeCloseTo(0.50, 2);
+  });
+
+  it('calculates piecewise segment grades when an intermediate control point is locked (e.g. over a tree root)', () => {
+    // Station 0: Elev 0.0"
+    // Station 25: Locked over root with Elev +1.5" (rises 1.5" over 25ft = +0.50%)
+    // Station 50: Ends at Elev 0.0" (drops 1.5" over 25ft = -0.50%)
+    // Overall net: 0.00%
+    const project: TrackProject = {
+      ...baseProject,
+      gradeMode: 'end_to_end',
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 14.0 },
+        { id: '25', distanceFt: 25, readingInches: 12.5, isLocked: true }, // 1.5" higher
+        { id: '50', distanceFt: 50, readingInches: 14.0 },
+      ],
+    };
+
+    const calculated = calculateTrackProfile(project);
+    const gradeInfo = calculateGradeInfo(calculated, 'end_to_end');
+
+    expect(gradeInfo).not.toBeNull();
+    expect(gradeInfo!.hasLockedPoints).toBe(true);
+    expect(gradeInfo!.overallGradePercent).toBeCloseTo(0.00, 2);
+    expect(gradeInfo!.segments.length).toBe(2);
+
+    // Segment 1 (0' to 25') climbs up to the root
+    expect(gradeInfo!.segments[0].startDistanceFt).toBe(0);
+    expect(gradeInfo!.segments[0].endDistanceFt).toBe(25);
+    expect(gradeInfo!.segments[0].gradePercent).toBeCloseTo(0.50, 2);
+    expect(gradeInfo!.segments[0].elevChangeInches).toBeCloseTo(1.5, 2);
+
+    // Segment 2 (25' to 50') slopes back down after the root
+    expect(gradeInfo!.segments[1].startDistanceFt).toBe(25);
+    expect(gradeInfo!.segments[1].endDistanceFt).toBe(50);
+    expect(gradeInfo!.segments[1].gradePercent).toBeCloseTo(-0.50, 2);
+    expect(gradeInfo!.segments[1].elevChangeInches).toBeCloseTo(-1.5, 2);
+  });
 });
+
 

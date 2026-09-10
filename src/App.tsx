@@ -46,8 +46,10 @@ export const App: React.FC = () => {
   // Dark mode (defaults to true for pure black OLED theme)
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
-      const saved = localStorage.getItem('track_level_dark_mode');
-      return saved !== null ? saved === 'true' : true;
+      const savedTheme = localStorage.getItem('track_level_theme_mode');
+      if (savedTheme === 'light') return false;
+      if (savedTheme === 'dark') return true;
+      return true; // Default is always dark mode
     } catch {
       return true;
     }
@@ -67,6 +69,7 @@ export const App: React.FC = () => {
       document.documentElement.classList.remove('dark');
     }
     try {
+      localStorage.setItem('track_level_theme_mode', isDarkMode ? 'dark' : 'light');
       localStorage.setItem('track_level_dark_mode', isDarkMode ? 'true' : 'false');
     } catch (e) {
       console.error(e);
@@ -442,6 +445,7 @@ export const App: React.FC = () => {
         onOpenDataModal={() => setIsDataModalOpen(true)}
         onOpenGuideModal={() => setIsGuideOpen(true)}
         summary={summary}
+        calculatedStations={calculatedStations}
       />
 
       {/* Visual Profile Chart ("Gentle Graph") */}

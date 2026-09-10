@@ -1,4 +1,4 @@
-import type { CalculatedStation, TrackProject } from './types';
+import type { CalculatedStation, TrackProject, GradeSegment, EndToEndGradeInfo, GradeMode } from './types';
 import { formatMeasurement } from './units';
 
 /**
@@ -296,3 +296,101 @@ export function getTrackSummary(calculatedStations: CalculatedStation[]) {
     lengthFt: Math.max(0, lastDist - firstDist),
   };
 }
+
+/**
+ * Calculates grade percentages and segment slopes for End-to-End or Target Grade modes.
+ * In End-to-End mode:
+ * - If there are no locked points between first and last, computes overall grade percent.
+ * - If there are locked points, computes the piecewise slope of each chord segment and the net end-to-end grade.
+ */
+export function calculateGradeInfo(
+  stations: CalculatedStation[],
+  gradeMode: GradeMode,
+  targetGradePercent: number = 0.0
+): EndToEndGradeInfo | null {
+  const validStations = stations.filter(
+    s => s.elevationInches !== null && !isNaN(s.elevationInches) && s.targetElevationInches !== null
+  );
+
+  if (validStations.length < 2) return null;
+
+  if (gradeMode === 'target_grade') {
+    const first = validStations[0];
+    const last = validStations[validStations.length - 1];
+    const totalLengthFt = Math.max(0, last.distanceFt - first.distanceFt);
+    const slopeInchesPerFt = (targetGradePercent / 100) * 12;
+    const elevChange = totalLengthFt * slopeInchesPerFt;
+
+    return {
+      overallGradePercent: targetGradePercent,
+      overallElevChangeInches: elevChange,
+      totalLengthFt,
+      segments: [
+        {
+          startDistanceFt: first.distanceFt,
+          endDistanceFt: last.distanceFt,
+          lengthFt: totalLengthFt,
+          startElevInches: first.targetElevationInches!,
+          endElevInches: last.targetElevationInches!,
+          elevChangeInches: elevChange,
+          gradePercent: targetGradePercent,
+          slopeInchesPerFt,
+        },
+      ],
+      hasLockedPoints: false,
+    };
+  }
+
+  // End-to-end mode
+  const first = validStations[0];
+  const last = validStations[validStations.length - 1];
+  const totalLengthFt = last.distanceFt - first.distanceFt;
+  if (totalLengthFt <= 0) return null;
+
+  // Identify control points: first, any locked points in between, and last
+  const lockedInBetween = validStations.filter(
+    s => s.isLocked && s.distanceFt > first.distanceFt && s.distanceFt < last.distanceFt
+  );
+
+  const controlStations = [first, ...lockedInBetween, last].sort(
+    (a, b) => a.distanceFt - b.distanceFt
+  );
+
+  // Overall net grade from first to last
+  const netElevChange = last.elevationInches! - first.elevationInches!;
+  const overallGradePercent = (netElevChange / (totalLengthFt * 12)) * 100;
+
+  // Segments between control points
+  const segments: GradeSegment[] = [];
+  for (let i = 0; i < controlStations.length - 1; i++) {
+    const sA = controlStations[i];
+    const sB = controlStations[i + 1];
+    const segLength = sB.distanceFt - sA.distanceFt;
+    if (segLength <= 0) continue;
+
+    const segElevChange = sB.elevationInches! - sA.elevationInches!;
+    const segGradePercent = (segElevChange / (segLength * 12)) * 100;
+    const slopeInchesPerFt = segElevChange / segLength;
+
+    segments.push({
+      startDistanceFt: sA.distanceFt,
+      endDistanceFt: sB.distanceFt,
+      lengthFt: segLength,
+      startElevInches: sA.elevationInches!,
+      endElevInches: sB.elevationInches!,
+      elevChangeInches: segElevChange,
+      gradePercent: segGradePercent,
+      slopeInchesPerFt,
+      isLockedAnchor: sA.isLocked || sB.isLocked,
+    });
+  }
+
+  return {
+    overallGradePercent,
+    overallElevChangeInches: netElevChange,
+    totalLengthFt,
+    segments,
+    hasLockedPoints: lockedInBetween.length > 0,
+  };
+}
+

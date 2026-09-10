@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { CalculatedStation, GradeMode } from '../core/types';
 import { formatFeetInches, formatMeasurement } from '../core/units';
+import { calculateGradeInfo } from '../core/calculations';
 import { Spline, TrendingUp, Maximize2, Minimize2 } from 'lucide-react';
 
 interface ProfileChartProps {
@@ -73,6 +74,8 @@ function getSmoothSplinePath(points: { x: number; y: number }[]): string {
 
 export const ProfileChart: React.FC<ProfileChartProps> = ({
   stations,
+  gradeMode = 'target_grade',
+  targetGradePercent = 0.0,
   onSelectStation,
   selectedStationId,
 }) => {
@@ -87,6 +90,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   const measuredStations = useMemo(() => {
     return stations.filter(s => s.elevationInches !== null && s.targetElevationInches !== null);
   }, [stations]);
+
+  // Calculate grade statistics and piecewise chord segments
+  const gradeInfo = useMemo(() => {
+    return calculateGradeInfo(stations, gradeMode, targetGradePercent);
+  }, [stations, gradeMode, targetGradePercent]);
 
   // Chart Height adapts to give more physical headroom as zoom increases
   const chartHeight = useMemo(() => {
@@ -234,6 +242,20 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           <span className="text-[11px] bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 font-mono px-2 py-0.5 rounded-full">
             {measuredStations.length}/{stations.length} Shot
           </span>
+          {gradeInfo && (
+            <span
+              className="text-[11px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-500/25"
+              title={
+                gradeMode === 'end_to_end'
+                  ? `End-to-End net slope: ${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}% (${gradeInfo.segments.length} chords)`
+                  : `Target Slope: ${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%`
+              }
+            >
+              {gradeMode === 'end_to_end' ? 'End-to-End: ' : 'Grade: '}
+              {gradeInfo.overallGradePercent >= 0 ? '+' : ''}{gradeInfo.overallGradePercent.toFixed(2)}%
+              {gradeInfo.hasLockedPoints && ` (${gradeInfo.segments.length} chords)`}
+            </span>
+          )}
         </div>
 
         {/* Action Controls Toolbar */}
@@ -334,6 +356,22 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             <span className="text-zinc-500 hidden sm:inline">
               Elev: {formatMeasurement(currentInspectStation.elevationInches, 'inches_fraction')}
             </span>
+            {gradeInfo && (
+              <>
+                <span className="text-zinc-400 hidden md:inline">|</span>
+                <span className="text-emerald-600 dark:text-emerald-400 hidden md:inline font-bold">
+                  Design Grade:{' '}
+                  {(() => {
+                    const activeSeg = gradeInfo.segments.find(
+                      seg => currentInspectStation.distanceFt >= seg.startDistanceFt && currentInspectStation.distanceFt <= seg.endDistanceFt
+                    ) || gradeInfo.segments[0];
+                    return activeSeg
+                      ? `${activeSeg.gradePercent >= 0 ? '+' : ''}${activeSeg.gradePercent.toFixed(2)}%`
+                      : `${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%`;
+                  })()}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2 font-sans font-bold">
@@ -446,6 +484,49 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               strokeLinejoin="round"
             />
           )}
+
+          {/* Grade Slope Labels on Target Line Chords */}
+          {gradeInfo && gradeInfo.segments.map((seg, idx) => {
+            const x1 = getX(seg.startDistanceFt);
+            const x2 = getX(seg.endDistanceFt);
+            const y1 = getY(seg.startElevInches);
+            const y2 = getY(seg.endElevInches);
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+
+            if (x2 - x1 < 35) return null;
+
+            const sign = seg.gradePercent > 0.001 ? '+' : '';
+            const arrow = seg.gradePercent > 0.05 ? '↗' : seg.gradePercent < -0.05 ? '↘' : '→';
+            const labelText = gradeMode === 'end_to_end' && gradeInfo.hasLockedPoints
+              ? `${sign}${seg.gradePercent.toFixed(2)}% ${arrow}`
+              : `${sign}${seg.gradePercent.toFixed(2)}% Grade ${arrow}`;
+
+            const badgeWidth = labelText.length * 6.8 + 12;
+            const badgeHeight = 17;
+            const badgeY = Math.max(padding.top + 4, Math.min(padding.top + innerHeight - 20, midY - 18));
+
+            return (
+              <g key={`grade-seg-${idx}`} className="pointer-events-none select-none">
+                <rect
+                  x={midX - badgeWidth / 2}
+                  y={badgeY}
+                  width={badgeWidth}
+                  height={badgeHeight}
+                  rx={4.5}
+                  className="fill-white/95 dark:fill-zinc-900/95 stroke-emerald-500/70 dark:stroke-emerald-400/80 stroke-[1.2]"
+                />
+                <text
+                  x={midX}
+                  y={badgeY + 11.5}
+                  textAnchor="middle"
+                  className="font-mono text-[9.5px] font-extrabold fill-emerald-700 dark:fill-emerald-300"
+                >
+                  {labelText}
+                </text>
+              </g>
+            );
+          })}
 
           {/* Station Markers / Interactive Points */}
           {stations.map(s => {

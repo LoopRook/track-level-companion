@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { UnitFormat, TrackProject } from '../core/types';
-import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { UnitFormat, TrackProject, CalculatedStation } from '../core/types';
+import { calculateGradeInfo } from '../core/calculations';
+import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2, TrendingUp } from 'lucide-react';
 
 interface StationConfigProps {
   project: TrackProject;
@@ -9,6 +10,7 @@ interface StationConfigProps {
   onToggleDarkMode: () => void;
   onOpenDataModal: () => void;
   onOpenGuideModal: () => void;
+  calculatedStations?: CalculatedStation[];
   summary: {
     totalStations: number;
     measuredCount: number;
@@ -28,6 +30,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
   onToggleDarkMode,
   onOpenDataModal,
   onOpenGuideModal,
+  calculatedStations,
   summary,
 }) => {
   const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -42,6 +45,11 @@ export const StationConfig: React.FC<StationConfigProps> = ({
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  const gradeInfo = useMemo(() => {
+    if (!calculatedStations) return null;
+    return calculateGradeInfo(calculatedStations, project.gradeMode, project.targetGradePercent);
+  }, [calculatedStations, project.gradeMode, project.targetGradePercent]);
 
   return (
     <div className="space-y-2.5">
@@ -239,6 +247,66 @@ export const StationConfig: React.FC<StationConfigProps> = ({
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* If End-to-End is selected, show resulting grade readout */}
+          {project.gradeMode === 'end_to_end' && (
+            <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 h-8 text-xs flex-wrap">
+              {!gradeInfo ? (
+                <div className="flex items-center gap-1 text-zinc-500 font-medium">
+                  <TrendingUp className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Grade:</span>
+                  <span className="italic text-[11px] text-zinc-400">Need 2+ shots</span>
+                </div>
+              ) : !gradeInfo.hasLockedPoints ? (
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-zinc-500 font-medium">Grade:</span>
+                  <span className={`font-mono font-bold ${
+                    gradeInfo.overallGradePercent > 0.05
+                      ? 'text-sky-600 dark:text-sky-400'
+                      : gradeInfo.overallGradePercent < -0.05
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-emerald-600 dark:text-emerald-400'
+                  }`}>
+                    {gradeInfo.overallGradePercent >= 0 ? '+' : ''}{gradeInfo.overallGradePercent.toFixed(2)}%
+                  </span>
+                  <span className="text-[11px] text-zinc-500 font-medium hidden sm:inline">
+                    ({gradeInfo.overallElevChangeInches >= 0 ? '+' : ''}{gradeInfo.overallElevChangeInches.toFixed(2)}" over {gradeInfo.totalLengthFt}ft)
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-zinc-500 font-medium">Net:</span>
+                    <span className={`font-mono font-bold ${
+                      gradeInfo.overallGradePercent > 0.05
+                        ? 'text-sky-600 dark:text-sky-400'
+                        : gradeInfo.overallGradePercent < -0.05
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-emerald-600 dark:text-emerald-400'
+                    }`} title="Net straight-line grade between first and last tie">
+                      {gradeInfo.overallGradePercent >= 0 ? '+' : ''}{gradeInfo.overallGradePercent.toFixed(2)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 pl-1.5 border-l border-zinc-200 dark:border-zinc-800">
+                    <span className="text-[10px] uppercase font-bold text-zinc-400 hidden xs:inline">
+                      {gradeInfo.segments.length} Chords:
+                    </span>
+                    {gradeInfo.segments.map((seg, idx) => (
+                      <span
+                        key={idx}
+                        className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-200/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold"
+                        title={`Chord ${idx + 1} (${seg.startDistanceFt}'-${seg.endDistanceFt}'): ${seg.gradePercent >= 0 ? '+' : ''}${seg.gradePercent.toFixed(2)}% (${seg.elevChangeInches >= 0 ? '+' : ''}${seg.elevChangeInches.toFixed(2)}" over ${seg.lengthFt}ft)`}
+                      >
+                        {seg.startDistanceFt}'-{seg.endDistanceFt}': <strong className={seg.gradePercent > 0.05 ? 'text-sky-500 dark:text-sky-400' : seg.gradePercent < -0.05 ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-500 dark:text-emerald-400'}>{seg.gradePercent >= 0 ? '+' : ''}{seg.gradePercent.toFixed(2)}%</strong>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

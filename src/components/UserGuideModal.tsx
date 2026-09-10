@@ -335,7 +335,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     </p>
                   ) : (
                     <p className="text-zinc-700 dark:text-zinc-300">
-                      <strong>End-to-End Mode:</strong> Stretches straight chords between your starting tie and ending tie, anchoring through any intermediate <strong>Locked Ties (🔒)</strong>. If a locked obstacle sits higher than your endpoints, it will form a summit; to smooth out a steep transition, expand your survey further down the line with <strong>+ Extend</strong> to feather the grade across more ties.
+                      <strong>End-to-End Mode:</strong> Stretches straight chords between your starting tie and ending tie, anchoring through any intermediate <strong>Locked Ties (🔒)</strong>. The app displays the resulting grade percentage in the top alignment bar and on-screen slope badges directly along each chord of the graph (e.g. <code>+0.67% ↗</code>, <code>-0.50% ↘</code>). If a locked obstacle sits high, expand your survey further down the line with <strong>+ Extend</strong> to feather the rise and fall across more ties.
                     </p>
                   )}
                 </div>

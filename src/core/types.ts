@@ -26,6 +26,27 @@ export interface CalculatedStation extends StationPoint {
   targetReadingInches?: number | null; // The exact rod reading that corresponds to target finished elevation under active laser setup
 }
 
+export interface GradeSegment {
+  startDistanceFt: number;
+  endDistanceFt: number;
+  lengthFt: number;
+  startElevInches: number;
+  endElevInches: number;
+  elevChangeInches: number;
+  gradePercent: number; // e.g. 0.50 for +0.50%
+  slopeInchesPerFt: number;
+  isLockedAnchor?: boolean;
+}
+
+export interface EndToEndGradeInfo {
+  overallGradePercent: number;
+  overallElevChangeInches: number;
+  totalLengthFt: number;
+  segments: GradeSegment[];
+  hasLockedPoints: boolean;
+}
+
+
 export interface TrackProject {
   id: string;
   name: string;

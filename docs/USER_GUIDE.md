@@ -88,16 +88,23 @@ In the alignment bar, choose between two target modes:
 
 ### Mode 2: `End-to-End` (Stringline with Locked Control Ties)
 - Draws a straight chord between Station 0 and your final surveyed tie.
-- **Locked Ties as Anchors:** If intermediate ties are marked with **Lock (🔒)** (e.g. over a tree root or bridge abutment), the grade line breaks into straight segments passing directly through each locked tie, ensuring unmovable points are never forced to lift or lower.
-- **Handling High Locked Points:**
+- **Automatic Grade Readouts:**
+  - **In the Alignment Bar:** As soon as 2 or more ties are measured, the app displays the resulting grade percentage (e.g. `Grade: +0.42% (+2.5" over 50ft)`).
+  - **With Locked Intermediate Ties:** If intermediate ties are marked with **Lock (🔒)** (e.g. over a tree root or bridge abutment), the grade line breaks into straight segments passing directly through each locked tie. The alignment bar displays the **Net Grade** and the slope of each individual chord segment (e.g. `Net: 0.00% • 0'-25': +0.67%, 25'-50': -0.67%`).
+- **Handling High Locked Points (Summits):**
   If an unmovable locked point sits higher than your start and end ties, the grade line will rise to it and slope back down, forming a summit. If this creates too sharp of a peak over a short distance (e.g. a 25 ft stretch), expand your survey further down the line (e.g. to 50 or 75 ft) using **`+ Extend`**. This gives the track enough room to feather the rise and fall naturally across more ties, or you can switch to **`Grade %`** to lift the adjoining track up to the high point.
 
 ---
 
-## 4. Vertical Profile Chart Controls
+## 4. Vertical Profile Chart Controls & Graph Grade Badges
 
 Located above the checklist in `ProfileChart.tsx`:
 
+- **On-Graph Grade Slope Badges:**
+  - Every chord segment along the dashed green target line displays an on-screen grade pill (e.g. `+0.67% ↗`, `-0.50% ↘`, `0.00% Grade →`).
+  - If locked points exist, each chord shows its individual slope so you immediately see the incline up to a root and the decline down after it.
+  - The chart header displays the overall slope summary (e.g. `End-to-End: 0.00% (2 chords)`).
+- **Interactive Inspection:** Hover or tap any point to view distance, reading, elevation, target, local design grade, and tap **`Edit`** to jump straight into the keypad.
 - **Curve vs Straight:**
   - **`Curve` (`<Spline />`):** Uses a Fritsch-Carlson monotone cubic spline that passes smoothly through every station without fake waves or overshoot.
   - **`Straight` (`<TrendingUp />`):** Connects points with direct straight chord lines.
@@ -109,7 +116,6 @@ Located above the checklist in `ProfileChart.tsx`:
 - **Width Toggle:**
   - **`Fit`:** Fits the full track section onto your screen.
   - **`Expand`:** Expands SVG width to allow horizontal touch-scrolling on long track sections.
-- **Interactive Inspection:** Hover or tap any point to view distance, reading, elevation, target, and tap **`Edit`** to jump straight into the keypad.
 
 ---
 
