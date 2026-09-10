@@ -340,60 +340,6 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     }
   };
 
-  // Mobile Touch Scrubbing & Drag tracking
-  const touchStartRef = useRef<{ x: number; y: number; time: number; hasMoved: boolean } | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent<SVGSVGElement>) => {
-    if (!e.touches[0]) return;
-    const touch = e.touches[0];
-    touchStartRef.current = {
-      x: touch.clientX,
-      y: touch.clientY,
-      time: Date.now(),
-      hasMoved: false,
-    };
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<SVGSVGElement>) => {
-    if (!e.touches[0] || !touchStartRef.current) return;
-    const touch = e.touches[0];
-    const dx = touch.clientX - touchStartRef.current.x;
-    const dy = touch.clientY - touchStartRef.current.y;
-
-    // Horizontal swipe gesture: scrub through stations with live chord preview
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 12) {
-      touchStartRef.current.hasMoved = true;
-      const svg = e.currentTarget;
-      const rect = svg.getBoundingClientRect();
-      if (!rect.width) return;
-      const screenX = touch.clientX - rect.left;
-      const svgX = (screenX / rect.width) * effectiveWidth;
-      const closest = getClosestStation(svgX);
-      if (closest && hoveredStationId !== closest.id) {
-        setHoveredStationId(closest.id);
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartRef.current) return;
-    // If the user was dragging/scrubbing across stations horizontally, lock range to destination
-    if (touchStartRef.current.hasMoved && hoveredStationId) {
-      const closest = stations.find(s => s.id === hoveredStationId);
-      if (closest) {
-        handleNodeClick(closest);
-      }
-      setHoveredStationId(null);
-    }
-    // If it was a simple tap, native onClick on the column rect handles it immediately with zero duplicate toggle!
-    touchStartRef.current = null;
-  };
-
-  const handleTouchCancel = () => {
-    touchStartRef.current = null;
-    setHoveredStationId(null);
-  };
-
   // Station interaction: click/tap selects/evaluates range; double click opens keypad editor
   const handleNodeClick = (s: CalculatedStation) => {
     if (!selectedStartId) {
@@ -697,7 +643,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     className="w-full px-3 py-2 text-left flex items-center gap-2 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition font-medium"
                   >
                     <Printer className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Print Chart / PDF</span>
+                    <span>Print / PDF (8.5×11 Report)</span>
                   </button>
                 </div>
               </>
@@ -950,7 +896,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       {/* Unified SVG Canvas Container */}
       <div
         className={`w-full ${isScrollable ? 'overflow-x-auto scrollbar-thin' : ''} bg-zinc-50/50 dark:bg-black select-none`}
-        style={{ touchAction: 'pan-y' }}
+        style={{ WebkitOverflowScrolling: 'touch', touchAction: isScrollable ? 'pan-x pan-y' : 'pan-y' }}
       >
         <svg
           ref={svgRef}
@@ -958,15 +904,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           className={`block ${isScrollable ? '' : 'w-full'} h-auto`}
           style={{
             minWidth: isScrollable ? `${effectiveWidth}px` : undefined,
-            touchAction: 'pan-y',
+            touchAction: isScrollable ? 'pan-x pan-y' : 'pan-y',
           }}
           onMouseMove={handleSvgMouseMove}
           onMouseLeave={handleSvgMouseLeave}
           onClick={handleSvgClick}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
         >
           {/* Shaded Range Region for Subset Grade Evaluation */}
           {activeSubsetGrade && (

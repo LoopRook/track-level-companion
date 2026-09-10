@@ -9,6 +9,7 @@ import { DataManagementModal } from './components/DataManagementModal';
 import { UserGuideModal } from './components/UserGuideModal';
 import { NewTrackModal } from './components/NewTrackModal';
 import { SettingsModal } from './components/SettingsModal';
+import { PrintReport } from './components/PrintReport';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { useBodyScrollLock } from './core/useBodyScrollLock';
 
@@ -565,129 +566,138 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2.5 sm:p-4 max-w-5xl lg:max-w-7xl xl:max-w-[1600px] mx-auto space-y-3">
-      {/* Top Navbar / Header (Spans full width across top) */}
-      <StationConfigHeader
-        project={project}
-        onChangeProject={handleUpdateProject}
-        isDarkMode={isDarkMode}
-        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-        onOpenDataModal={() => setIsDataModalOpen(true)}
-        onOpenGuideModal={() => setIsGuideOpen(true)}
-        onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
-        onOpenSettingsModal={() => setIsSettingsOpen(true)}
-        onInstallApp={handleInstallApp}
-        canInstall={!!installPrompt}
-        summary={summary}
-      />
+    <>
+      <div className="app-interactive-screen min-h-screen bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2.5 sm:p-4 max-w-5xl lg:max-w-7xl xl:max-w-[1600px] mx-auto space-y-3">
+        {/* Top Navbar / Header (Spans full width across top) */}
+        <StationConfigHeader
+          project={project}
+          onChangeProject={handleUpdateProject}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+          onOpenDataModal={() => setIsDataModalOpen(true)}
+          onOpenGuideModal={() => setIsGuideOpen(true)}
+          onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
+          onOpenSettingsModal={() => setIsSettingsOpen(true)}
+          onInstallApp={handleInstallApp}
+          canInstall={!!installPrompt}
+          summary={summary}
+        />
 
-      {/* Responsive Work Area: Single column on mobile/tablet, 2 columns on desktop (lg: >= 1024px) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-start">
-        {/* LEFT COLUMN: Field Stats Summary + Alignment Controls + Gentle Profile Graph */}
-        <div className="lg:col-span-7 space-y-3 lg:sticky lg:top-3">
-          <StationSummaryBar
-            project={project}
-            summary={summary}
-          />
+        {/* Responsive Work Area: Single column on mobile/tablet, 2 columns on desktop (lg: >= 1024px) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-start">
+          {/* LEFT COLUMN: Field Stats Summary + Alignment Controls + Gentle Profile Graph */}
+          <div className="lg:col-span-7 space-y-3 lg:sticky lg:top-3">
+            <StationSummaryBar
+              project={project}
+              summary={summary}
+            />
 
-          <StationAlignmentBar
-            project={project}
-            onChangeProject={handleUpdateProject}
-            calculatedStations={calculatedStations}
-          />
+            <StationAlignmentBar
+              project={project}
+              onChangeProject={handleUpdateProject}
+              calculatedStations={calculatedStations}
+            />
 
-          {/* Visual Profile Chart ("Gentle Graph") */}
-          <ProfileChart
-            stations={calculatedStations}
-            gradeMode={project.gradeMode}
-            targetGradePercent={project.targetGradePercent}
-            trackName={project.name}
-            onSelectStation={handleSelectStation}
-            selectedStationId={activeEditingStation?.id}
-            onApplyTargetGrade={(grade) => {
-              handleUpdateProject({
-                gradeMode: 'target_grade',
-                targetGradePercent: Number(grade.toFixed(2)),
-              });
-            }}
-          />
+            {/* Visual Profile Chart ("Gentle Graph") */}
+            <ProfileChart
+              stations={calculatedStations}
+              gradeMode={project.gradeMode}
+              targetGradePercent={project.targetGradePercent}
+              trackName={project.name}
+              onSelectStation={handleSelectStation}
+              selectedStationId={activeEditingStation?.id}
+              onApplyTargetGrade={(grade) => {
+                handleUpdateProject({
+                  gradeMode: 'target_grade',
+                  targetGradePercent: Number(grade.toFixed(2)),
+                });
+              }}
+            />
+          </div>
+
+          {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
+          <div className="lg:col-span-5 space-y-3 lg:sticky lg:top-3">
+            <ActionTable
+              stations={calculatedStations}
+              unitFormat={project.unitFormat}
+              fractionResolution={project.fractionResolution}
+              onEditStation={handleSelectStation}
+              onToggleComplete={handleToggleComplete}
+              onToggleLock={handleToggleLock}
+              onDeleteStation={handleDeleteStation}
+              onAddNextStation={handleAddNextStation}
+              onInsertCustomStation={handleInsertCustomStation}
+              onExtendTrack={handleExtendTrack}
+              onSetTurningPoint={handleSetTurningPoint}
+              onResetDatum={handleResetDatum}
+              selectedStationId={activeEditingStation?.id}
+            />
+          </div>
         </div>
 
-        {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
-        <div className="lg:col-span-5 space-y-3 lg:sticky lg:top-3">
-          <ActionTable
-            stations={calculatedStations}
-            unitFormat={project.unitFormat}
-            fractionResolution={project.fractionResolution}
-            onEditStation={handleSelectStation}
-            onToggleComplete={handleToggleComplete}
-            onToggleLock={handleToggleLock}
-            onDeleteStation={handleDeleteStation}
-            onAddNextStation={handleAddNextStation}
-            onInsertCustomStation={handleInsertCustomStation}
-            onExtendTrack={handleExtendTrack}
-            onSetTurningPoint={handleSetTurningPoint}
-            onResetDatum={handleResetDatum}
-            selectedStationId={activeEditingStation?.id}
-          />
-        </div>
+        {/* Keypad Modal */}
+        <FractionKeypad
+          isOpen={isKeypadOpen}
+          stationDistanceFt={activeEditingStation?.distanceFt ?? 0}
+          currentReadingInches={activeEditingStation?.readingInches ?? null}
+          datumOffsetInches={activeEditingStation?.appliedDatumOffsetInches ?? activeEditingStation?.datumOffsetInches}
+          targetReadingInches={activeEditingStation?.targetReadingInches ?? null}
+          actionText={activeEditingStation?.actionText}
+          unitFormat={project.unitFormat}
+          fractionResolution={project.fractionResolution}
+          stationIndex={activeEditingStation ? project.stations.findIndex(s => s.id === activeEditingStation.id) + 1 : undefined}
+          totalStations={project.stations.length}
+          onSave={handleSaveStationReading}
+          onSaveAndNext={handleSaveAndNext}
+          onSaveAndPrev={handleSaveAndPrev}
+          onClose={() => setIsKeypadOpen(false)}
+        />
+
+        {/* Data Management / Export Modal */}
+        <DataManagementModal
+          isOpen={isDataModalOpen}
+          onClose={() => setIsDataModalOpen(false)}
+          currentProject={project}
+          calculatedStations={calculatedStations}
+          onLoadProject={(p) => setProject(p)}
+          onResetProject={handleResetProject}
+          onLoadDemoTrack={handleLoadDemoTrack}
+          onOpenNewTrack={() => setIsNewTrackModalOpen(true)}
+        />
+
+        {/* Start New Track Modal */}
+        <NewTrackModal
+          isOpen={isNewTrackModalOpen}
+          onClose={() => setIsNewTrackModalOpen(false)}
+          currentProject={project}
+          onCreateNewTrack={handleCreateNewTrack}
+        />
+
+        {/* Settings Modal */}
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          project={project}
+          onChangeProject={handleUpdateProject}
+        />
+
+        {/* Field Guide & Animated Tutorial Modal */}
+        <UserGuideModal
+          isOpen={isGuideOpen}
+          onClose={() => setIsGuideOpen(false)}
+        />
+
+        {/* Opt-in PWA Update Notification Toast */}
+        <UpdatePrompt />
       </div>
 
-      {/* Keypad Modal */}
-      <FractionKeypad
-        isOpen={isKeypadOpen}
-        stationDistanceFt={activeEditingStation?.distanceFt ?? 0}
-        currentReadingInches={activeEditingStation?.readingInches ?? null}
-        datumOffsetInches={activeEditingStation?.appliedDatumOffsetInches ?? activeEditingStation?.datumOffsetInches}
-        targetReadingInches={activeEditingStation?.targetReadingInches ?? null}
-        actionText={activeEditingStation?.actionText}
-        unitFormat={project.unitFormat}
-        fractionResolution={project.fractionResolution}
-        stationIndex={activeEditingStation ? project.stations.findIndex(s => s.id === activeEditingStation.id) + 1 : undefined}
-        totalStations={project.stations.length}
-        onSave={handleSaveStationReading}
-        onSaveAndNext={handleSaveAndNext}
-        onSaveAndPrev={handleSaveAndPrev}
-        onClose={() => setIsKeypadOpen(false)}
-      />
-
-      {/* Data Management / Export Modal */}
-      <DataManagementModal
-        isOpen={isDataModalOpen}
-        onClose={() => setIsDataModalOpen(false)}
-        currentProject={project}
-        calculatedStations={calculatedStations}
-        onLoadProject={(p) => setProject(p)}
-        onResetProject={handleResetProject}
-        onLoadDemoTrack={handleLoadDemoTrack}
-        onOpenNewTrack={() => setIsNewTrackModalOpen(true)}
-      />
-
-      {/* Start New Track Modal */}
-      <NewTrackModal
-        isOpen={isNewTrackModalOpen}
-        onClose={() => setIsNewTrackModalOpen(false)}
-        currentProject={project}
-        onCreateNewTrack={handleCreateNewTrack}
-      />
-
-      {/* Settings Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
+      {/* Dedicated 8.5x11 Printable Report (Visible ONLY in Print / PDF dialog) */}
+      <PrintReport
         project={project}
-        onChangeProject={handleUpdateProject}
+        calculatedStations={calculatedStations}
+        summary={summary}
       />
-
-      {/* Field Guide & Animated Tutorial Modal */}
-      <UserGuideModal
-        isOpen={isGuideOpen}
-        onClose={() => setIsGuideOpen(false)}
-      />
-
-      {/* Opt-in PWA Update Notification Toast */}
-      <UpdatePrompt />
-    </div>
+    </>
   );
 };
 export default App;

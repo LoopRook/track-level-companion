@@ -129,22 +129,43 @@ input, textarea {
 }
 
 /* Print optimization styles */
+@media screen {
+  .print-report-container {
+    display: none !important;
+  }
+}
+
 @media print {
-  body {
+  @page {
+    size: letter portrait;
+    margin: 0.35in;
+  }
+
+  html, body {
     background: #ffffff !important;
     color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .no-print {
+  /* Completely hide the interactive web app screen during print */
+  .app-interactive-screen {
     display: none !important;
   }
 
-  /* Keep chart and tables visible and prevent awkward page breaks */
-  svg {
+  /* Show ONLY the dedicated 8.5x11 printable report */
+  .print-report-container {
+    display: block !important;
+    width: 100% !important;
     max-width: 100% !important;
-    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
   }
 
   .break-inside-avoid {
@@ -152,5 +173,6 @@ input, textarea {
     page-break-inside: avoid;
   }
 }
+
 
 
