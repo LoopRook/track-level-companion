@@ -15,7 +15,8 @@ import {
   Download,
   Play,
   Spline,
-  Plus
+  Plus,
+  Ruler
 } from 'lucide-react';
 
 interface UserGuideModalProps {
@@ -92,8 +93,8 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
           </button>
         </div>
 
-        {/* Step Tabs Navigation */}
-        <div className="flex overflow-x-auto border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-2 pt-2 gap-1 text-xs font-bold scrollbar-none">
+        {/* Step Tabs Navigation - Desktop (sm and up) */}
+        <div className="hidden sm:flex overflow-x-auto border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-2 pt-2 gap-1 text-xs font-bold scrollbar-none">
           {steps.map((s, idx) => (
             <button
               key={s.id}
@@ -106,6 +107,26 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
             >
               <s.icon className="w-3.5 h-3.5" />
               <span>{s.shortTitle}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Step Navigation - Mobile (Zero horizontal scrolling: 5-column grid fitting 100% width) */}
+        <div className="grid grid-cols-5 gap-1 p-1.5 bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 sm:hidden">
+          {steps.map((s, idx) => (
+            <button
+              key={s.id}
+              onClick={() => setCurrentStep(idx)}
+              className={`py-1.5 px-0.5 rounded-lg text-center transition flex flex-col items-center justify-center gap-0.5 ${
+                currentStep === idx
+                  ? 'bg-amber-500 text-black font-extrabold shadow-xs'
+                  : 'bg-zinc-200/60 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 font-semibold'
+              }`}
+            >
+              <s.icon className="w-3.5 h-3.5 shrink-0" />
+              <span className="text-[10px] leading-tight truncate max-w-full">
+                {idx === 0 ? 'Laser' : idx === 1 ? 'Slope' : idx === 2 ? 'Move' : idx === 3 ? 'Chart' : 'Tips'}
+              </span>
             </button>
           ))}
         </div>
@@ -231,6 +252,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     When track has a hump, the rod is pushed up, hitting lower on the rod's tape. The app tells you: <strong>LOWER</strong>.
                   </div>
                 </div>
+
+                {/* Unit Format Note */}
+                <div className="p-2.5 bg-zinc-100 dark:bg-zinc-900 rounded-xl text-zinc-600 dark:text-zinc-400 text-[11px] border border-zinc-200 dark:border-zinc-800">
+                  <strong>Units & Decimals:</strong> Track Level Companion defaults to <strong>Decimal Inches</strong> (e.g. <code>6.28"</code>, <code>5.86"</code>), but seamlessly supports <strong>Fractional Inches (16ths)</strong>, <strong>Total Inches</strong>, and <strong>Metric (mm)</strong> via the header dropdown.
+                </div>
               </div>
             </div>
           )}
@@ -332,7 +358,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 <div className="text-xs space-y-1.5 leading-relaxed">
                   {activeSlopeDemo === 'grade_percent' ? (
                     <p className="text-zinc-700 dark:text-zinc-300">
-                      <strong>Grade % Mode:</strong> Holds Station 0 as your benchmark. Tap <strong>0.0%</strong> for a dead-flat line across yard tracks, or choose <strong>0.5%</strong>, <strong>1.0%</strong>, or <strong>1.5%</strong>. You can also tap directly into the slope box to type any custom grade (e.g. <code>0.25%</code>, <code>-0.75%</code>).
+                      <strong>Grade % Mode:</strong> Holds Station 0 as your benchmark. Tap <strong>0.0%</strong> for a dead-flat line across yard tracks, or choose <strong>0.5%</strong>, <strong>1.0%</strong>, or <strong>1.5%</strong>. You can also tap directly into the slope box to type any custom grade (e.g. <code>0.25%</code>, <code>-0.75%</code>), or use the <strong>"📐 Evaluate Grade"</strong> tool on the chart to apply a measured track section slope with one click.
                     </p>
                   ) : (
                     <p className="text-zinc-700 dark:text-zinc-300">
@@ -432,11 +458,63 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                   Extending Track & Profile Chart Controls
                 </h3>
                 <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
-                  Easily expand your survey in either direction and inspect the track profile:
+                  Easily expand your survey in either direction, evaluate grades, and inspect the track profile:
                 </p>
               </div>
 
               <div className="space-y-3">
+                {/* Subset Grade Evaluation Tool */}
+                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-sky-500/30 dark:border-sky-500/20 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-xs text-sky-700 dark:text-sky-400 flex items-center gap-1.5">
+                      <Ruler className="w-4 h-4 stroke-[2.5]" />
+                      <span>Subset Grade Evaluation Tool ("Evaluate Grade")</span>
+                    </h4>
+                    <span className="text-[10px] bg-sky-500/15 text-sky-700 dark:text-sky-300 font-bold px-2 py-0.5 rounded-full border border-sky-500/30">
+                      New Tool
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    Evaluate the exact slope, elevation difference, and chord line between <strong>any two stations</strong> along the track:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                      <strong className="text-zinc-900 dark:text-zinc-100 block">How to Select Stations:</strong>
+                      <span className="text-zinc-500 block">
+                        Tap <strong>"Evaluate Grade"</strong> (or <strong>"Grade"</strong> on mobile) to pick Start & End from dropdowns, or simply tap two stations on the graph. On mobile, press and drag across ties to scrub with live preview!
+                      </span>
+                    </div>
+                    <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                      <strong className="text-zinc-900 dark:text-zinc-100 block">Live Calculations & 1-Click Apply:</strong>
+                      <span className="text-zinc-500 block">
+                        Displays <strong>Span</strong>, <strong>Rise / Fall</strong>, <strong>Chord Grade %</strong>, and <strong>Best-Fit Regression %</strong>. Tap <strong>"Apply as Target"</strong> to instantly set this slope as your survey target in Grade % mode.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Profile Chart Controls & Mobile Touch Gestures */}
+                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
+                  <h4 className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
+                    <Spline className="w-4 h-4 text-amber-500" />
+                    <span>Vertical Profile Chart Controls & Touch Gestures</span>
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Curve vs Straight</strong>
+                      <span className="text-zinc-500">Toggle smooth Fritsch-Carlson monotone spline vs point-to-point chords.</span>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Zoom (1x / 3x / 8x / 15x)</strong>
+                      <span className="text-zinc-500">1x is true scale. 3x is standard gentle view. 8x and 15x exaggerate micro-leveling.</span>
+                    </div>
+                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Touch Tap & Scrub</strong>
+                      <span className="text-zinc-500">Full-height hit zones make tapping easy. Tap node to inspect or tap <strong>[✏️ Edit]</strong> to open keypad.</span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* The + Extend Modal */}
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-start gap-3">
                   <div className="p-2 bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl shrink-0 mt-0.5">
@@ -453,28 +531,6 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                       <li><strong>Ahead (Forward →):</strong> Appends new stations after the end of your track (+25', +50', +100').</li>
                       <li><strong>Behind 0 (Backward ←):</strong> Inserts negative stations (<code>-5 ft, -10 ft...</code>) before Station 0 for feathering runouts into undisturbed track.</li>
                     </ul>
-                  </div>
-                </div>
-
-                {/* Profile Chart Controls */}
-                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-xs">
-                  <h4 className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                    <Spline className="w-4 h-4 text-amber-500" />
-                    <span>Vertical Profile Chart Controls ("Gentle Graph")</span>
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Curve vs Straight</strong>
-                      <span className="text-zinc-500">Toggle smooth Fritsch-Carlson monotone spline vs point-to-point chords.</span>
-                    </div>
-                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Zoom (1x / 3x / 8x / 15x)</strong>
-                      <span className="text-zinc-500">1x is true scale. 3x is standard gentle view. 8x and 15x exaggerate micro-leveling.</span>
-                    </div>
-                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Fit vs Expand Width</strong>
-                      <span className="text-zinc-500">Expand width enables horizontal touch-scrolling for long track surveys.</span>
-                    </div>
                   </div>
                 </div>
 
@@ -517,10 +573,21 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 {/* Adaptive Keypad */}
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block">
-                    ⚡ Adaptive Touch Keypad
+                    ⚡ Adaptive Touch Keypad (Decimal Default)
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Keypad adapts instantly to your unit format: 16th fractions, direct whole inches, decimal numbers (with ±0.1" steppers), or metric mm.
+                    Defaults to <strong>Decimal Inches</strong> with rapid ±0.1" and ±1.0" steppers. Automatically adapts if you switch to 16th fractions, total inches, or metric mm.
+                  </p>
+                </div>
+
+                {/* Station Advance Feedback */}
+                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                  <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    Station Advance Feedback
+                  </span>
+                  <p className="text-zinc-500 leading-relaxed">
+                    Tapping <strong>Next Station (→)</strong> provides immediate tactile visual feedback and glow transition so you always know your reading saved and you're at the next tie.
                   </p>
                 </div>
 
@@ -550,7 +617,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
                     <Plus className="w-3.5 h-3.5 text-amber-500 stroke-[3]" />
-                    + New Track / Start Fresh
+                    + New Track / Safety Backup
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
                     Tap <strong>+ New Track</strong> in the header to start a blank survey at Station 0, generate an empty grid, or wipe readings with automatic safety backup.

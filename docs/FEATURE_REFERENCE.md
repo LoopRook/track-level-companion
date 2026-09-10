@@ -46,6 +46,10 @@ Located in `src/components/ProfileChart.tsx`.
 
 #### Toolbar Controls:
 - **Header Grade Readout Pill:** Reports overall section grade (e.g. `End-to-End: +0.25% (2 chords)` or `Grade: +1.00%`).
+- **Evaluate Grade Tool Button (`<Ruler />`):**
+  - Toggles the subset grade evaluation dropdown bar and range inspection mode.
+  - Labeled `"Evaluate Grade"` on desktop, `"Grade"` on mobile.
+  - When a range is locked, displays active span badge (e.g. `30'`).
 - **Curve vs Straight Mode:**
   - **`Curve` (`<Spline />`):** Uses Fritsch-Carlson Monotone Cubic Spline (`getSmoothSplinePath()`). Guarantees smooth curvature passing through every point without overshoot or artificial waves.
   - **`Straight` (`<TrendingUp />`):** Draws straight point-to-point chords between adjacent stations.
@@ -53,13 +57,30 @@ Located in `src/components/ProfileChart.tsx`.
   - **`1x` (True Scale):** Span multiplier `4.0`, min span `16.0"`, height `240px`. Flat, realistic perspective.
   - **`3x` (Gentle / Default):** Span multiplier `2.0`, min span `6.0"`, height `265px`. Standard track flex view.
   - **`8x` (Noticeable):** Span multiplier `1.33`, min span `1.75"`, height `300px`. Magnified dips and humps.
-  - **`15x` (Exaggerated):** Span multiplier `1.08`, min span `0.5"`, height `340px`. High-magnification micro-leveling.
+  - **`15x` (Exaggerated):** Extreme magnification for fine 1/16" micro-leveling.
 - **Expand / Fit Width Toggle:**
   - **`Fit` (`<Minimize2 />`):** SVG fits container width (`850px` base).
   - **`Expand` (`<Maximize2 />`):** SVG width expands dynamically to enable horizontal scrolling for long tracks.
 
+#### Subset Grade Evaluation Bar:
+- Displays when `isMeasureModeActive` is true or two stations are selected:
+  - **From / To Selectors:** Station dropdown pickers showing station foot and elevation.
+  - **Live Metrics:**
+    - `Span`: Horizontal distance in feet and station count.
+    - `Rise/Fall`: Net vertical change ($Y_{\text{end}} - Y_{\text{start}}$).
+    - `Grade`: Computed net slope percentage with directional glyph (`↗`, `↘`, `→`).
+    - `Best-Fit`: Least-squares regression slope ($n \ge 3$).
+  - **`Apply as Target` Action Button:** Invokes `onApplyTargetGrade(netGradePercent)` to immediately lock slope into the project's target grade.
+  - **`Reset` / `Clear Range` Button:** Clears selected endpoints.
+
+#### Mobile Touch Gestures & Hit Zones:
+- **Full-Height Invisible Tap Columns:** `<rect>` elements covering the full vertical span of the chart for each station (`x - interval/2` to `x + interval/2`), providing easy, forgiving tap targets on touchscreens.
+- **Touch Scrubbing (`handleTouchMove`):** Horizontal swipe / drag gestures detect movement ($|\Delta x| > 12\text{px}$) and scrub through stations with live chord preview; releasing locks the range.
+- **Node Clicks:** First click sets start station, second click locks end station, clicking same station clears selection.
+
 #### Active Station Banner:
-- Appears when a station is clicked or hovered: displays distance, reading, elevation, local design grade, status badge, and an **`Edit`** button that directly opens the `FractionKeypad`.
+- Persistent height (`min-h-[42px]`) prevents layout shifts when hovering or selecting ties.
+- Displays station distance, laser reading, relative elevation, local design grade, leveling status badge (`LIFT`, `LOWER`, `ON GRADE`, `LOCKED`), and a prominent **`[✏️ Edit]`** button that directly opens `FractionKeypad`.
 
 #### Visual Legend & Elements:
 - **Green Dashed Line:** Target Grade Line.
@@ -116,22 +137,23 @@ Located in `src/components/FractionKeypad.tsx`.
 Prominently placed above input buttons: displays the calculated target rod reading and required action for the tie, e.g. `🎯 Target: 1' 2 3/8" (Aim: Lift +1/4")`.
 
 #### Adaptive Layouts Based on `unitFormat`:
-1. **`feet_inches_fraction` Mode:**
+1. **`decimal_inches` Mode (Default):**
+   - Touch numeric keypad (`0–9`, `.`, `+/-`, Backspace, Clear).
+   - Instant decimal steppers: `+1.0"`, `-1.0"`, `+0.1"`, `-0.1"`.
+   - Optimized for modern digital and decimal laser rods (e.g. `6.28"`, `5.86"`).
+2. **`feet_inches_fraction` Mode:**
    - **Feet Column:** `0'`, `1'`, `2'`, `3'`, `4'`, `5'`.
    - **Inches Grid:** `0"` through `11"`.
    - **Fraction Grid:** `0 (even)`, `1/16` through `15/16` (filtered to 8ths if `fractionResolution === 8`).
-2. **`inches_fraction` Mode (Total Inches):**
+3. **`inches_fraction` Mode (Total Inches):**
    - Direct whole inches selector (`0"` through `48"+`) + 16th fraction grid (no feet column).
-3. **`decimal_inches` Mode:**
-   - Touch numeric keypad (`0–9`, `.`, `+/-`, Backspace, Clear).
-   - Instant decimal steppers: `+1.0"`, `-1.0"`, `+0.1"`, `-0.1"`.
 4. **`metric_mm` Mode:**
    - Touch numeric keypad for millimeters (`0–9`, `+/-`, Backspace, Clear).
    - Millimeter steppers: `+10mm`, `-10mm`, `+1mm`, `-1mm`.
    - Real-time conversion preview displaying current value in inches (`= X.XX"`).
 
-#### Action Buttons:
-- **`Next Station` (`<ArrowRight />`):** Black/white primary button. Saves current value and automatically opens the next station down the line.
+#### Action Buttons & Advance Feedback:
+- **`Next Station` (`<ArrowRight />`):** Primary button. Saves current value, triggers visual glow feedback, and automatically opens the next station down the line.
 - **`Save` (`<Check />`):** Emerald button. Saves current value and closes keypad.
 - **`Save & Prev` (`<ArrowLeft />`):** Saves current value and opens previous station.
 - **Close (`<X />`):** Discards unsaved changes and closes modal.
@@ -203,6 +225,19 @@ Where:
 - $D$ is the base datum reading at Station 0.
 - $E_{\text{target}}$ is the calculated design elevation at that station.
 - $O_{\text{active}}$ is the cumulative active laser offset for that section.
+
+### 2.5 Subset Grade Evaluation Algorithm (`calculateSubsetGrade`)
+Calculates the geometric chord slope and linear regression between any two surveyed stations $A$ and $B$:
+1. **Span & Elevation Rise/Fall:**
+   $$\Delta X = X_B - X_A \quad (\text{ft})$$
+   $$\Delta Y = Y_B - Y_A \quad (\text{inches})$$
+2. **Direct Chord Grade Percentage:**
+   $$\text{Grade}_{\text{chord}}\% = \left( \frac{\Delta Y}{\Delta X \times 12} \right) \times 100$$
+3. **Best-Fit Linear Regression (when $n \ge 3$ measured ties exist in range):**
+   $$m = \frac{n \sum (X_i Y_i) - \left(\sum X_i\right) \left(\sum Y_i\right)}{n \sum X_i^2 - \left(\sum X_i\right)^2} \quad (\text{in/ft})$$
+   $$\text{Grade}_{\text{best-fit}}\% = \left( \frac{m}{12} \right) \times 100$$
+4. **Max Deviation from Straight Chord:**
+   $$d_{\max} = \max_{i} | Y_i - (Y_A + (X_i - X_A) \times (\Delta Y / \Delta X)) |$$
 
 ---
 

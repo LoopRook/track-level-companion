@@ -36,12 +36,12 @@ The app handles all inversions automatically, eliminating mental math errors in 
 ### Step 2: Walk the Ties & Record Readings
 1. Walk down the track at your chosen interval (e.g. Station 5, 10, 15, 20...).
 2. Tap each station row or card to open the **Adaptive Input Keypad**:
+   - **`Decimal In` Mode (Default):** Full numeric touch pad (`0-9`, `.`) with instant `+1.0"`, `-1.0"`, `+0.1"`, `-0.1"` micro-steppers (e.g. `6.28"`, `5.86"`).
    - **`Ft, In & 1/16"` Mode:** Tap feet, whole inches, and fraction buttons (e.g. `1'`, `4"`, `3/8"`).
    - **`Inches & 1/16"` Mode:** Tap whole inches directly (e.g. `16"`) and fraction buttons.
-   - **`Decimal In` Mode:** Full numeric touch pad (`0-9`, `.`) with instant `+1.0"`, `-1.0"`, `+0.1"`, `-0.1"` micro-steppers.
    - **`Metric (mm)` Mode:** Full millimeter numeric pad (`0-9`) with `+10mm`, `-10mm`, `+1mm`, `-1mm` steppers and real-time inch conversion preview.
 3. Check the **Target Badge** at the top of the keypad: it displays the calculated target rod reading and required action (e.g. `🎯 Target: 1' 2 3/8" (Aim: Lift +1/4")`).
-4. Tap **`Next Station`** (`→`) — the app saves the reading and automatically advances to the next tie down the line.
+4. Tap **`Next Station`** (`→`) — the app saves the reading, gives immediate tactile visual transition feedback, and automatically advances to the next tie down the line.
 
 ### Step 3: Inspect the Vertical Profile Chart
 - Glance at the **Track Vertical Profile** chart:
@@ -49,6 +49,7 @@ The app handles all inversions automatically, eliminating mental math errors in 
   - **Humps** peak above the dashed green target line.
   - Switch between **Curve** (smooth flex spline) and **Straight** (chords).
   - Adjust vertical zoom (`1x` true scale up to `15x` micro-precision).
+  - Tap or scrub across any station nodes to inspect elevations, required actions, or evaluate grade slopes between ties.
 
 ### Step 4: Jacking & Tamping (Checklist Actions)
 1. **Choose Your Display Preference (Target Rod vs. Elevation):**
@@ -85,6 +86,7 @@ In the alignment bar, choose between two target modes:
 - **Dead Level Benchmark (`0.0%`):** Holds Station 0's elevation flat across the entire section. Best for yard tracks, sidings, and tangent track where no grade change is intended.
 - **Quick Presets:** One-tap buttons for **`0.0%`**, **`0.5%`**, **`1.0%`**, and **`1.5%`**.
 - **Type Any Custom Grade:** Tap directly into the slope percentage input box to type any custom slope (e.g. `0.25%`, `-0.75%`, `2.0%`).
+- **One-Click Subset Grade Adoption:** Use the **`📐 Evaluate Grade`** tool on the Profile Chart to measure the actual slope of any section of track and tap **`Apply as Target`** to automatically set it as your target grade.
 
 ### Mode 2: `End-to-End` (Stringline with Locked Control Ties)
 - Draws a straight chord between Station 0 and your final surveyed tie.
@@ -96,15 +98,33 @@ In the alignment bar, choose between two target modes:
 
 ---
 
-## 4. Vertical Profile Chart Controls & Graph Grade Badges
+## 4. Vertical Profile Chart Controls, Grade Evaluation & Gestures
 
 Located above the checklist in `ProfileChart.tsx`:
 
-- **On-Graph Grade Slope Badges:**
-  - Every chord segment along the dashed green target line displays an on-screen grade pill (e.g. `+0.67% ↗`, `-0.50% ↘`, `0.00% Grade →`).
-  - If locked points exist, each chord shows its individual slope so you immediately see the incline up to a root and the decline down after it.
-  - The chart header displays the overall slope summary (e.g. `End-to-End: 0.00% (2 chords)`).
-- **Interactive Inspection:** Hover or tap any point to view distance, reading, elevation, target, local design grade, and tap **`Edit`** to jump straight into the keypad.
+### 4.1 Subset Grade Evaluation Tool ("Evaluate Grade")
+Measure the slope, elevation difference, and chord geometry between **any two arbitrary stations** along the surveyed track:
+- **How to Activate:**
+  - **Via Toolbar:** Tap the blue **`Evaluate Grade`** button (labeled **`Grade`** on mobile) in the chart header.
+  - **Via Dropdowns:** Select the `From:` and `To:` station pickers to choose exact endpoints.
+  - **Via Graph Interaction:** Tap any station node on the chart, then tap a second station node.
+  - **Via Mobile Touch Scrub:** Touch and drag your finger across the chart; release on the destination tie to lock the range.
+- **Calculated Statistics:**
+  - **`Span`:** Horizontal distance between stations (e.g. `30 ft` across 7 ties).
+  - **`Rise / Fall`:** Net elevation change in your chosen unit format (e.g. `+1.80"` or `-3/4"`).
+  - **`Chord Grade %`:** Direct slope angle with directional indicator (`↗ uphill`, `↘ downhill`, `→ flat`).
+  - **`Best-Fit Regression Grade %`:** Least-squares linear regression line across all intermediate surveyed ties in that range (identifying the underlying natural trend).
+  - **`Visual Chord Preview`:** A dashed line is drawn directly on the chart between the two stations with an on-screen grade pill.
+- **`Apply as Target` Button:** Tap to immediately lock this calculated grade percentage into the top alignment bar as your survey's active target slope in **`Grade %`** mode!
+- **`Reset / Clear Range`:** Clears the selection and returns to standard profile inspection.
+
+### 4.2 Mobile Touch Gestures & Hit Zones
+- **Full-Height Tap Columns:** You do not need to hunt for tiny 8px circle nodes on touchscreens. Invisible vertical columns cover the entire chart height for each station, making tapping instant and foolproof with field gloves.
+- **Touch Drag / Scrubbing:** Press down on any station and drag horizontally across the screen to scrub stations in real time. The chord preview updates dynamically under your finger.
+- **Station Readout Banner & One-Tap Edit:** Tapping any station displays distance, laser reading, relative elevation, local design grade, leveling status (`LIFT`, `LOWER`, `ON GRADE`, `LOCKED`), and a prominent **`[✏️ Edit]`** button to immediately open the keypad for that tie.
+
+### 4.3 View Modes & Display Controls
+- **On-Graph Grade Slope Badges:** Every chord segment along the dashed green target line displays an on-screen grade pill (e.g. `+0.67% ↗`, `-0.50% ↘`, `0.00% Grade →`).
 - **Curve vs Straight:**
   - **`Curve` (`<Spline />`):** Uses a Fritsch-Carlson monotone cubic spline that passes smoothly through every station without fake waves or overshoot.
   - **`Straight` (`<TrendingUp />`):** Connects points with direct straight chord lines.
