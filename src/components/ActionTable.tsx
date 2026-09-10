@@ -164,7 +164,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               }`}
               title="Show target laser rod measurement to aim for when leveling track"
             >
-              <span>🎯 Target Rod</span>
+              <span>Target Rod</span>
             </button>
             <button
               type="button"
@@ -176,7 +176,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               }`}
               title="Show physical relative elevation above/below laser datum"
             >
-              <span>📐 Rel. Elev</span>
+              <span>Rel. Elev</span>
             </button>
             <button
               type="button"
@@ -353,7 +353,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               {/* Middle Row: Readings & Target/Elevation */}
               <div className="grid grid-cols-2 gap-2 py-1.5 px-2.5 bg-zinc-100/60 dark:bg-zinc-900/60 rounded-xl mb-2 text-xs">
                 <div>
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-300 block uppercase font-bold">
+                  <span className="text-[10px] text-zinc-600 dark:text-zinc-400 block uppercase font-bold">
                     {s.isTurningPoint ? 'Last Reading (TP)' : 'Last Reading'}
                   </span>
                   {s.isTurningPoint ? (
@@ -396,13 +396,14 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 <div className="text-right">
                   {displayMode === 'target_reading' && (
                     <div>
-                      <span className="text-[10px] text-zinc-400 dark:text-zinc-300 block uppercase font-bold">Target Rod</span>
-                      <div className="font-mono font-bold text-sm text-sky-600 dark:text-sky-400 flex items-center justify-end gap-1">
-                        <span className="text-xs">🎯</span>
+                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 block uppercase font-bold">Target Rod</span>
+                      <div className="font-mono font-bold text-sm text-sky-700 dark:text-sky-400 flex items-center justify-end gap-1">
                         <span>
                           {s.targetReadingInches !== null && s.targetReadingInches !== undefined
                             ? formatMeasurement(s.targetReadingInches, unitFormat, fractionResolution)
-                            : '—'}
+                            : s.readingInches === null
+                            ? '—'
+                            : 'Need end shot'}
                         </span>
                       </div>
                     </div>
@@ -410,8 +411,8 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
                   {displayMode === 'relative_elev' && (
                     <div>
-                      <span className="text-[10px] text-zinc-400 dark:text-zinc-300 block uppercase font-bold">Rel. Elevation</span>
-                      <div className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-300">
+                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 block uppercase font-bold">Rel. Elevation</span>
+                      <div className="font-mono font-bold text-sm text-zinc-800 dark:text-zinc-200">
                         {s.elevationInches !== null
                           ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
                           : '—'}
@@ -422,16 +423,16 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {displayMode === 'both' && (
                     <div className="space-y-0.5">
                       <div className="flex items-center justify-end gap-1">
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-300 uppercase font-bold">Target:</span>
-                        <span className="font-mono font-bold text-xs text-sky-600 dark:text-sky-400">
+                        <span className="text-[10px] text-zinc-600 dark:text-zinc-400 uppercase font-bold">Target:</span>
+                        <span className="font-mono font-bold text-xs text-sky-700 dark:text-sky-400">
                           {s.targetReadingInches !== null && s.targetReadingInches !== undefined
                             ? formatMeasurement(s.targetReadingInches, unitFormat, fractionResolution)
                             : '—'}
                         </span>
                       </div>
                       <div className="flex items-center justify-end gap-1">
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-300 uppercase font-bold">Elev:</span>
-                        <span className="font-mono font-bold text-xs text-zinc-700 dark:text-zinc-300">
+                        <span className="text-[10px] text-zinc-600 dark:text-zinc-400 uppercase font-bold">Elev:</span>
+                        <span className="font-mono font-bold text-xs text-zinc-800 dark:text-zinc-200">
                           {s.elevationInches !== null
                             ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
                             : '—'}
@@ -445,26 +446,26 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               {/* Bottom Row: Full-width Track Action Banner */}
               <div>
                 {isCompleted ? (
-                  <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-zinc-200/50 dark:bg-zinc-800/50 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                  <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-zinc-200/50 dark:bg-zinc-800/50 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                     <span>LEVELED</span>
                     {s.actionText !== '—' && s.action !== 'ok' && (
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500 line-through font-normal ml-1">
+                      <span className="text-[11px] text-zinc-600 dark:text-zinc-400 line-through font-normal ml-1">
                         ({s.actionText})
                       </span>
                     )}
                   </div>
                 ) : isLocked ? (
-                  <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                  <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
                     <Lock className="w-3.5 h-3.5 text-amber-500" />
                     <span>LOCKED</span>
                   </div>
                 ) : (
                   <>
                     {s.action === 'ok' && (
-                      <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>ON GRADE ✓</span>
+                      <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>{s.actionText}</span>
                       </div>
                     )}
                     {s.action === 'lift' && (
@@ -480,7 +481,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       </div>
                     )}
                     {s.action === 'none' && (
-                      <div className="w-full py-1 px-3 rounded-xl text-xs text-center text-zinc-400 bg-zinc-100/50 dark:bg-zinc-900/50">
+                      <div className="w-full py-1 px-3 rounded-xl text-xs text-center text-zinc-600 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-900/50">
                         Awaiting reading
                       </div>
                     )}
@@ -496,7 +497,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
       <div className="overflow-x-auto hidden md:block">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-300 bg-zinc-100/70 dark:bg-zinc-950 font-bold">
+            <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 bg-zinc-100/70 dark:bg-zinc-950 font-bold">
               <th className="py-2.5 px-3 w-10 text-center">Status</th>
               <th className="py-2.5 px-3">Station</th>
               <th className="py-2.5 px-3">Last Reading</th>
@@ -637,7 +638,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         </span>
                       )
                     ) : (
-                      <span className="text-zinc-400 text-xs italic bg-zinc-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
+                      <span className="text-zinc-600 dark:text-zinc-400 text-xs italic bg-zinc-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
                         Need Reading
                       </span>
                     )}
@@ -647,19 +648,20 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {(displayMode === 'target_reading' || displayMode === 'both') && (
                     <td className="py-3 px-3 font-mono font-bold text-xs">
                       {s.targetReadingInches !== null && s.targetReadingInches !== undefined ? (
-                        <div className="flex items-center gap-1 text-sky-600 dark:text-sky-400">
-                          <span className="text-[11px]">🎯</span>
+                        <div className="flex items-center gap-1 text-sky-700 dark:text-sky-400">
                           <span>{formatMeasurement(s.targetReadingInches, unitFormat, fractionResolution)}</span>
                         </div>
                       ) : (
-                        <span className="text-zinc-400">—</span>
+                        <span className="text-zinc-500 dark:text-zinc-400 text-xs">
+                          {s.readingInches === null ? '—' : 'Need end shot'}
+                        </span>
                       )}
                     </td>
                   )}
 
                   {/* Relative Elevation Column */}
                   {(displayMode === 'relative_elev' || displayMode === 'both') && (
-                    <td className="py-3 px-3 font-mono text-zinc-500 dark:text-zinc-400 text-xs">
+                    <td className="py-3 px-3 font-mono text-zinc-700 dark:text-zinc-300 text-xs">
                       {s.elevationInches !== null
                         ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
                         : '—'}
@@ -669,11 +671,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {/* Track Action Badge */}
                   <td className="py-3 px-3 text-center">
                     {isCompleted ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-zinc-200/50 dark:bg-zinc-800/60 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-zinc-200/50 dark:bg-zinc-800/60 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                         <span>LEVELED</span>
                         {s.actionText !== '—' && s.action !== 'ok' && (
-                          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 line-through font-normal ml-0.5">
+                          <span className="text-[10px] text-zinc-600 dark:text-zinc-400 line-through font-normal ml-0.5">
                             ({s.actionText})
                           </span>
                         )}
@@ -686,9 +688,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     ) : (
                       <>
                         {s.action === 'ok' && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            ON GRADE
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                            {s.actionText}
                           </span>
                         )}
                         {s.action === 'lift' && (
@@ -704,7 +706,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                           </span>
                         )}
                         {s.action === 'none' && (
-                          <span className="text-zinc-400 text-xs">—</span>
+                          <span className="text-zinc-500 dark:text-zinc-400 text-xs">—</span>
                         )}
                       </>
                     )}

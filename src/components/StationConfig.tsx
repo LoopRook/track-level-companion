@@ -187,42 +187,52 @@ export const StationConfig: React.FC<StationConfigProps> = ({
         </div>
 
         <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
-          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
+          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
             On Grade (Within {project.fractionResolution === 16 ? '1/16"' : '1/8"'})
           </span>
-          <div className="text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
-            {summary.measuredCount > 0
+          <div className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">
+            {summary.measuredCount >= 2
               ? `${Math.round((summary.onGradeCount / summary.measuredCount) * 100)}%`
               : '—'}
-            <span className="text-[11px] text-zinc-400 dark:text-zinc-300 font-semibold ml-1.5">
-              ({summary.onGradeCount} pts)
+            <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-semibold ml-1.5">
+              {summary.measuredCount < 2 ? '(Need ≥ 2 shots)' : `(${summary.onGradeCount} pts)`}
             </span>
           </div>
         </div>
 
         <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
-          <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider block">
+          <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider block">
             Needs Lift (Low spots)
           </span>
-          <div className="text-lg font-mono font-bold text-sky-600 dark:text-sky-400 mt-0.5">
-            {summary.liftCount} pts
-            {summary.maxLift > 0 && (
-              <span className="text-[11px] text-sky-500 dark:text-sky-400 font-semibold ml-1.5">
+          <div className="text-lg font-mono font-bold text-sky-700 dark:text-sky-400 mt-0.5">
+            {summary.measuredCount >= 2 ? `${summary.liftCount} pts` : '—'}
+            {summary.measuredCount >= 2 && summary.maxLift > 0 && (
+              <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold ml-1.5">
                 (Max +{project.fractionResolution === 16 ? `${Math.round(summary.maxLift * 16)}/16"` : `${summary.maxLift.toFixed(2)}"`})
+              </span>
+            )}
+            {summary.measuredCount < 2 && (
+              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-normal ml-1.5">
+                (Need ≥ 2 shots)
               </span>
             )}
           </div>
         </div>
 
         <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
-          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
+          <span className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">
             Needs Lower (High spots)
           </span>
-          <div className="text-lg font-mono font-bold text-amber-600 dark:text-amber-400 mt-0.5">
-            {summary.lowerCount} pts
-            {summary.maxLower > 0 && (
-              <span className="text-[11px] text-amber-500 dark:text-amber-400 font-semibold ml-1.5">
+          <div className="text-lg font-mono font-bold text-amber-800 dark:text-amber-400 mt-0.5">
+            {summary.measuredCount >= 2 ? `${summary.lowerCount} pts` : '—'}
+            {summary.measuredCount >= 2 && summary.maxLower > 0 && (
+              <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold ml-1.5">
                 (Max -{project.fractionResolution === 16 ? `${Math.round(summary.maxLower * 16)}/16"` : `${summary.maxLower.toFixed(2)}"`})
+              </span>
+            )}
+            {summary.measuredCount < 2 && (
+              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-normal ml-1.5">
+                (Need ≥ 2 shots)
               </span>
             )}
           </div>

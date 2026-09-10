@@ -81,20 +81,24 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   const [pulseDistance, setPulseDistance] = useState(false);
   const prevDistRef = React.useRef(stationDistanceFt);
 
+  // Track if user has entered/selected a measurement (starts false if station reading is null)
+  const [hasEnteredValue, setHasEnteredValue] = useState(false);
+
   // Feet & Inches fractional state
-  const [feet, setFeet] = useState(0);
-  const [inches, setInches] = useState(12);
-  const [totalInchesOnly, setTotalInchesOnly] = useState(14);
+  const [feet, setFeet] = useState(1);
+  const [inches, setInches] = useState(0);
+  const [totalInchesOnly, setTotalInchesOnly] = useState(12);
   const [numerator, setNumerator] = useState(0);
   const [denominator, setDenominator] = useState(1);
 
   // Decimal & Metric state (string for keypad typing)
-  const [decimalInputStr, setDecimalInputStr] = useState('14.000');
-  const [metricInputStr, setMetricInputStr] = useState('355.6');
+  const [decimalInputStr, setDecimalInputStr] = useState('');
+  const [metricInputStr, setMetricInputStr] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       if (currentReadingInches !== null && !isNaN(currentReadingInches)) {
+        setHasEnteredValue(true);
         const parts = toFractionalParts(currentReadingInches, fractionResolution);
         setFeet(parts.feet);
         setInches(parts.inches);
@@ -105,13 +109,15 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         setMetricInputStr((currentReadingInches * 25.4).toFixed(1));
         setDirectText(formatMeasurement(currentReadingInches, unitFormat, fractionResolution));
       } else {
+        // Default reading is blank: no selection until user taps a number
+        setHasEnteredValue(false);
         setFeet(1);
         setInches(0);
         setTotalInchesOnly(12);
         setNumerator(0);
         setDenominator(1);
-        setDecimalInputStr('12.000');
-        setMetricInputStr('304.8');
+        setDecimalInputStr('');
+        setMetricInputStr('');
         setDirectText('');
       }
     }
@@ -151,20 +157,29 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   if (useDirectInput) {
     currentComputedInches = parseMeasurement(directText);
   } else if (unitFormat === 'decimal_inches') {
-    const val = parseFloat(decimalInputStr);
-    currentComputedInches = !isNaN(val) ? val : null;
+    if (hasEnteredValue && decimalInputStr.trim() !== '') {
+      const val = parseFloat(decimalInputStr);
+      currentComputedInches = !isNaN(val) ? val : null;
+    }
   } else if (unitFormat === 'metric_mm') {
-    const valMm = parseFloat(metricInputStr);
-    currentComputedInches = !isNaN(valMm) ? valMm / 25.4 : null;
+    if (hasEnteredValue && metricInputStr.trim() !== '') {
+      const valMm = parseFloat(metricInputStr);
+      currentComputedInches = !isNaN(valMm) ? valMm / 25.4 : null;
+    }
   } else if (unitFormat === 'inches_fraction') {
-    const frac = denominator > 0 ? numerator / denominator : 0;
-    currentComputedInches = totalInchesOnly + frac;
+    if (hasEnteredValue) {
+      const frac = denominator > 0 ? numerator / denominator : 0;
+      currentComputedInches = totalInchesOnly + frac;
+    }
   } else {
-    currentComputedInches = partsToInches(feet, inches, numerator, denominator);
+    if (hasEnteredValue) {
+      currentComputedInches = partsToInches(feet, inches, numerator, denominator);
+    }
   }
 
   // Handle Nudges
   const handleNudge = (deltaInches: number) => {
+    setHasEnteredValue(true);
     const current = currentComputedInches ?? 12.0;
     const nextVal = Math.max(0, current + deltaInches);
     const parts = toFractionalParts(nextVal, fractionResolution);
@@ -180,6 +195,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
   // Touch Numeric Keypad typing for Decimal & Metric
   const handleKeypadDigit = (digit: string) => {
+    setHasEnteredValue(true);
     if (unitFormat === 'decimal_inches') {
       if (digit === '.' && decimalInputStr.includes('.')) return;
       setDecimalInputStr((prev) => (prev === '0' || prev === '' ? digit : prev + digit));
@@ -191,18 +207,27 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
   const handleKeypadBackspace = () => {
     if (unitFormat === 'decimal_inches') {
-      setDecimalInputStr((prev) => (prev.length > 1 ? prev.slice(0, -1) : '0'));
+      if (decimalInputStr.length <= 1) {
+        setDecimalInputStr('');
+        setHasEnteredValue(false);
+      } else {
+        setDecimalInputStr((prev) => prev.slice(0, -1));
+      }
     } else if (unitFormat === 'metric_mm') {
-      setMetricInputStr((prev) => (prev.length > 1 ? prev.slice(0, -1) : '0'));
+      if (metricInputStr.length <= 1) {
+        setMetricInputStr('');
+        setHasEnteredValue(false);
+      } else {
+        setMetricInputStr((prev) => prev.slice(0, -1));
+      }
     }
   };
 
   const handleKeypadClear = () => {
-    if (unitFormat === 'decimal_inches') {
-      setDecimalInputStr('');
-    } else if (unitFormat === 'metric_mm') {
-      setMetricInputStr('');
-    }
+    setHasEnteredValue(false);
+    setDecimalInputStr('');
+    setMetricInputStr('');
+    setDirectText('');
   };
 
   const handleSave = () => {
@@ -340,7 +365,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 </span>
               )}
             </div>
-          <div className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight text-center">
+          <div className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight text-center min-h-[44px] flex items-center justify-center">
             {currentComputedInches !== null ? (
               <>
                 <span>{formatMeasurement(currentComputedInches, unitFormat, fractionResolution)}</span>
@@ -356,7 +381,9 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 )}
               </>
             ) : (
-              <span className="text-zinc-500 italic">No measurement</span>
+              <span className="text-zinc-400 dark:text-zinc-500 italic text-2xl font-normal">
+                Tap numbers to set
+              </span>
             )}
           </div>
 
@@ -452,6 +479,14 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
               </>
             )}
             <button
+              type="button"
+              onClick={handleKeypadClear}
+              className="px-2.5 py-1 text-xs font-bold rounded bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 active:scale-95 transition ml-1"
+              title="Clear measurement (set to blank)"
+            >
+              Clear
+            </button>
+            <button
               onClick={() => setUseDirectInput(!useDirectInput)}
               className="ml-auto p-1.5 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-200 dark:bg-zinc-900 transition"
               title={useDirectInput ? 'Switch to Touch Keypad' : 'Switch to Direct Keyboard Typing'}
@@ -471,7 +506,10 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
               <input
                 type="text"
                 value={directText}
-                onChange={(e) => setDirectText(e.target.value)}
+                onChange={(e) => {
+                  setDirectText(e.target.value);
+                  setHasEnteredValue(e.target.value.trim().length > 0);
+                }}
                 placeholder="e.g. 1' 2 3/8"
                 autoFocus
                 className="w-full text-xl font-mono p-3 rounded-xl border-2 border-amber-500 bg-white dark:bg-black text-zinc-900 dark:text-zinc-100 outline-none shadow-inner"
@@ -498,7 +536,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
               {/* Display Box */}
               <div className="w-full text-center text-2xl font-mono font-bold p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100">
-                {decimalInputStr || '0'}"
+                {hasEnteredValue && decimalInputStr ? `${decimalInputStr}"` : <span className="text-zinc-400 dark:text-zinc-500 font-normal italic text-lg">Tap digits to enter...</span>}
               </div>
 
               {/* Number Touch Keypad */}
@@ -541,7 +579,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
               {/* Display Box */}
               <div className="w-full text-center text-2xl font-mono font-bold p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100">
-                {metricInputStr || '0'} mm
+                {hasEnteredValue && metricInputStr ? `${metricInputStr} mm` : <span className="text-zinc-400 dark:text-zinc-500 font-normal italic text-lg">Tap digits to enter...</span>}
               </div>
 
               {/* Number Touch Keypad */}
@@ -578,14 +616,20 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => setTotalInchesOnly((prev) => Math.max(0, prev - 1))}
+                      onClick={() => {
+                        setTotalInchesOnly((prev) => Math.max(0, prev - 1));
+                        setHasEnteredValue(true);
+                      }}
                       className="px-2 py-0.5 text-xs font-bold rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
                     >
                       -1"
                     </button>
                     <button
                       type="button"
-                      onClick={() => setTotalInchesOnly((prev) => prev + 1)}
+                      onClick={() => {
+                        setTotalInchesOnly((prev) => prev + 1);
+                        setHasEnteredValue(true);
+                      }}
                       className="px-2 py-0.5 text-xs font-bold rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
                     >
                       +1"
@@ -593,20 +637,26 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                   </div>
                 </div>
                 <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5">
-                  {[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].map((inch) => (
-                    <button
-                      key={inch}
-                      type="button"
-                      onClick={() => setTotalInchesOnly(inch)}
-                      className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
-                        totalInchesOnly === inch
-                          ? 'bg-amber-500 text-black font-extrabold shadow-sm'
-                          : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
-                      }`}
-                    >
-                      {inch}"
-                    </button>
-                  ))}
+                  {[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].map((inch) => {
+                    const isSelected = hasEnteredValue && totalInchesOnly === inch;
+                    return (
+                      <button
+                        key={inch}
+                        type="button"
+                        onClick={() => {
+                          setTotalInchesOnly(inch);
+                          setHasEnteredValue(true);
+                        }}
+                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
+                          isSelected
+                            ? 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                        }`}
+                      >
+                        {inch}"
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -618,8 +668,9 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 <div className="grid grid-cols-4 gap-1.5">
                   {fractionsList.map((frac) => {
                     const isSelected =
-                      (numerator === 0 && frac.num === 0) ||
-                      (numerator === frac.num && denominator === frac.den);
+                      hasEnteredValue &&
+                      ((numerator === 0 && frac.num === 0) ||
+                        (numerator === frac.num && denominator === frac.den));
 
                     return (
                       <button
@@ -628,6 +679,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                         onClick={() => {
                           setNumerator(frac.num);
                           setDenominator(frac.den);
+                          setHasEnteredValue(true);
                         }}
                         className={`h-10 rounded-lg font-mono font-bold text-xs transition active:scale-95 ${
                           isSelected
@@ -651,20 +703,26 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                   Feet (ft)
                 </label>
                 <div className="grid grid-cols-6 gap-1.5">
-                  {[0, 1, 2, 3, 4, 5].map((f) => (
-                    <button
-                      key={f}
-                      type="button"
-                      onClick={() => setFeet(f)}
-                      className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
-                        feet === f
-                          ? 'bg-amber-500 text-black font-extrabold shadow-sm'
-                          : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
-                      }`}
-                    >
-                      {f}'
-                    </button>
-                  ))}
+                  {[0, 1, 2, 3, 4, 5].map((f) => {
+                    const isSelected = hasEnteredValue && feet === f;
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => {
+                          setFeet(f);
+                          setHasEnteredValue(true);
+                        }}
+                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
+                          isSelected
+                            ? 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                        }`}
+                      >
+                        {f}'
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -674,20 +732,26 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                   Inches (in)
                 </label>
                 <div className="grid grid-cols-6 gap-1.5">
-                  {Array.from({ length: 12 }, (_, i) => i).map((inch) => (
-                    <button
-                      key={inch}
-                      type="button"
-                      onClick={() => setInches(inch)}
-                      className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
-                        inches === inch
-                          ? 'bg-amber-500 text-black font-extrabold shadow-sm'
-                          : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
-                      }`}
-                    >
-                      {inch}"
-                    </button>
-                  ))}
+                  {Array.from({ length: 12 }, (_, i) => i).map((inch) => {
+                    const isSelected = hasEnteredValue && inches === inch;
+                    return (
+                      <button
+                        key={inch}
+                        type="button"
+                        onClick={() => {
+                          setInches(inch);
+                          setHasEnteredValue(true);
+                        }}
+                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
+                          isSelected
+                            ? 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                        }`}
+                      >
+                        {inch}"
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -699,8 +763,9 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 <div className="grid grid-cols-4 gap-1.5">
                   {fractionsList.map((frac) => {
                     const isSelected =
-                      (numerator === 0 && frac.num === 0) ||
-                      (numerator === frac.num && denominator === frac.den);
+                      hasEnteredValue &&
+                      ((numerator === 0 && frac.num === 0) ||
+                        (numerator === frac.num && denominator === frac.den));
 
                     return (
                       <button
@@ -709,6 +774,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                         onClick={() => {
                           setNumerator(frac.num);
                           setDenominator(frac.den);
+                          setHasEnteredValue(true);
                         }}
                         className={`h-10 rounded-lg font-mono font-bold text-xs transition active:scale-95 ${
                           isSelected

@@ -506,8 +506,8 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                 {/* Target Rod vs Elevation Toggle */}
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
-                  <span className="font-bold text-amber-600 dark:text-amber-400 block">
-                    🎯 Target Rod vs. Relative Elev
+                  <span className="font-bold text-amber-700 dark:text-amber-400 block">
+                    Target Rod vs. Relative Elev
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
                     Toggle between <strong>Target Rod</strong>, <strong>Relative Elev</strong>, or <strong>Both</strong>. Target Rod tells you exactly what reading your laser receiver should hit when the tie is leveled!

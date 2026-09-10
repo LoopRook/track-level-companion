@@ -376,30 +376,32 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
           <div className="flex items-center gap-2 font-sans font-bold">
             {currentInspectStation.completed && (
-              <span className="text-emerald-600 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
+              <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
                 ✓ LEVELED
               </span>
             )}
             {currentInspectStation.isLocked ? (
-              <span className="text-amber-500 dark:text-amber-400 text-xs flex items-center gap-1">
+              <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1">
                 🔒 LOCKED
               </span>
             ) : (
               <>
                 {currentInspectStation.action === 'ok' && (
-                  <span className="text-emerald-500 text-xs">✓ ON GRADE</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 text-xs">
+                    {currentInspectStation.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : '✓ ON GRADE'}
+                  </span>
                 )}
                 {currentInspectStation.action === 'lift' && (
-                  <span className="text-sky-500 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
+                  <span className="text-sky-700 dark:text-sky-400 text-xs">▲ {currentInspectStation.actionText}</span>
                 )}
                 {currentInspectStation.action === 'lower' && (
-                  <span className="text-amber-500 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
+                  <span className="text-amber-800 dark:text-amber-400 text-xs">▼ {currentInspectStation.actionText}</span>
                 )}
               </>
             )}
             <button
               onClick={() => onSelectStation(currentInspectStation)}
-              className="text-[11px] underline text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 ml-1.5"
+              className="text-[11px] underline text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 ml-1.5"
             >
               Edit
             </button>
@@ -638,7 +640,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       </div>
 
       {/* Legend Footer */}
-      <div className="px-3.5 py-1.5 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-[11px] text-zinc-500 gap-2">
+      <div className="px-3.5 py-1.5 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-[11px] text-zinc-600 dark:text-zinc-400 gap-2">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <span className="w-2.5 h-0.5 bg-zinc-900 dark:bg-white rounded"></span>
@@ -650,16 +652,16 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-3 font-semibold flex-wrap">
-          <span className="flex items-center gap-1 text-sky-500">
-            <span className="w-2 h-2 rounded-full bg-sky-400"></span> Lift (Low)
+          <span className="flex items-center gap-1 text-sky-700 dark:text-sky-400">
+            <span className="w-2 h-2 rounded-full bg-sky-500"></span> Lift (Low)
           </span>
-          <span className="flex items-center gap-1 text-amber-500">
-            <span className="w-2 h-2 rounded-full bg-amber-400"></span> Lower (High)
+          <span className="flex items-center gap-1 text-amber-800 dark:text-amber-400">
+            <span className="w-2 h-2 rounded-full bg-amber-500"></span> Lower (High)
           </span>
-          <span className="flex items-center gap-1 text-emerald-500">
+          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span> On Grade
           </span>
-          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
             <span className="w-2 h-2 rounded-full border border-emerald-500 bg-emerald-500/30"></span> Leveled ✓
           </span>
         </div>

@@ -537,6 +537,54 @@ describe('Laser Datum & Track Profile Calculations', () => {
     expect(gradeInfo!.segments[1].gradePercent).toBeCloseTo(-0.50, 2);
     expect(gradeInfo!.segments[1].elevChangeInches).toBeCloseTo(-1.5, 2);
   });
+
+  it('handles a single measurement cleanly without anomalies', () => {
+    const singleShotProject: TrackProject = {
+      ...baseProject,
+      gradeMode: 'target_grade',
+      targetGradePercent: 0.0,
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 14.0 },
+        { id: '5', distanceFt: 5, readingInches: null },
+        { id: '10', distanceFt: 10, readingInches: null },
+      ],
+    };
+
+    const calculated = calculateTrackProfile(singleShotProject);
+    // Station 0 acts as datum benchmark, not an already leveled station
+    expect(calculated[0].actionText).toBe('DATUM (REF)');
+    expect(calculated[0].action).toBe('ok');
+
+    // Intermediate unmeasured stations remain none
+    expect(calculated[1].action).toBe('none');
+    expect(calculated[1].actionText).toBe('—');
+    expect(calculated[1].readingInches).toBeNull();
+
+    // Summary statistics should report 0 onGradeCount since 1 point cannot evaluate grade compliance
+    const summary = getTrackSummary(calculated);
+    expect(summary.measuredCount).toBe(1);
+    expect(summary.onGradeCount).toBe(0);
+    expect(summary.liftCount).toBe(0);
+    expect(summary.lowerCount).toBe(0);
+  });
+
+  it('leaves unmeasured target elevations null when in end_to_end mode with only 1 measurement', () => {
+    const singleE2EProject: TrackProject = {
+      ...baseProject,
+      gradeMode: 'end_to_end',
+      stations: [
+        { id: '0', distanceFt: 0, readingInches: 14.0 },
+        { id: '5', distanceFt: 5, readingInches: null },
+        { id: '10', distanceFt: 10, readingInches: null },
+      ],
+    };
+
+    const calculated = calculateTrackProfile(singleE2EProject);
+    // Unmeasured stations cannot have an end-to-end target elevation without an end point
+    expect(calculated[1].targetElevationInches).toBeNull();
+    expect(calculated[2].targetElevationInches).toBeNull();
+    expect(calculated[1].targetReadingInches).toBeNull();
+  });
 });
 
 

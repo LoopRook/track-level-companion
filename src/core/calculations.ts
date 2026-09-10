@@ -186,15 +186,24 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
       });
     }
   } else if (validStationsWithReading.length === 1) {
-    // With only one point, target line is just a flat or slope line anchored there
     const firstIdx = stations.findIndex(s => s.readingInches !== null && !isNaN(s.readingInches));
-    const startX = stations[firstIdx].distanceFt;
-    const startY = elevations[firstIdx]!;
-    const slopeInchesPerFt = (targetGradePercent / 100) * 12;
+    if (firstIdx >= 0) {
+      if (gradeMode === 'target_grade') {
+        // In Target Grade mode, a single shot establishes the reference datum,
+        // allowing the target slope plane to project across all stations from that point
+        const startX = stations[firstIdx].distanceFt;
+        const startY = elevations[firstIdx]!;
+        const slopeInchesPerFt = (targetGradePercent / 100) * 12;
 
-    stations.forEach((s, i) => {
-      targetElevations[i] = startY + (s.distanceFt - startX) * slopeInchesPerFt;
-    });
+        stations.forEach((s, i) => {
+          targetElevations[i] = startY + (s.distanceFt - startX) * slopeInchesPerFt;
+        });
+      } else {
+        // In End-to-End or regression modes, you cannot project a target line with only 1 point.
+        // Target line remains null for unmeasured stations until the other end is surveyed.
+        targetElevations[firstIdx] = elevations[firstIdx];
+      }
+    }
   }
 
   // Step 3: Calculate Lifts / Cuts and Action Badges
@@ -216,7 +225,11 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
     } else if (elev !== null && target !== null) {
       lift = target - elev;
 
-      if (Math.abs(lift) <= tolerance) {
+      if (validStationsWithReading.length === 1) {
+        // A single lone measurement acts as the reference datum, not an already leveled tie
+        action = 'ok';
+        actionText = 'DATUM (REF)';
+      } else if (Math.abs(lift) <= tolerance) {
         action = 'ok';
         actionText = 'ON GRADE ✓';
       } else if (lift > 0) {
@@ -277,9 +290,10 @@ export function getTrackSummary(calculatedStations: CalculatedStation[]) {
   }
 
   const lifts = withLifts.map(s => s.liftInches!);
-  const onGradeCount = withLifts.filter(s => s.action === 'ok').length;
-  const liftCount = withLifts.filter(s => s.action === 'lift').length;
-  const lowerCount = withLifts.filter(s => s.action === 'lower').length;
+  // When only 1 station is measured, it is the benchmark datum; grade compliance requires >= 2 shots
+  const onGradeCount = withLifts.length >= 2 ? withLifts.filter(s => s.action === 'ok').length : 0;
+  const liftCount = withLifts.length >= 2 ? withLifts.filter(s => s.action === 'lift').length : 0;
+  const lowerCount = withLifts.length >= 2 ? withLifts.filter(s => s.action === 'lower').length : 0;
 
   const maxLift = Math.max(0, ...lifts);
   const maxLower = Math.abs(Math.min(0, ...lifts));
