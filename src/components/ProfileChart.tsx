@@ -725,7 +725,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               <button
                 onClick={() => onApplyTargetGrade(activeSubsetGrade.netGradePercent)}
                 className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition active:scale-95"
-                title={`Set design target grade to ${activeSubsetGrade.netGradePercent.toFixed(2)}%`}
+                title={`Set target grade to ${activeSubsetGrade.netGradePercent.toFixed(2)}%`}
               >
                 Apply as Target
               </button>
@@ -837,7 +837,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <>
                     <span className="text-zinc-400 hidden md:inline">|</span>
                     <span className="text-emerald-600 dark:text-emerald-400 hidden md:inline font-bold whitespace-nowrap">
-                      Design Grade:{' '}
+                      Grade:{' '}
                       {(() => {
                         const activeSeg = gradeInfo.segments.find(
                           seg => currentInspectStation.distanceFt >= seg.startDistanceFt && currentInspectStation.distanceFt <= seg.endDistanceFt

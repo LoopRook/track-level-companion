@@ -122,7 +122,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
             <strong className="text-sm">{summary.lengthFt} ft</strong> ({summary.totalStations} ties)
           </div>
           <div className="p-1.5 bg-zinc-100 rounded border border-zinc-300">
-            <span className="text-[9px] uppercase font-bold text-zinc-500 block">Design Grade</span>
+            <span className="text-[9px] uppercase font-bold text-zinc-500 block">Grade</span>
             <strong className="text-sm">
               {gradeInfo ? `${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%` : '0.00%'}
             </strong> ({project.gradeMode === 'end_to_end' ? 'End-to-End' : 'Target %'})
