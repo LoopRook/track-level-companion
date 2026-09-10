@@ -476,6 +476,10 @@ export const App: React.FC = () => {
         stationDistanceFt={activeEditingStation?.distanceFt ?? 0}
         currentReadingInches={activeEditingStation?.readingInches ?? null}
         datumOffsetInches={activeEditingStation?.appliedDatumOffsetInches ?? activeEditingStation?.datumOffsetInches}
+        targetReadingInches={activeEditingStation?.targetReadingInches ?? null}
+        actionText={activeEditingStation?.actionText}
+        unitFormat={project.unitFormat}
+        fractionResolution={project.fractionResolution}
         onSave={handleSaveStationReading}
         onSaveAndNext={handleSaveAndNext}
         onSaveAndPrev={handleSaveAndPrev}

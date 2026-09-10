@@ -23,6 +23,7 @@ export interface CalculatedStation extends StationPoint {
   liftInches: number | null;     // Target - Current (positive = lift, negative = lower)
   action: 'lift' | 'lower' | 'ok' | 'none';
   actionText: string;            // e.g. "LIFT 3/8\"", "LOWER 1/8\"", "ON GRADE"
+  targetReadingInches?: number | null; // The exact rod reading that corresponds to target finished elevation under active laser setup
 }
 
 export interface TrackProject {

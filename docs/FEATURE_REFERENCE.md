@@ -73,6 +73,8 @@ Located in `src/components/ProfileChart.tsx`.
 Located in `src/components/ActionTable.tsx`.
 
 #### Header Toolbar:
+- **Display Mode Toggle:** Segmented control (`[ Target Rod ]`, `[ Relative Elev ]`, `[ Both ]`) bound to `TableDisplayMode`. Automatically persists preference in `localStorage.getItem('tlc_table_display_mode')`.
+  - Also toggled by clicking the desktop table column header (`Target Rod` / `Relative Elev`).
 - **`Move Laser (Datum)`:** Purple button with `<Flag />` icon. Opens the Laser Relocation modal pre-selected to the last measured station.
 - **`+ Extend`:** Button with `<Layers />` icon. Opens the batch Extend Track modal.
 - **`+ Custom Pt`:** Prompts for custom distance along track (e.g. `12.5 ft`) and inserts in sorted order.
@@ -91,8 +93,8 @@ Located in `src/components/ActionTable.tsx`.
   - **`Behind 0 (Backward ←)`:** Inserts negative stations (`-5'`, `-10'`, `-15'`) before Station 0 for taper runout feathering.
 
 #### Row Actions & Layouts:
-- **Mobile Card View (`md:hidden`):** Zero horizontal scroll. Large touch-friendly cards showing distance, `LOCKED` & `TP` badges, laser reading, relative elevation, full-width status pill, and action icons (Lock, TP, Edit, Delete).
-- **Desktop Table View (`hidden md:block`):** 6-column tabular layout (Status checkbox, Station, Laser Reading, Relative Elev, Track Action pill, Actions).
+- **Mobile Card View (`md:hidden`):** Zero horizontal scroll. Large touch-friendly cards showing distance, `LOCKED` & `TP` badges, dynamic middle row switching between `Target Rod`, `Relative Elev`, or both stacked, full-width status pill, and action icons (Lock, TP, Edit, Delete).
+- **Desktop Table View (`hidden md:block`):** 6-column tabular layout (Status checkbox, Station, Laser Reading, Dynamic Target/Elevation column, Track Action pill, Actions).
 - **Status Pills:**
   - **`ON GRADE ✓`:** Emerald Green (`bg-emerald-500/20 text-emerald-600 dark:text-emerald-400`).
   - **`LIFT +X"`:** Sky Blue (`bg-sky-500/20 text-sky-600 dark:text-sky-400`).
@@ -101,20 +103,27 @@ Located in `src/components/ActionTable.tsx`.
 
 ---
 
-### 1.4 `FractionKeypad.tsx` (Measurement Input Keypad)
+### 1.4 `FractionKeypad.tsx` (Adaptive Input Keypad)
 
 Located in `src/components/FractionKeypad.tsx`.
 
-#### Modes:
-1. **Touch Keypad Mode (Default):**
-   - **Feet Selector:** `0'`, `1'`, `2'`, `3'`, `4'`, `5'`.
-   - **Inches Selector:** `0"` through `11"`.
-   - **Fraction Selector (4x4 grid):** `0 (even)`, `1/16` through `15/16`.
-2. **Direct Keyboard Input Mode:**
-   - Single input field accepting feet/inches (`1' 4 3/8"`), inches (`16 3/8"`), hyphens (`1-4-3/8`), or decimals (`14.5`).
+#### Live Target Badge:
+Prominently placed above input buttons: displays the calculated target rod reading and required action for the tie, e.g. `🎯 Target: 1' 2 3/8" (Aim: Lift +1/4")`.
 
-#### Nudge Toolbar:
-- Buttons: `-1/4"`, `-1/16"`, `+1/16"`, `+1/4"`.
+#### Adaptive Layouts Based on `unitFormat`:
+1. **`feet_inches_fraction` Mode:**
+   - **Feet Column:** `0'`, `1'`, `2'`, `3'`, `4'`, `5'`.
+   - **Inches Grid:** `0"` through `11"`.
+   - **Fraction Grid:** `0 (even)`, `1/16` through `15/16` (filtered to 8ths if `fractionResolution === 8`).
+2. **`inches_fraction` Mode (Total Inches):**
+   - Direct whole inches selector (`0"` through `48"+`) + 16th fraction grid (no feet column).
+3. **`decimal_inches` Mode:**
+   - Touch numeric keypad (`0–9`, `.`, `+/-`, Backspace, Clear).
+   - Instant decimal steppers: `+1.0"`, `-1.0"`, `+0.1"`, `-0.1"`.
+4. **`metric_mm` Mode:**
+   - Touch numeric keypad for millimeters (`0–9`, `+/-`, Backspace, Clear).
+   - Millimeter steppers: `+10mm`, `-10mm`, `+1mm`, `-1mm`.
+   - Real-time conversion preview displaying current value in inches (`= X.XX"`).
 
 #### Action Buttons:
 - **`Next Station` (`<ArrowRight />`):** Black/white primary button. Saves current value and automatically opens the next station down the line.
@@ -124,18 +133,22 @@ Located in `src/components/FractionKeypad.tsx`.
 
 ---
 
-### 1.5 `DataManagementModal.tsx` (Files, CSV & Saved Tracks)
+### 1.5 `DataManagementModal.tsx` (Files, Templates, CSV & Saved Tracks)
 
 Located in `src/components/DataManagementModal.tsx`.
 
-#### Tabs:
+#### Tabs & Features:
 1. **`Export CSV`:**
    - **Download .CSV File:** Downloads `{name}_{date}.csv` or triggers mobile native share sheet (`navigator.share`).
-   - **Copy CSV to Clipboard:** Copies RFC-compliant CSV text with green confirmation toast.
+   - **Copy CSV to Clipboard:** Copies RFC-compliant CSV text with confirmation toast.
    - **View / Copy Raw CSV Text:** Expandable textarea with "Copy All" button.
 2. **`Import CSV`:**
+   - **Field Data Template (Excel / Google Drive):**
+     - **`Download Template (.CSV)`:** Downloads a clean `track_template.csv` pre-populated with station chains.
+     - **`Copy for Google Sheets (Clipboard)`:** Copies TSV text for 1-click paste into Google Sheets.
+     - 4-step field workflow guidance.
    - **Upload CSV File from Device:** File picker for `.csv` or `.txt`.
-   - **Paste CSV / Spreadsheet Text:** Textarea for Excel or Google Sheets columns.
+   - **Paste CSV / Spreadsheet Text:** Textarea for Excel or Google Sheets columns (accepts comma, tab, or semicolon delimiters).
    - **Resolution Card:** Previews stations found and presents **`[ Load & Replace Track ]`** and **`[ Cancel ]`**.
    - *(Note: `ENABLE_MERGE_FEATURE = false` hides merge prompts for single-operator clarity; see `docs/MERGE_FEATURE.md`).*
 3. **`Saved Tracks`:**
@@ -176,6 +189,16 @@ When the laser tripod is relocated at turning point tie $T$ by shift $\Delta = \
    - Calculates piecewise linear chords between adjacent control points $(X_A, Y_A)$ and $(X_B, Y_B)$.
    - A locked station forces $\text{Target} = \text{Elevation}$, $\text{Lift} = 0$, and status `'LOCKED 🔒'`.
 
+### 2.4 Target Rod Reading Formula
+To display the exact physical laser rod measurement required to bring a tie on grade:
+$$R_{\text{target}} = R_{\text{current}} - \text{Lift}$$
+Or when a station has not yet been surveyed:
+$$R_{\text{target}} = (D - E_{\text{target}}) + O_{\text{active}}$$
+Where:
+- $D$ is the base datum reading at Station 0.
+- $E_{\text{target}}$ is the calculated design elevation at that station.
+- $O_{\text{active}}$ is the cumulative active laser offset for that section.
+
 ---
 
 ## 3. UI Color System
@@ -187,3 +210,15 @@ When the laser tripod is relocated at turning point tie $T$ by shift $\Delta = \
 | **On Grade (Within Tol)** | `text-emerald-600 dark:text-emerald-400 bg-emerald-500/20` | `#10b981` (Emerald Green) |
 | **Locked Tie / ROOT** | `text-amber-600 dark:text-amber-400 bg-amber-500/20 border-amber-500/30` | Amber with Lock icon |
 | **Laser Relocation / TP** | `text-purple-600 dark:text-purple-300 bg-purple-500/20 border-purple-500/30` | Purple with Flag icon |
+
+---
+
+## 4. Offline Progressive Web App (PWA) Architecture
+
+Configured via `vite-plugin-pwa` in `vite.config.ts`:
+- **Service Worker Engine:** Workbox precaching all HTML, JS, CSS, and webmanifest bundles.
+- **Auto-Update Registration:** `registerType: 'autoUpdate'`, with client bundle auto-inject.
+- **Single Page Navigation Fallback:** Configured `/track-level-companion/index.html` as navigation fallback for GitHub Pages base URL routing.
+- **Device Connectivity Detection:** Native `navigator.onLine` and `online`/`offline` window events drive the live connectivity status pill in `StationConfig.tsx`.
+- **Zero Cache Deletion on Reload:** Cleaned out all legacy destructive cache-purging scripts in `index.html`.
+

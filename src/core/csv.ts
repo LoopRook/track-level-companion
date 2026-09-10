@@ -16,32 +16,103 @@ export function splitCSVLine(line: string, delimiter?: string): string[] {
   const result: string[] = [];
   let current = '';
   let inQuotes = false;
+  let fieldStarted = false;
   let i = 0;
 
   while (i < line.length) {
     const char = line[i];
-    if (char === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i += 2;
-        continue;
-      } else {
-        inQuotes = !inQuotes;
+
+    if (!fieldStarted) {
+      if (char === ' ' || char === '\t') {
+        if (char !== delim) {
+          i++;
+          continue;
+        }
+      }
+      if (char === '"') {
+        inQuotes = true;
+        fieldStarted = true;
         i++;
         continue;
       }
+      fieldStarted = true;
     }
-    if (char === delim && !inQuotes) {
-      result.push(current.trim());
-      current = '';
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') {
+          current += '"';
+          i += 2;
+          continue;
+        } else {
+          inQuotes = false;
+          i++;
+          continue;
+        }
+      }
+      current += char;
       i++;
       continue;
     }
+
+    if (char === delim) {
+      result.push(current.trim());
+      current = '';
+      fieldStarted = false;
+      inQuotes = false;
+      i++;
+      continue;
+    }
+
     current += char;
     i++;
   }
   result.push(current.trim());
   return result;
+}
+
+/**
+ * Generates a clean, standard CSV template that users can download or copy to Google Drive / Sheets.
+ */
+export function generateCSVTemplate(lengthFt: number = 50, intervalFt: number = 5): string {
+  const headers = ['Station (ft)', 'Laser Reading', 'Completed', 'Locked', 'Notes'];
+  const rows: string[] = [];
+
+  for (let dist = 0; dist <= lengthFt; dist += intervalFt) {
+    if (dist === 0) {
+      rows.push([dist, escapeCSV("1' 2 1/4\""), 'NO', 'NO', escapeCSV('Station 0 baseline reading')].join(','));
+    } else if (dist === 20) {
+      rows.push([dist, escapeCSV("1' 2 1/2\""), 'NO', 'NO', escapeCSV('Example reading (edit or delete)')].join(','));
+    } else {
+      rows.push([dist, '', 'NO', 'NO', ''].join(','));
+    }
+  }
+
+  return [
+    '# Track Level Companion - Standard Field Data Template',
+    '# Open in Google Sheets or Excel. Fill in Laser Readings, then re-upload.',
+    '# Accepted reading formats: 1\' 4 3/8", 16 3/8", 14.375, or 365mm',
+    headers.join(','),
+    ...rows,
+  ].join('\n');
+}
+
+/**
+ * Generates a tab-separated (TSV) clipboard-ready format for instant paste into Google Sheets.
+ */
+export function generateGoogleSheetsTSVTemplate(lengthFt: number = 50, intervalFt: number = 5): string {
+  const headers = ['Station (ft)', 'Laser Reading', 'Completed', 'Locked', 'Notes'];
+  const rows: string[] = [];
+
+  for (let dist = 0; dist <= lengthFt; dist += intervalFt) {
+    if (dist === 0) {
+      rows.push([dist, "1' 2 1/4\"", 'NO', 'NO', 'Station 0 baseline reading'].join('\t'));
+    } else {
+      rows.push([dist, '', 'NO', 'NO', ''].join('\t'));
+    }
+  }
+
+  return [headers.join('\t'), ...rows].join('\n');
 }
 
 /**
@@ -77,7 +148,10 @@ export function exportTrackToCSV(project: TrackProject): string {
  */
 export function parseTrackFromCSV(csvText: string): StationPoint[] {
   if (!csvText || typeof csvText !== 'string') return [];
-  const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+  const lines = csvText
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l.length > 0 && !l.startsWith('#') && !l.startsWith('//'));
   if (lines.length === 0) return [];
 
   const stations: StationPoint[] = [];
@@ -102,6 +176,14 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
 
   if (firstIsHeader) {
     startIndex = 1;
+    distIdx = -1;
+    readingInIdx = -1;
+    readingFtInIdx = -1;
+    completedIdx = -1;
+    offsetIdx = -1;
+    lockedIdx = -1;
+    notesIdx = -1;
+
     firstParts.forEach((header, idx) => {
       const h = header.toLowerCase();
       if (h.includes('datum') || h.includes('offset') || h.includes('shift')) {
@@ -122,6 +204,9 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
         notesIdx = idx;
       }
     });
+
+    if (distIdx === -1) distIdx = 0;
+    if (readingInIdx === -1 && readingFtInIdx === -1) readingInIdx = 1;
   }
 
   let prevDatumOffset: number | undefined = undefined;
@@ -130,15 +215,15 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
     const parts = splitCSVLine(lines[i], delim);
     if (parts.length === 0) continue;
 
-    const rawDist = parts[distIdx];
+    const rawDist = distIdx >= 0 ? parts[distIdx] : undefined;
     if (rawDist === undefined || rawDist === '') continue;
     const dist = parseFloat(rawDist);
     if (isNaN(dist)) continue;
 
     // Robust measurement parsing: check readingInIdx first, then readingFtInIdx
     let reading: number | null = null;
-    const readingInStr = parts[readingInIdx];
-    const readingFtInStr = parts[readingFtInIdx];
+    const readingInStr = readingInIdx >= 0 ? parts[readingInIdx] : undefined;
+    const readingFtInStr = readingFtInIdx >= 0 ? parts[readingFtInIdx] : undefined;
 
     if (readingInStr && readingInStr.trim() !== '') {
       const parsed = parseMeasurement(readingInStr);
@@ -149,19 +234,19 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
       if (parsed !== null && !isNaN(parsed)) reading = parsed;
     }
 
-    const completedStr = parts[completedIdx]?.toUpperCase();
+    const completedStr = completedIdx >= 0 ? parts[completedIdx]?.toUpperCase() : undefined;
     const completed = completedStr === 'YES' || completedStr === 'TRUE' || completedStr === '1';
 
     let datumOffset: number | undefined = undefined;
-    if (parts[offsetIdx] && parts[offsetIdx].trim() !== '') {
+    if (offsetIdx >= 0 && parts[offsetIdx] && parts[offsetIdx].trim() !== '') {
       const parsedOffset = parseFloat(parts[offsetIdx]);
       if (!isNaN(parsedOffset) && parsedOffset !== 0) datumOffset = parsedOffset;
     }
 
-    const lockedStr = parts[lockedIdx]?.toUpperCase();
+    const lockedStr = lockedIdx >= 0 ? parts[lockedIdx]?.toUpperCase() : undefined;
     const isLocked = lockedStr === 'YES' || lockedStr === 'TRUE' || lockedStr === '1';
 
-    const notes = parts[notesIdx] || '';
+    const notes = notesIdx >= 0 ? (parts[notesIdx] || '') : '';
 
     const isTurningPoint = datumOffset !== undefined && datumOffset !== 0 && datumOffset !== prevDatumOffset;
     prevDatumOffset = datumOffset;

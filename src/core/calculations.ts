@@ -230,14 +230,26 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
       }
     }
 
+    const activeOffset = isUnifiedScale ? (s.datumOffsetInches || 0) : appliedOffsets[i];
+    let targetReading: number | null = null;
+
+    if (s.isLocked && s.readingInches !== null) {
+      targetReading = s.readingInches;
+    } else if (s.readingInches !== null && lift !== null) {
+      targetReading = s.readingInches - lift;
+    } else if (target !== null && validStationsWithReading.length > 0) {
+      targetReading = (datumReference - target) + activeOffset;
+    }
+
     return {
       ...s,
       datumOffsetInches: isUnifiedScale ? s.datumOffsetInches : (appliedOffsets[i] !== 0 ? appliedOffsets[i] : s.datumOffsetInches),
       effectiveReadingInches: effectiveReadings[i],
-      appliedDatumOffsetInches: isUnifiedScale ? (s.datumOffsetInches || 0) : appliedOffsets[i],
+      appliedDatumOffsetInches: activeOffset,
       elevationInches: elev,
       targetElevationInches: target,
       liftInches: lift,
+      targetReadingInches: targetReading,
       action,
       actionText,
     };

@@ -503,13 +503,34 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                {/* Rapid Keypad */}
+                {/* Target Rod vs Elevation Toggle */}
                 <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
                   <span className="font-bold text-amber-600 dark:text-amber-400 block">
-                    ⚡ Rapid Fraction Keypad
+                    🎯 Target Rod vs. Relative Elev
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Tap any station to open the keypad. Tap <strong>Next Station (→)</strong> to immediately save and auto-advance to the next tie down the line.
+                    Toggle between <strong>Target Rod</strong>, <strong>Relative Elev</strong>, or <strong>Both</strong>. Target Rod tells you exactly what reading your laser receiver should hit when the tie is leveled!
+                  </p>
+                </div>
+
+                {/* Adaptive Keypad */}
+                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                  <span className="font-bold text-amber-600 dark:text-amber-400 block">
+                    ⚡ Adaptive Touch Keypad
+                  </span>
+                  <p className="text-zinc-500 leading-relaxed">
+                    Keypad adapts instantly to your unit format: 16th fractions, direct whole inches, decimal numbers (with ±0.1" steppers), or metric mm.
+                  </p>
+                </div>
+
+                {/* Google Sheets & CSV Template */}
+                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                  <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
+                    <Download className="w-3.5 h-3.5 text-emerald-500" />
+                    Google Sheets & CSV Template
+                  </span>
+                  <p className="text-zinc-500 leading-relaxed">
+                    Download a clean spreadsheet template or 1-click copy TSV to paste directly into Google Sheets. Take readings trackside and re-upload in seconds.
                   </p>
                 </div>
 
@@ -520,35 +541,14 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     Bright Sunlight Mode
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
-                    Working under intense glare? Tap the Sun/Moon toggle in the header for high-contrast sunlight mode.
-                  </p>
-                </div>
-
-                {/* Zero Horizontal Scroll Mobile Cards */}
-                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
-                  <span className="font-bold text-amber-600 dark:text-amber-400 block">
-                    📱 Mobile Card Layout
-                  </span>
-                  <p className="text-zinc-500 leading-relaxed">
-                    On phones, the checklist switches to stacked cards with zero horizontal scrolling. Easy to tap with gloves on.
-                  </p>
-                </div>
-
-                {/* Universal CSV Export */}
-                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
-                  <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
-                    <Download className="w-3.5 h-3.5 text-emerald-500" />
-                    Universal CSV Export
-                  </span>
-                  <p className="text-zinc-500 leading-relaxed">
-                    Tap <strong>Files / Export</strong> to download CSVs, use the native mobile share sheet (AirDrop/Files), or copy CSV text directly.
+                    Working under intense glare? Tap the Sun/Moon toggle in the header for high-contrast daylight visibility.
                   </p>
                 </div>
               </div>
 
               {/* Offline Support */}
               <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-                ✓ <strong>100% Offline PWA:</strong> Track Level Companion runs completely offline in airplane mode. Install it to your home screen and survey deep in rail cuts with zero cell reception.
+                ✓ <strong>100% Offline PWA:</strong> Track Level Companion operates completely offline without internet or cellular data. Install it to your home screen and survey deep in rail cuts with zero reception.
               </div>
             </div>
           )}

@@ -92,6 +92,45 @@ describe('Laser Datum & Track Profile Calculations', () => {
 
     // Station 15: Target = 0, Elev = 0 => On Grade
     expect(calculated[3].action).toBe('ok');
+
+    // Verify Target Rod Readings on 0% Flat Grade
+    // On flat grade, every station's target rod reading must equal baseline datum reading (12.0")
+    expect(calculated[0].targetReadingInches).toBeCloseTo(12.0, 4);
+    expect(calculated[1].targetReadingInches).toBeCloseTo(12.0, 4);
+    expect(calculated[2].targetReadingInches).toBeCloseTo(12.0, 4);
+    expect(calculated[3].targetReadingInches).toBeCloseTo(12.0, 4);
+  });
+
+  it('calculates targetReadingInches accurately across grades, locked ties, and unmeasured stations', () => {
+    // 1% climbing grade (0.12 in/ft rise)
+    const gradeProject: TrackProject = {
+      ...baseProject,
+      targetGradePercent: 1.0,
+      stations: [
+        { id: '1', distanceFt: 0, readingInches: 14.0 },   // Station 0: 14.0" reading -> datum baseline
+        { id: '2', distanceFt: 10, readingInches: 14.5 },  // Station 10: 14.5" reading (dip)
+        { id: '3', distanceFt: 20, readingInches: 11.6, isLocked: true }, // Locked tie at 20 ft
+        { id: '4', distanceFt: 30, readingInches: null },  // Unmeasured station at 30 ft
+      ]
+    };
+
+    const calculated = calculateTrackProfile(gradeProject);
+
+    // Station 0 (d=0): Target elev = 0. Target rod = 14.0"
+    expect(calculated[0].targetReadingInches).toBeCloseTo(14.0, 4);
+
+    // Station 10 (d=10): Target elev = 10 * 0.12 = +1.20".
+    // Rod reading required to be 1.2" higher: 14.0 - 1.20 = 12.80"
+    expect(calculated[1].targetReadingInches).toBeCloseTo(12.80, 4);
+    // Current reading is 14.5, so lift is 14.5 - 12.8 = 1.70"
+    expect(calculated[1].liftInches).toBeCloseTo(1.70, 4);
+
+    // Station 20 (Locked tie): Target reading must equal current reading because it cannot be moved
+    expect(calculated[2].targetReadingInches).toBeCloseTo(11.6, 4);
+
+    // Station 30 (Unmeasured): Target elev = 30 * 0.12 = +3.60".
+    // Pre-calculated target rod: 14.0 - 3.60 = 10.40"
+    expect(calculated[3].targetReadingInches).toBeCloseTo(10.40, 4);
   });
 
   it('calculates 1.0% climbing grade correctly', () => {

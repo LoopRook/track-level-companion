@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { UnitFormat, TrackProject } from '../core/types';
-import { Sliders, Sun, Moon, Compass, BookOpen } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2 } from 'lucide-react';
 
 interface StationConfigProps {
   project: TrackProject;
@@ -30,6 +30,19 @@ export const StationConfig: React.FC<StationConfigProps> = ({
   onOpenGuideModal,
   summary,
 }) => {
+  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   return (
     <div className="space-y-2.5">
       {/* Top Navbar */}
@@ -48,9 +61,26 @@ export const StationConfig: React.FC<StationConfigProps> = ({
                 placeholder="Track Section Name"
               />
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Track Level Companion • {summary.lengthFt} ft Section
-            </p>
+            <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <span>Track Level Companion • {summary.lengthFt} ft Section</span>
+              {!isOnline ? (
+                <span
+                  className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                  title="Offline mode: all changes persist in browser storage"
+                >
+                  <WifiOff className="w-3 h-3 text-amber-500" />
+                  <span>Offline</span>
+                </span>
+              ) : (
+                <span
+                  className="hidden sm:flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400"
+                  title="Service Worker active: full offline support enabled"
+                >
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                  <span>Offline Ready</span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { TrackProject, StationPoint } from '../core/types';
-import { exportTrackToCSV, parseTrackFromCSV, appendStations } from '../core/csv';
-import { formatFeetInches } from '../core/units';
+import { exportTrackToCSV, parseTrackFromCSV, appendStations, generateCSVTemplate, generateGoogleSheetsTSVTemplate } from '../core/csv';
+import { formatMeasurement } from '../core/units';
 import {
   X,
   Download,
@@ -172,6 +172,52 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
       document.execCommand('copy');
       document.body.removeChild(textarea);
       showNotification('✓ Copied CSV data to clipboard!');
+    }
+  };
+
+  // Download blank CSV template
+  const handleDownloadTemplate = () => {
+    try {
+      const template = generateCSVTemplate(50, currentProject.stationIntervalFt || 5);
+      const filename = `track_level_template_${currentProject.stationIntervalFt || 5}ft.csv`;
+      const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 500);
+      showNotification(`Downloaded "${filename}"! Open in Excel or Google Drive.`);
+    } catch {
+      showNotification('Failed to download template.', 'error');
+    }
+  };
+
+  // Copy template directly formatted for Google Sheets paste
+  const handleCopyGoogleSheetsTemplate = async () => {
+    try {
+      const tsv = generateGoogleSheetsTSVTemplate(50, currentProject.stationIntervalFt || 5);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(tsv);
+        showNotification('✓ Copied template! Paste (Ctrl+V) directly into Google Sheets.');
+        return;
+      }
+      throw new Error('Clipboard API not available');
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = generateGoogleSheetsTSVTemplate(50, currentProject.stationIntervalFt || 5);
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showNotification('✓ Copied template! Paste (Ctrl+V) directly into Google Sheets.');
     }
   };
 
@@ -432,7 +478,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                     {pendingCsvStations.stations.slice(0, 4).map((s, idx) => (
                       <div key={idx} className="flex justify-between text-zinc-600 dark:text-zinc-400">
                         <span>Station {s.distanceFt} ft</span>
-                        <span>{s.readingInches !== null ? formatFeetInches(s.readingInches) : 'Need Reading'}</span>
+                        <span>{s.readingInches !== null ? formatMeasurement(s.readingInches, currentProject.unitFormat, currentProject.fractionResolution) : 'Need Reading'}</span>
                       </div>
                     ))}
                     {pendingCsvStations.stations.length > 4 && (
@@ -550,6 +596,51 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                       >
                         Parse & Import Pasted Text
                       </button>
+                    </div>
+                  </div>
+
+                  {/* Standard CSV & Google Sheets Template Card */}
+                  <div className="p-4 bg-gradient-to-r from-amber-500/10 via-zinc-100 dark:via-zinc-900 to-amber-500/10 border border-amber-500/30 rounded-2xl space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FileSpreadsheet className="w-5 h-5 text-amber-500 shrink-0" />
+                      <div>
+                        <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                          Field Data Template (Excel / Google Drive)
+                        </h4>
+                        <p className="text-xs text-zinc-500">
+                          Download a blank field sheet or copy directly into Google Sheets
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={handleDownloadTemplate}
+                        className="py-2.5 px-3 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-black font-bold text-xs rounded-xl shadow-sm transition active:scale-95 flex items-center justify-center gap-1.5"
+                      >
+                        <Download className="w-4 h-4 text-amber-500" />
+                        <span>Download CSV Template</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCopyGoogleSheetsTemplate}
+                        className="py-2.5 px-3 bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold text-xs rounded-xl transition active:scale-95 flex items-center justify-center gap-1.5"
+                      >
+                        <Copy className="w-4 h-4 text-amber-500" />
+                        <span>Copy for Google Sheets</span>
+                      </button>
+                    </div>
+
+                    <div className="p-3 bg-white/60 dark:bg-black/60 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400 space-y-1">
+                      <p className="font-bold text-zinc-900 dark:text-zinc-200">How to use with Google Drive / Google Sheets:</p>
+                      <ol className="list-decimal list-inside space-y-0.5 text-[11px] leading-relaxed">
+                        <li>Click <strong>Copy for Google Sheets</strong> (or download CSV and upload to Google Drive).</li>
+                        <li>Open a new sheet in Google Sheets and press <kbd className="px-1 py-0.2 bg-zinc-200 dark:bg-zinc-800 rounded font-mono">Ctrl+V</kbd> to paste columns.</li>
+                        <li>Record laser measurements trackside in column B (e.g. <span className="font-mono">1' 4 3/8"</span>, <span className="font-mono">14.375</span>, or <span className="font-mono">365mm</span>).</li>
+                        <li>Export as CSV from Google Sheets (or copy the cells) and upload/paste it right back into this tab!</li>
+                      </ol>
                     </div>
                   </div>
                 </div>

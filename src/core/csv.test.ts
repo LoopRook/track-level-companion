@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { exportTrackToCSV, parseTrackFromCSV, appendStations } from './csv';
+import { exportTrackToCSV, parseTrackFromCSV, appendStations, generateCSVTemplate, generateGoogleSheetsTSVTemplate } from './csv';
 import { TrackProject, StationPoint } from './types';
 
 describe('CSV Import, Export & Combine Operations', () => {
@@ -135,13 +135,29 @@ describe('CSV Import, Export & Combine Operations', () => {
     expect(parsed[1].readingInches).toBeCloseTo(14.5, 4);
   });
 
-  it('parses headerless CSV data rows directly', () => {
-    const rawData = `0, 14.0, "1' 2", YES\n5, 14.25, "1' 2 1/4", NO`;
-    const parsed = parseTrackFromCSV(rawData);
-    expect(parsed.length).toBe(2);
+  it('generates a valid CSV template that parses seamlessly back into station points', () => {
+    const csv = generateCSVTemplate(50, 5);
+    expect(csv).toContain('Station (ft),Laser Reading,Completed,Locked,Notes');
+
+    const parsed = parseTrackFromCSV(csv);
+    expect(parsed.length).toBe(11); // 0, 5, 10, ..., 50 = 11 stations
     expect(parsed[0].distanceFt).toBe(0);
-    expect(parsed[0].readingInches).toBeCloseTo(14.0, 4);
+    expect(parsed[0].readingInches).toBeCloseTo(14.25, 4); // "1' 2 1/4\"" is 14.25
     expect(parsed[1].distanceFt).toBe(5);
-    expect(parsed[1].readingInches).toBeCloseTo(14.25, 4);
+    expect(parsed[1].readingInches).toBeNull(); // blank reading for user to fill
+    expect(parsed[10].distanceFt).toBe(50);
+  });
+
+  it('generates a Google Sheets TSV template that parses seamlessly', () => {
+    const tsv = generateGoogleSheetsTSVTemplate(30, 10);
+    expect(tsv).toContain("Station (ft)\tLaser Reading\tCompleted\tLocked\tNotes");
+
+    const parsed = parseTrackFromCSV(tsv);
+    expect(parsed.length).toBe(4); // 0, 10, 20, 30
+    expect(parsed[0].distanceFt).toBe(0);
+    expect(parsed[0].readingInches).toBeCloseTo(14.25, 4);
+    expect(parsed[3].distanceFt).toBe(30);
+    expect(parsed[3].readingInches).toBeNull();
   });
 });
+

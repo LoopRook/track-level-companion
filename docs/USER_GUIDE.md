@@ -35,9 +35,13 @@ The app handles all inversions automatically, eliminating mental math errors in 
 
 ### Step 2: Walk the Ties & Record Readings
 1. Walk down the track at your chosen interval (e.g. Station 5, 10, 15, 20...).
-2. Tap each station row or card to open the **Rapid Fraction Keypad**.
-3. Tap the feet, inches, and fractions (e.g. `1'`, `4"`, `3/8"`), or switch to direct keyboard mode.
-4. Tap **`Next Station`** (`→`) — the app saves the reading and automatically opens the next tie down the line.
+2. Tap each station row or card to open the **Adaptive Input Keypad**:
+   - **`Ft, In & 1/16"` Mode:** Tap feet, whole inches, and fraction buttons (e.g. `1'`, `4"`, `3/8"`).
+   - **`Inches & 1/16"` Mode:** Tap whole inches directly (e.g. `16"`) and fraction buttons.
+   - **`Decimal In` Mode:** Full numeric touch pad (`0-9`, `.`) with instant `+1.0"`, `-1.0"`, `+0.1"`, `-0.1"` micro-steppers.
+   - **`Metric (mm)` Mode:** Full millimeter numeric pad (`0-9`) with `+10mm`, `-10mm`, `+1mm`, `-1mm` steppers and real-time inch conversion preview.
+3. Check the **Target Badge** at the top of the keypad: it displays the calculated target rod reading and required action (e.g. `🎯 Target: 1' 2 3/8" (Aim: Lift +1/4")`).
+4. Tap **`Next Station`** (`→`) — the app saves the reading and automatically advances to the next tie down the line.
 
 ### Step 3: Inspect the Vertical Profile Chart
 - Glance at the **Track Vertical Profile** chart:
@@ -47,13 +51,19 @@ The app handles all inversions automatically, eliminating mental math errors in 
   - Adjust vertical zoom (`1x` true scale up to `15x` micro-precision).
 
 ### Step 4: Jacking & Tamping (Checklist Actions)
-1. Check the **Track Action** column/banner on your checklist:
+1. **Choose Your Display Preference (Target Rod vs. Elevation):**
+   In the toolbar, toggle between **`Target Rod`**, **`Relative Elev`**, or **`Both`**:
+   - **`Target Rod` Mode (Default for Track Crews):** Shows the exact laser rod reading your rod receiver must hit when the tie is jacked into position ($R_{\text{target}} = R_{\text{current}} - \text{Lift}$). Simply raise the rail until your laser receiver beeps on the target mark!
+   - **`Relative Elev` Mode:** Shows elevation relative to Station 0 benchmark ($E = \text{Datum} - R$).
+   - **`Both` Mode:** Stacks both values so you can see rod readings and physical elevations simultaneously.
+   *(Your preference is automatically saved on your device).*
+2. Check the **Track Action** column/banner on your checklist:
    - **`ON GRADE ✓`**: Within tolerance (1/16"). Do not touch.
    - **`LIFT 3/8"`**: Jack tie up by 3/8" and tamp ballast underneath.
    - **`LOWER 1/4"`**: Rail is high. Knock down ballast or avoid lifting adjacent ties.
    - **`LOCKED`**: Immovable control tie (no lifting or shimming instructed).
-2. Tap the **Circle / Checkmark** to mark a tie as leveled as you finish it.
-3. Tap the **Lock (🔒)** icon on any tie that cannot be moved (e.g. over a tree root, bridge abutment, or road crossing).
+3. Tap the **Circle / Checkmark** to mark a tie as leveled as you finish it.
+4. Tap the **Lock (🔒)** icon on any tie that cannot be moved (e.g. over a tree root, bridge abutment, or road crossing).
 
 ---
 
@@ -140,19 +150,38 @@ Tap the **`+ Extend`** button in the checklist toolbar:
 
 ---
 
-## 7. Data Management, Export & Offline PWA
+## 7. Data Management, Google Sheets Templates & Offline PWA
 
-Tap **`Files / Export`** in the header:
-- **Export CSV:**
-  - **Download .CSV File:** Saves `{name}_{date}.csv` or triggers the native mobile share sheet (`navigator.share`) on iOS and Android for AirDrop, Files, or messaging.
-  - **Copy CSV to Clipboard:** One-tap copy of spreadsheet-ready CSV text.
-  - **View Raw CSV Text:** Drawer with full raw CSV text and "Copy All".
-- **Import CSV:**
-  - Upload a `.csv` file or paste spreadsheet columns from Excel or Google Sheets.
-  - Previews station count and provides **`[ Load & Replace Track ]`** to open the survey.
-- **Saved Tracks:**
-  - Save named profiles to browser storage (`localStorage`).
-  - One-tap **Load**, **Download CSV**, and **Delete**.
-  - Built-in presets: `"Load Demo 50ft Track (with Dip)"` and `"Reset Track"`.
-- **100% Offline PWA:**
-  - Track Level Companion operates completely offline in airplane mode. Install to your home screen (iOS: *Share $\to$ Add to Home Screen*; Android: *Install App*) for reliable use deep in rail cuts or remote territory.
+Tap **`Files / Export`** in the header to access data tools:
+
+### Field Data Template (Excel / Google Drive / Google Sheets):
+Under the **Import CSV** tab:
+1. **Download Template (.CSV):** Downloads a pre-formatted field template (`track_template.csv`) with Station, Laser Reading, Completed, Locked, and Notes headers.
+2. **Copy for Google Sheets (Clipboard):** Copies tab-separated values (TSV) directly to your clipboard.
+   - Open Google Drive $\to$ create a new **Google Sheet** $\to$ press `Ctrl+V` (or `Cmd+V`).
+   - The columns paste directly into spreadsheet cells with proper alignment!
+   - Take rod readings on your phone or tablet in Google Sheets while walking the track.
+   - When finished, either export as `.csv` or select and copy the cells, switch back to Track Level Companion, paste into the text box, and tap **`[ Load & Replace Track ]`**.
+
+### Export Track Data:
+- **Download .CSV File:** Saves `{name}_{date}.csv` or opens the native mobile share sheet (`navigator.share`) on iOS and Android for AirDrop, Files, or messaging.
+- **Copy CSV to Clipboard:** One-tap copy of clean CSV text.
+- **View Raw CSV Text:** Drawer with full raw CSV text and one-click "Copy All".
+
+### Import CSV:
+- Upload any `.csv` file or paste spreadsheet rows from Excel or Google Sheets.
+- Previews station count, detects columns dynamically, and provides **`[ Load & Replace Track ]`** to open the survey.
+
+### Saved Tracks & Presets:
+- Save named profiles to browser storage (`localStorage`).
+- One-tap **Load**, **Download CSV**, and **Delete**.
+- Built-in presets: `"Load Demo 50ft Track (with Dip)"` and `"Reset Track"`.
+
+### 100% Offline PWA Operation:
+- **Zero Internet Required:** Track Level Companion is engineered as an offline Progressive Web App (PWA). All application logic, styles, and calculation engines are precached locally on your device by service workers.
+- **Connectivity Indicator:** The top bar displays `📡 Offline` when out of cellular range and `✓ Offline Ready` when cached.
+- **Home Screen Installation:**
+  - **iOS (Safari):** Tap *Share* $\to$ *Add to Home Screen*.
+  - **Android (Chrome):** Tap *Install App* or the three dots $\to$ *Add to Home screen*.
+- Runs smoothly in deep rail cuts, remote mountains, and tunnels with zero mobile service.
+

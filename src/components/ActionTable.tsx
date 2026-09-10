@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CalculatedStation, UnitFormat } from '../core/types';
-import { formatFeetInches, formatMeasurement, parseMeasurement } from '../core/units';
+import { formatMeasurement, parseMeasurement } from '../core/units';
 import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock } from 'lucide-react';
 
 interface ActionTableProps {
@@ -19,6 +19,8 @@ interface ActionTableProps {
   selectedStationId?: string | null;
 }
 
+export type TableDisplayMode = 'target_reading' | 'relative_elev' | 'both';
+
 export const ActionTable: React.FC<ActionTableProps> = ({
   stations,
   unitFormat,
@@ -34,6 +36,33 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   onResetDatum,
   selectedStationId,
 }) => {
+  const [displayMode, setDisplayMode] = useState<TableDisplayMode>(() => {
+    try {
+      const saved = localStorage.getItem('track_level_table_display_mode');
+      if (saved === 'target_reading' || saved === 'relative_elev' || saved === 'both') {
+        return saved;
+      }
+      return 'target_reading';
+    } catch {
+      return 'target_reading';
+    }
+  });
+
+  const handleSetDisplayMode = (mode: TableDisplayMode) => {
+    setDisplayMode(mode);
+    try {
+      localStorage.setItem('track_level_table_display_mode', mode);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleCycleDisplayMode = () => {
+    const next: TableDisplayMode =
+      displayMode === 'target_reading' ? 'relative_elev' : displayMode === 'relative_elev' ? 'both' : 'target_reading';
+    handleSetDisplayMode(next);
+  };
+
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
   const [extendLength, setExtendLength] = useState(50);
   const [extendInterval, setExtendInterval] = useState(5);
@@ -83,7 +112,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 const target = (measured.length > 0 ? measured[measured.length - 1] : stations[0]) || null;
                 if (target) {
                   setTurningPointStation(target);
-                  setTpNewReadingStr(target.readingInches !== null ? formatFeetInches(target.readingInches) : '');
+                  setTpNewReadingStr(target.readingInches !== null ? formatMeasurement(target.readingInches, unitFormat, fractionResolution) : '');
                   setTpError(null);
                 }
               }}
@@ -117,6 +146,56 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Add Next</span>
           </button>
+        </div>
+      </div>
+
+      {/* View Mode & Column Selector Toolbar */}
+      <div className="px-3 sm:px-4 py-2 bg-zinc-100/70 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap text-xs">
+        <div className="flex items-center gap-2">
+          <span className="text-zinc-500 font-bold uppercase tracking-wider text-[10px]">Display:</span>
+          <div className="flex rounded-lg bg-zinc-200/80 dark:bg-zinc-900 p-0.5 border border-zinc-300 dark:border-zinc-800 h-7 items-center">
+            <button
+              type="button"
+              onClick={() => handleSetDisplayMode('target_reading')}
+              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition ${
+                displayMode === 'target_reading'
+                  ? 'bg-amber-500 text-black shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+              }`}
+              title="Show target laser rod measurement to aim for when leveling track"
+            >
+              <span>🎯 Target Rod</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSetDisplayMode('relative_elev')}
+              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition ${
+                displayMode === 'relative_elev'
+                  ? 'bg-amber-500 text-black shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+              }`}
+              title="Show physical relative elevation above/below laser datum"
+            >
+              <span>📐 Rel. Elev</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSetDisplayMode('both')}
+              className={`h-full px-2.5 rounded-md font-bold text-xs flex items-center gap-1 transition ${
+                displayMode === 'both'
+                  ? 'bg-amber-500 text-black shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+              }`}
+              title="Show both Target Rod Reading and Relative Elevation side-by-side"
+            >
+              <span>Both</span>
+            </button>
+          </div>
+        </div>
+        <div className="text-[11px] text-zinc-500 hidden sm:block">
+          {displayMode === 'target_reading' && 'Target Rod: measurement on tape/rod when leveled'}
+          {displayMode === 'relative_elev' && 'Relative Elevation: height relative to datum reference'}
+          {displayMode === 'both' && 'Showing Target Rod & Relative Elevation'}
         </div>
       </div>
 
@@ -236,7 +315,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       type="button"
                       onClick={() => {
                         setTurningPointStation(s);
-                        setTpNewReadingStr(s.readingInches !== null ? formatFeetInches(s.readingInches) : '');
+                        setTpNewReadingStr(s.readingInches !== null ? formatMeasurement(s.readingInches, unitFormat, fractionResolution) : '');
                         setTpError(null);
                       }}
                       className={`p-1.5 rounded-lg border transition ${
@@ -270,7 +349,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 </div>
               </div>
 
-              {/* Middle Row: Readings & Elevation */}
+              {/* Middle Row: Readings & Target/Elevation */}
               <div className="grid grid-cols-2 gap-2 py-1.5 px-2.5 bg-zinc-100/60 dark:bg-zinc-900/60 rounded-xl mb-2 text-xs">
                 <div>
                   <span className="text-[10px] text-zinc-500 block uppercase font-semibold">
@@ -279,16 +358,16 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {s.isTurningPoint ? (
                     <div className="font-mono text-xs">
                       <div className="font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                        <span>{s.readingInches !== null ? formatFeetInches(s.readingInches, fractionResolution) : '—'}</span>
+                        <span>{s.readingInches !== null ? formatMeasurement(s.readingInches, unitFormat, fractionResolution) : '—'}</span>
                         <span className="text-[10px] bg-purple-500/15 text-purple-700 dark:text-purple-300 px-1 py-0.2 rounded font-sans font-semibold">
                           Active Laser backsight
                         </span>
                       </div>
                       {s.tpOldReadingInches !== undefined && (
                         <div className="text-[11px] text-zinc-500 font-sans mt-0.5">
-                          Laser 1 was: {formatFeetInches(s.tpOldReadingInches, fractionResolution)}{' '}
+                          Laser 1 was: {formatMeasurement(s.tpOldReadingInches, unitFormat, fractionResolution)}{' '}
                           <span className="font-mono">
-                            ({(s.datumOffsetInches ?? 0) >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches ?? 0, 'inches_fraction', fractionResolution)} shift)
+                            ({(s.datumOffsetInches ?? 0) >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches ?? 0, unitFormat, fractionResolution)} shift)
                           </span>
                         </div>
                       )}
@@ -296,13 +375,13 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   ) : s.readingInches !== null ? (
                     <div>
                       <div className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                        {formatFeetInches(s.readingInches, fractionResolution)}
+                        {formatMeasurement(s.readingInches, unitFormat, fractionResolution)}
                       </div>
                       {s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0 && (
                         <div className="text-[11px] font-sans text-purple-600 dark:text-purple-400 mt-0.5">
-                          Was: <strong>{formatFeetInches(s.readingInches - s.datumOffsetInches, fractionResolution)}</strong>{' '}
+                          Was: <strong>{formatMeasurement(s.readingInches - s.datumOffsetInches, unitFormat, fractionResolution)}</strong>{' '}
                           <span className="text-[10px] text-purple-500/80">
-                            ({s.datumOffsetInches >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches, 'inches_fraction', fractionResolution)} laser shift)
+                            ({s.datumOffsetInches >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches, unitFormat, fractionResolution)} laser shift)
                           </span>
                         </div>
                       )}
@@ -311,13 +390,54 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     <span className="text-amber-500 italic text-xs">Tap to Enter</span>
                   )}
                 </div>
+
+                {/* Right Column: Target Rod and/or Relative Elevation based on displayMode */}
                 <div className="text-right">
-                  <span className="text-[10px] text-zinc-500 block uppercase font-semibold">Rel. Elevation</span>
-                  <div className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-300">
-                    {s.elevationInches !== null
-                      ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
-                      : '—'}
-                  </div>
+                  {displayMode === 'target_reading' && (
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block uppercase font-semibold">Target Rod</span>
+                      <div className="font-mono font-bold text-sm text-sky-600 dark:text-sky-400 flex items-center justify-end gap-1">
+                        <span className="text-xs">🎯</span>
+                        <span>
+                          {s.targetReadingInches !== null && s.targetReadingInches !== undefined
+                            ? formatMeasurement(s.targetReadingInches, unitFormat, fractionResolution)
+                            : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {displayMode === 'relative_elev' && (
+                    <div>
+                      <span className="text-[10px] text-zinc-500 block uppercase font-semibold">Rel. Elevation</span>
+                      <div className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-300">
+                        {s.elevationInches !== null
+                          ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
+                          : '—'}
+                      </div>
+                    </div>
+                  )}
+
+                  {displayMode === 'both' && (
+                    <div className="space-y-0.5">
+                      <div className="flex items-center justify-end gap-1">
+                        <span className="text-[10px] text-zinc-500 uppercase font-semibold">Target:</span>
+                        <span className="font-mono font-bold text-xs text-sky-600 dark:text-sky-400">
+                          {s.targetReadingInches !== null && s.targetReadingInches !== undefined
+                            ? formatMeasurement(s.targetReadingInches, unitFormat, fractionResolution)
+                            : '—'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-end gap-1">
+                        <span className="text-[10px] text-zinc-500 uppercase font-semibold">Elev:</span>
+                        <span className="font-mono font-bold text-xs text-zinc-700 dark:text-zinc-300">
+                          {s.elevationInches !== null
+                            ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
+                            : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -369,7 +489,30 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               <th className="py-2.5 px-3 w-10 text-center">Status</th>
               <th className="py-2.5 px-3">Station</th>
               <th className="py-2.5 px-3">Laser Reading</th>
-              <th className="py-2.5 px-3">Relative Elev.</th>
+              {(displayMode === 'target_reading' || displayMode === 'both') && (
+                <th
+                  className="py-2.5 px-3 cursor-pointer hover:text-amber-500 transition select-none"
+                  onClick={handleCycleDisplayMode}
+                  title="Click to toggle display mode (Target Rod vs Rel. Elev vs Both)"
+                >
+                  <div className="flex items-center gap-1">
+                    <span>Target Rod</span>
+                    <span className="text-[9px] lowercase font-normal opacity-70">(tap to toggle)</span>
+                  </div>
+                </th>
+              )}
+              {(displayMode === 'relative_elev' || displayMode === 'both') && (
+                <th
+                  className="py-2.5 px-3 cursor-pointer hover:text-amber-500 transition select-none"
+                  onClick={handleCycleDisplayMode}
+                  title="Click to toggle display mode (Target Rod vs Rel. Elev vs Both)"
+                >
+                  <div className="flex items-center gap-1">
+                    <span>Relative Elev.</span>
+                    <span className="text-[9px] lowercase font-normal opacity-70">(tap to toggle)</span>
+                  </div>
+                </th>
+              )}
               <th className="py-2.5 px-3 text-center">Track Action</th>
               <th className="py-2.5 px-3 text-right">Actions</th>
             </tr>
@@ -443,7 +586,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-1.5">
                           <span className="text-zinc-900 dark:text-zinc-100 font-bold">
-                            {s.readingInches !== null ? formatFeetInches(s.readingInches, fractionResolution) : '—'}
+                            {s.readingInches !== null ? formatMeasurement(s.readingInches, unitFormat, fractionResolution) : '—'}
                           </span>
                           <span className="text-[10px] bg-purple-500/15 text-purple-700 dark:text-purple-300 px-1 py-0.2 rounded font-sans font-semibold">
                             Active Laser backsight
@@ -451,9 +594,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         </div>
                         {s.tpOldReadingInches !== undefined && (
                           <div className="text-[11px] text-zinc-500 font-sans">
-                            Laser 1 was: {formatFeetInches(s.tpOldReadingInches, fractionResolution)}{' '}
+                            Laser 1 was: {formatMeasurement(s.tpOldReadingInches, unitFormat, fractionResolution)}{' '}
                             <span className="font-mono">
-                              ({(s.datumOffsetInches ?? 0) >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches ?? 0, 'inches_fraction', fractionResolution)} shift)
+                              ({(s.datumOffsetInches ?? 0) >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches ?? 0, unitFormat, fractionResolution)} shift)
                             </span>
                           </div>
                         )}
@@ -462,20 +605,20 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0 ? (
                         <div className="flex flex-col gap-0.5">
                           <div className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                            {formatFeetInches(s.readingInches, fractionResolution)}
+                            {formatMeasurement(s.readingInches, unitFormat, fractionResolution)}
                           </div>
                           <div className="text-[11px] font-sans text-purple-600 dark:text-purple-400 flex items-center gap-1">
                             <span>
-                              Was: <strong>{formatFeetInches(s.readingInches - s.datumOffsetInches, fractionResolution)}</strong>
+                              Was: <strong>{formatMeasurement(s.readingInches - s.datumOffsetInches, unitFormat, fractionResolution)}</strong>
                             </span>
                             <span className="text-[10px] text-purple-500/80">
-                              ({s.datumOffsetInches >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches, 'inches_fraction', fractionResolution)} laser shift)
+                              ({s.datumOffsetInches >= 0 ? '+' : ''}{formatMeasurement(s.datumOffsetInches, unitFormat, fractionResolution)} laser shift)
                             </span>
                           </div>
                         </div>
                       ) : (
                         <span className="text-zinc-900 dark:text-zinc-100 font-semibold">
-                          {formatFeetInches(s.readingInches, fractionResolution)}
+                          {formatMeasurement(s.readingInches, unitFormat, fractionResolution)}
                         </span>
                       )
                     ) : (
@@ -485,12 +628,28 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     )}
                   </td>
 
-                  {/* Relative Elevation */}
-                  <td className="py-3 px-3 font-mono text-zinc-500 dark:text-zinc-400 text-xs">
-                    {s.elevationInches !== null
-                      ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
-                      : '—'}
-                  </td>
+                  {/* Target Rod Column */}
+                  {(displayMode === 'target_reading' || displayMode === 'both') && (
+                    <td className="py-3 px-3 font-mono font-bold text-xs">
+                      {s.targetReadingInches !== null && s.targetReadingInches !== undefined ? (
+                        <div className="flex items-center gap-1 text-sky-600 dark:text-sky-400">
+                          <span className="text-[11px]">🎯</span>
+                          <span>{formatMeasurement(s.targetReadingInches, unitFormat, fractionResolution)}</span>
+                        </div>
+                      ) : (
+                        <span className="text-zinc-400">—</span>
+                      )}
+                    </td>
+                  )}
+
+                  {/* Relative Elevation Column */}
+                  {(displayMode === 'relative_elev' || displayMode === 'both') && (
+                    <td className="py-3 px-3 font-mono text-zinc-500 dark:text-zinc-400 text-xs">
+                      {s.elevationInches !== null
+                        ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
+                        : '—'}
+                    </td>
+                  )}
 
                   {/* Track Action Badge */}
                   <td className="py-3 px-3 text-center">
@@ -549,7 +708,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         <button
                           onClick={() => {
                             setTurningPointStation(s);
-                            setTpNewReadingStr(s.readingInches !== null ? formatFeetInches(s.readingInches) : '');
+                            setTpNewReadingStr(s.readingInches !== null ? formatMeasurement(s.readingInches, unitFormat, fractionResolution) : '');
                             setTpError(null);
                           }}
                           className={`p-1.5 rounded transition ${
@@ -724,7 +883,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     const found = stations.find(s => s.id === e.target.value);
                     if (found) {
                       setTurningPointStation(found);
-                      setTpNewReadingStr(found.readingInches !== null ? formatFeetInches(found.readingInches) : '');
+                      setTpNewReadingStr(found.readingInches !== null ? formatMeasurement(found.readingInches, unitFormat, fractionResolution) : '');
                       setTpError(null);
                     }
                   }}
@@ -732,7 +891,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 >
                   {stations.map(s => (
                     <option key={s.id} value={s.id}>
-                      Station {s.distanceFt} ft {s.readingInches !== null ? `(Recorded: ${formatFeetInches(s.readingInches)})` : '(⚠️ No reading yet)'}
+                      Station {s.distanceFt} ft {s.readingInches !== null ? `(Recorded: ${formatMeasurement(s.readingInches, unitFormat, fractionResolution)})` : '(⚠️ No reading yet)'}
                     </option>
                   ))}
                 </select>
@@ -749,7 +908,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   <span className="text-zinc-500">Old Laser Reading:</span>
                   <span className="font-bold text-zinc-900 dark:text-zinc-100">
                     {turningPointStation.readingInches !== null
-                      ? formatFeetInches(turningPointStation.readingInches)
+                      ? formatMeasurement(turningPointStation.readingInches, unitFormat, fractionResolution)
                       : 'None recorded'}
                   </span>
                 </div>
@@ -777,11 +936,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   return (
                     <div className="p-2.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-800 dark:text-purple-300 text-xs space-y-1.5 font-sans">
                       <div className="font-bold font-mono">
-                        Laser Relocation Shift: {shift >= 0 ? '+' : ''}{formatMeasurement(shift, 'inches_fraction', fractionResolution)}
+                        Laser Relocation Shift: {shift >= 0 ? '+' : ''}{formatMeasurement(shift, unitFormat, fractionResolution)}
                       </div>
                       <p className="text-[11px] leading-tight text-purple-700 dark:text-purple-400">
                         {shift !== 0
-                          ? `All previously measured stations (0 ft to ${turningPointStation.distanceFt} ft) will convert to your new laser's scale (${shift >= 0 ? '+' : ''}${formatMeasurement(shift, 'inches_fraction', fractionResolution)}). ${st0NewReading !== null ? `If you walk back to Station 0 with your rod right now, it will read ${formatFeetInches(st0NewReading, fractionResolution)} to match your active laser!` : ''}`
+                          ? `All previously measured stations (0 ft to ${turningPointStation.distanceFt} ft) will convert to your new laser's scale (${shift >= 0 ? '+' : ''}${formatMeasurement(shift, unitFormat, fractionResolution)}). ${st0NewReading !== null ? `If you walk back to Station 0 with your rod right now, it will read ${formatMeasurement(st0NewReading, unitFormat, fractionResolution)} to match your active laser!` : ''}`
                           : `Both setups are at the exact same height (0" shift).`}
                       </p>
                       <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">
