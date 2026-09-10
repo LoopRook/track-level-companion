@@ -15,6 +15,7 @@ interface StationConfigProps {
   summary: {
     totalStations: number;
     measuredCount: number;
+    completedCount?: number;
     onGradeCount: number;
     liftCount: number;
     lowerCount: number;
@@ -71,7 +72,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
                 placeholder="Track Section Name"
               />
             </div>
-            <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-300 font-medium">
               <span>Track Level Companion • {summary.lengthFt} ft Section</span>
               {!isOnline ? (
                 <span
@@ -131,10 +132,15 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           {/* Theme Toggle (Sunlight mode) */}
           <button
             onClick={onToggleDarkMode}
-            className="p-1.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95"
-            title={isDarkMode ? 'Switch to Bright Daylight Mode' : 'Switch to Pure Black Mode'}
+            className="p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300"
+            title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle Sunlight Mode"
           >
-            {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-zinc-600" />}
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-zinc-600" />
+            )}
           </button>
         </div>
       </header>
@@ -142,13 +148,23 @@ export const StationConfig: React.FC<StationConfigProps> = ({
       {/* Real-time Field Summary Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
-          <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
-            Track Length
-          </span>
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider block">
+              Track Length
+            </span>
+            {summary.completedCount !== undefined && summary.completedCount > 0 && (
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25"
+                title={`${summary.completedCount} of ${summary.totalStations} ties completed trackside`}
+              >
+                ✓ {summary.completedCount}/{summary.totalStations}
+              </span>
+            )}
+          </div>
           <div className="text-lg font-mono font-bold text-zinc-900 dark:text-zinc-100 mt-0.5">
             {summary.lengthFt} ft
-            <span className="text-[11px] text-zinc-500 font-normal ml-1.5">
-              ({summary.measuredCount}/{summary.totalStations})
+            <span className="text-[11px] text-zinc-400 dark:text-zinc-400 font-normal ml-1.5">
+              ({summary.measuredCount}/{summary.totalStations} shot)
             </span>
           </div>
         </div>
@@ -161,7 +177,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
             {summary.measuredCount > 0
               ? `${Math.round((summary.onGradeCount / summary.measuredCount) * 100)}%`
               : '—'}
-            <span className="text-[11px] text-zinc-500 font-normal ml-1.5">
+            <span className="text-[11px] text-zinc-400 dark:text-zinc-300 font-semibold ml-1.5">
               ({summary.onGradeCount} pts)
             </span>
           </div>
@@ -174,7 +190,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <div className="text-lg font-mono font-bold text-sky-600 dark:text-sky-400 mt-0.5">
             {summary.liftCount} pts
             {summary.maxLift > 0 && (
-              <span className="text-[11px] text-sky-500 dark:text-sky-400 font-normal ml-1.5">
+              <span className="text-[11px] text-sky-500 dark:text-sky-400 font-semibold ml-1.5">
                 (Max +{project.fractionResolution === 16 ? `${Math.round(summary.maxLift * 16)}/16"` : `${summary.maxLift.toFixed(2)}"`})
               </span>
             )}
@@ -188,7 +204,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
           <div className="text-lg font-mono font-bold text-amber-600 dark:text-amber-400 mt-0.5">
             {summary.lowerCount} pts
             {summary.maxLower > 0 && (
-              <span className="text-[11px] text-amber-500 dark:text-amber-400 font-normal ml-1.5">
+              <span className="text-[11px] text-amber-500 dark:text-amber-400 font-semibold ml-1.5">
                 (Max -{project.fractionResolution === 16 ? `${Math.round(summary.maxLower * 16)}/16"` : `${summary.maxLower.toFixed(2)}"`})
               </span>
             )}
@@ -200,7 +216,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
       <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3 shadow-sm flex flex-wrap items-center justify-between gap-2.5 text-xs">
         {/* Grade Mode Selection */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">
+          <span className="font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider text-[10px]">
             Target:
           </span>
           <div className="flex rounded-lg bg-zinc-100 dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-800 h-8 items-center">

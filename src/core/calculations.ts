@@ -260,11 +260,13 @@ export function calculateTrackProfile(project: TrackProject): CalculatedStation[
  * Computes summary statistics for the track profile
  */
 export function getTrackSummary(calculatedStations: CalculatedStation[]) {
+  const completedCount = calculatedStations.filter(s => !!s.completed).length;
   const withLifts = calculatedStations.filter(s => s.liftInches !== null);
   if (withLifts.length === 0) {
     return {
       totalStations: calculatedStations.length,
       measuredCount: 0,
+      completedCount,
       onGradeCount: 0,
       liftCount: 0,
       lowerCount: 0,
@@ -288,6 +290,7 @@ export function getTrackSummary(calculatedStations: CalculatedStation[]) {
   return {
     totalStations: calculatedStations.length,
     measuredCount: withLifts.length,
+    completedCount,
     onGradeCount,
     liftCount,
     lowerCount,

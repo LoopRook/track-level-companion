@@ -240,17 +240,17 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <div
               key={s.id}
               onClick={() => onEditStation(s)}
-              className={`p-3 transition-colors cursor-pointer ${
+              className={`p-3 transition-all cursor-pointer rounded-xl ${
                 isSelected
-                  ? 'bg-amber-500/10 dark:bg-amber-500/15'
+                  ? 'bg-amber-500/10 dark:bg-amber-500/15 ring-2 ring-amber-500'
                   : isCompleted
-                  ? 'bg-zinc-50/50 dark:bg-zinc-950/40 opacity-75'
+                  ? 'bg-zinc-100/50 dark:bg-zinc-950/70 opacity-40 hover:opacity-80 grayscale-[0.2]'
                   : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'
               }`}
             >
               {/* Top Header Row: Completed Check, Station Distance & Badges, Quick Action Buttons */}
               <div className="flex items-center justify-between gap-2 mb-2">
-                {/* Left: Complete Checkbox + Distance + Status Badges */}
+                {/* Left: Complete Checkbox (44x44px Fitts' Law touch target) + Distance + Status Badges */}
                 <div className="flex items-center gap-2 flex-wrap min-w-0">
                   <button
                     type="button"
@@ -258,8 +258,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       e.stopPropagation();
                       onToggleComplete(s.id);
                     }}
-                    className="p-1 -m-1 text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition"
+                    className="w-11 h-11 -m-2.5 flex items-center justify-center rounded-xl text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 active:scale-90 transition shrink-0"
                     title={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
+                    aria-label={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
                   >
                     {isCompleted ? (
                       <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -268,7 +269,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     )}
                   </button>
 
-                  <span className="font-mono font-bold text-base text-zinc-900 dark:text-zinc-100">
+                  <span className={`font-mono font-bold text-base ${isCompleted ? 'line-through text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
                     {s.distanceFt} ft
                   </span>
 
@@ -293,13 +294,13 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   )}
                 </div>
 
-                {/* Right: Quick Action Buttons (Lock, TP, Edit, Delete) */}
-                <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                {/* Right: Quick Action Buttons (Lock, TP, Edit, Delete) with ample touch spacing */}
+                <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
                   {onToggleLock && (
                     <button
                       type="button"
                       onClick={() => onToggleLock(s.id)}
-                      className={`p-1.5 rounded-lg border transition ${
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg border transition ${
                         isLocked
                           ? 'text-amber-500 bg-amber-500/15 border-amber-500/40'
                           : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -318,7 +319,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         setTpNewReadingStr(s.readingInches !== null ? formatMeasurement(s.readingInches, unitFormat, fractionResolution) : '');
                         setTpError(null);
                       }}
-                      className={`p-1.5 rounded-lg border transition ${
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg border transition ${
                         s.isTurningPoint
                           ? 'text-purple-500 bg-purple-500/15 border-purple-500/40'
                           : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-purple-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -332,7 +333,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   <button
                     type="button"
                     onClick={() => onEditStation(s)}
-                    className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
                     title="Edit measurement"
                   >
                     <Edit3 className="w-3.5 h-3.5" />
@@ -341,7 +342,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   <button
                     type="button"
                     onClick={() => onDeleteStation(s.id)}
-                    className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
                     title="Delete station"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -352,7 +353,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               {/* Middle Row: Readings & Target/Elevation */}
               <div className="grid grid-cols-2 gap-2 py-1.5 px-2.5 bg-zinc-100/60 dark:bg-zinc-900/60 rounded-xl mb-2 text-xs">
                 <div>
-                  <span className="text-[10px] text-zinc-500 block uppercase font-semibold">
+                  <span className="text-[10px] text-zinc-400 dark:text-zinc-300 block uppercase font-bold">
                     {s.isTurningPoint ? 'Laser Reading (TP)' : 'Laser Reading'}
                   </span>
                   {s.isTurningPoint ? (
@@ -395,7 +396,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 <div className="text-right">
                   {displayMode === 'target_reading' && (
                     <div>
-                      <span className="text-[10px] text-zinc-500 block uppercase font-semibold">Target Rod</span>
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-300 block uppercase font-bold">Target Rod</span>
                       <div className="font-mono font-bold text-sm text-sky-600 dark:text-sky-400 flex items-center justify-end gap-1">
                         <span className="text-xs">🎯</span>
                         <span>
@@ -409,7 +410,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
                   {displayMode === 'relative_elev' && (
                     <div>
-                      <span className="text-[10px] text-zinc-500 block uppercase font-semibold">Rel. Elevation</span>
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-300 block uppercase font-bold">Rel. Elevation</span>
                       <div className="font-mono font-bold text-sm text-zinc-700 dark:text-zinc-300">
                         {s.elevationInches !== null
                           ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
@@ -421,7 +422,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {displayMode === 'both' && (
                     <div className="space-y-0.5">
                       <div className="flex items-center justify-end gap-1">
-                        <span className="text-[10px] text-zinc-500 uppercase font-semibold">Target:</span>
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-300 uppercase font-bold">Target:</span>
                         <span className="font-mono font-bold text-xs text-sky-600 dark:text-sky-400">
                           {s.targetReadingInches !== null && s.targetReadingInches !== undefined
                             ? formatMeasurement(s.targetReadingInches, unitFormat, fractionResolution)
@@ -429,7 +430,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         </span>
                       </div>
                       <div className="flex items-center justify-end gap-1">
-                        <span className="text-[10px] text-zinc-500 uppercase font-semibold">Elev:</span>
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-300 uppercase font-bold">Elev:</span>
                         <span className="font-mono font-bold text-xs text-zinc-700 dark:text-zinc-300">
                           {s.elevationInches !== null
                             ? formatMeasurement(s.elevationInches, unitFormat, fractionResolution)
@@ -443,7 +444,17 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
               {/* Bottom Row: Full-width Track Action Banner */}
               <div>
-                {isLocked ? (
+                {isCompleted ? (
+                  <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-zinc-200/50 dark:bg-zinc-800/50 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>LEVELED</span>
+                    {s.actionText !== '—' && s.action !== 'ok' && (
+                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500 line-through font-normal ml-1">
+                        ({s.actionText})
+                      </span>
+                    )}
+                  </div>
+                ) : isLocked ? (
                   <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                     <Lock className="w-3.5 h-3.5 text-amber-500" />
                     <span>LOCKED</span>
@@ -485,7 +496,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
       <div className="overflow-x-auto hidden md:block">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-500 bg-zinc-100/70 dark:bg-zinc-950 font-bold">
+            <tr className="border-b border-zinc-200 dark:border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-300 bg-zinc-100/70 dark:bg-zinc-950 font-bold">
               <th className="py-2.5 px-3 w-10 text-center">Status</th>
               <th className="py-2.5 px-3">Station</th>
               <th className="py-2.5 px-3">Laser Reading</th>
@@ -526,16 +537,16 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               return (
                 <tr
                   key={s.id}
-                  className={`transition-colors cursor-pointer ${
+                  className={`transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-amber-500/10 dark:bg-amber-500/15 font-medium'
                       : isCompleted
-                      ? 'bg-zinc-50/40 dark:bg-zinc-950/40 text-zinc-400 dark:text-zinc-600'
+                      ? 'bg-zinc-100/40 dark:bg-zinc-950/70 opacity-40 hover:opacity-80 grayscale-[0.2]'
                       : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'
                   }`}
                   onClick={() => onEditStation(s)}
                 >
-                  {/* Completed Checkmark Toggle */}
+                  {/* Completed Checkmark Toggle (Fitts' Law enlarged touch target) */}
                   <td
                     className="py-3 px-3 text-center"
                     onClick={(e) => {
@@ -544,8 +555,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     }}
                   >
                     <button
-                      className="text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 transition"
+                      type="button"
+                      className="w-10 h-10 -m-2 flex items-center justify-center rounded-xl text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 active:scale-90 transition mx-auto"
                       title={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
+                      aria-label={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
                     >
                       {isCompleted ? (
                         <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -558,7 +571,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {/* Station Distance & Badges */}
                   <td className="py-3 px-3 font-mono font-bold text-zinc-900 dark:text-zinc-200">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span>{s.distanceFt} ft</span>
+                      <span className={isCompleted ? 'line-through text-zinc-500' : ''}>
+                        {s.distanceFt} ft
+                      </span>
                       {isLocked && (
                         <span
                           className="text-[10px] bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-0.5"
@@ -653,7 +668,17 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
                   {/* Track Action Badge */}
                   <td className="py-3 px-3 text-center">
-                    {isLocked ? (
+                    {isCompleted ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-zinc-200/50 dark:bg-zinc-800/60 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>LEVELED</span>
+                        {s.actionText !== '—' && s.action !== 'ok' && (
+                          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 line-through font-normal ml-0.5">
+                            ({s.actionText})
+                          </span>
+                        )}
+                      </span>
+                    ) : isLocked ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
                         <Lock className="w-3.5 h-3.5 text-amber-500" />
                         LOCKED
@@ -690,11 +715,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     className="py-3 px-3 text-right"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1.5">
                       {onToggleLock && (
                         <button
                           onClick={() => onToggleLock(s.id)}
-                          className={`p-1.5 rounded transition ${
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
                             isLocked
                               ? 'text-amber-500 bg-amber-500/15 hover:bg-amber-500/25'
                               : 'text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -711,7 +736,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                             setTpNewReadingStr(s.readingInches !== null ? formatMeasurement(s.readingInches, unitFormat, fractionResolution) : '');
                             setTpError(null);
                           }}
-                          className={`p-1.5 rounded transition ${
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
                             s.isTurningPoint
                               ? 'text-purple-500 bg-purple-500/15 hover:bg-purple-500/25'
                               : 'text-zinc-400 hover:text-purple-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -723,7 +748,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       )}
                       <button
                         onClick={() => onEditStation(s)}
-                        className="p-1.5 text-zinc-400 hover:text-amber-500 rounded transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-amber-500 rounded-lg transition hover:bg-zinc-100 dark:hover:bg-zinc-800"
                         title="Edit measurement"
                       >
                         <Edit3 className="w-4 h-4" />

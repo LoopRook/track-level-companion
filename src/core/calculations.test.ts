@@ -179,6 +179,7 @@ describe('Laser Datum & Track Profile Calculations', () => {
 
     expect(summary.totalStations).toBe(4);
     expect(summary.measuredCount).toBe(4);
+    expect(summary.completedCount).toBe(0);
     expect(summary.onGradeCount).toBe(2);
     expect(summary.liftCount).toBe(1);
     expect(summary.lowerCount).toBe(1);

@@ -375,6 +375,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </div>
 
           <div className="flex items-center gap-2 font-sans font-bold">
+            {currentInspectStation.completed && (
+              <span className="text-emerald-600 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1">
+                ✓ LEVELED
+              </span>
+            )}
             {currentInspectStation.isLocked ? (
               <span className="text-amber-500 dark:text-amber-400 text-xs flex items-center gap-1">
                 🔒 LOCKED
@@ -594,14 +599,27 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   />
                 )}
 
+                {/* Completed (Leveled trackside) indicator ring */}
+                {s.completed && (
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r={9.5}
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth="2"
+                  />
+                )}
+
                 {/* Dot */}
                 <circle
                   cx={x}
                   cy={y}
                   r={isMeasured ? (isSelected ? 6.5 : 5.5) : 3.5}
-                  fill={dotFill}
+                  fill={s.completed ? '#10b981' : dotFill}
                   stroke={isSelected ? '#f59e0b' : '#000000'}
                   strokeWidth="1.5"
+                  opacity={s.completed ? 0.6 : 1}
                 />
               </g>
             );
@@ -631,7 +649,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             <span>Target Plane</span>
           </div>
         </div>
-        <div className="flex items-center gap-3 font-semibold">
+        <div className="flex items-center gap-3 font-semibold flex-wrap">
           <span className="flex items-center gap-1 text-sky-500">
             <span className="w-2 h-2 rounded-full bg-sky-400"></span> Lift (Low)
           </span>
@@ -640,6 +658,9 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </span>
           <span className="flex items-center gap-1 text-emerald-500">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span> On Grade
+          </span>
+          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+            <span className="w-2 h-2 rounded-full border border-emerald-500 bg-emerald-500/30"></span> Leveled ✓
           </span>
         </div>
       </div>
