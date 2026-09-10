@@ -210,11 +210,19 @@ Under the **Import CSV** tab:
 - One-tap **Load**, **Download CSV**, and **Delete**.
 - Built-in presets: `"Load Demo 50ft Track (with Dip)"`, `"+ New Track..."`, and `"Clear Active"`.
 
-### 100% Offline PWA Operation:
+### 100% Offline PWA & Desktop App Operation:
 - **Zero Internet Required:** Track Level Companion is engineered as an offline Progressive Web App (PWA). All application logic, styles, and calculation engines are precached locally on your device by service workers.
 - **Connectivity Indicator:** The top bar displays `📡 Offline` when out of cellular range and `✓ Offline Ready` when cached.
-- **Home Screen Installation:**
+- **Desktop App Installation (Windows, macOS, Linux):**
+  - **Chrome / Edge / Brave:** Click the **`[ Install App ]`** button in the top header (or the install monitor icon in the address bar) to run Track Level Companion as a borderless native application with its own desktop shortcut, taskbar icon, and offline launch.
+  - **macOS Safari (Sonoma+):** Select **File $\to$ Add to Dock** to run in a standalone application window.
+- **Mobile Home Screen Installation:**
   - **iOS (Safari):** Tap *Share* $\to$ *Add to Home Screen*.
   - **Android (Chrome):** Tap *Install App* or the three dots $\to$ *Add to Home screen*.
-- Runs smoothly in deep rail cuts, remote mountains, and tunnels with zero mobile service.
-
+- **Opt-In Updates:**
+  - Updates are never forced onto active field surveys. When a new version is deployed, it downloads silently in the background and displays a non-intrusive **Update Available** banner with **`[ Update Now ]`** and **`[ Later ]`** buttons.
+- **Responsive Desktop 2-Column Layout:**
+  - On screens $\ge 1024\text{px}$ (`lg:`), the app expands into a dual-column workspace: Real-Time Field Summary Cards and the Visual Profile Graph ("Gentle Graph") anchor on the left, while the Trackside Checklist Table runs on the right. On mobile and tablet, it seamlessly preserves the stacked 1-column layout.
+- **Layman-Friendly CSV Schema:**
+  - Columns: `Station (ft)`, `Rod Reading`, `Target Rod`, `Rel Elevation (in)`, `Action`, `Completed`, `Datum Offset (in)`, `Locked`, `Notes`.
+  - Single `Rod Reading` column prevents accidental dual-column edit conflicts in Excel/Google Sheets. Target rod, relative elevation, and action recommendations are exported for field reporting, but safely ignored as read-only on re-import.

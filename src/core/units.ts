@@ -37,9 +37,10 @@ export function parseMeasurement(input: string | number | null | undefined): num
   const isNeg = str.startsWith('-');
   const clean = isNeg ? str.substring(1).trim() : str;
 
-  // Case 1: Simple decimal number
-  if (/^\d+(\.\d+)?$/.test(clean)) {
-    const val = parseFloat(clean);
+  // Case 1: Simple decimal number (handles optional trailing inch symbol or quotes e.g. 6.28")
+  const decimalClean = clean.replace(/["”]\s*$/, '').trim();
+  if (/^\d+(\.\d+)?$/.test(decimalClean)) {
+    const val = parseFloat(decimalClean);
     return isNeg ? -val : val;
   }
 

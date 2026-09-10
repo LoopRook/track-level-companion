@@ -26,15 +26,17 @@ describe('CSV Import, Export & Combine Operations', () => {
     const csv = exportTrackToCSV(sampleProject);
     const lines = csv.trim().split('\n');
 
-    expect(lines[0]).toBe('Station (ft),Last Reading (in),Last Reading (ft/in),Completed,Datum Offset (in),Locked,Notes');
+    expect(lines[0]).toBe('Station (ft),Rod Reading,Target Rod,Rel Elevation (in),Action,Completed,Datum Offset (in),Locked,Notes');
     expect(lines.length).toBe(4); // header + 3 stations
 
     // Station 0
-    expect(lines[1]).toContain('0,14.0000,"1\' 2""",YES,,NO');
+    expect(lines[1]).toContain('0,"1\' 2""",');
     // Station 5 (locked over root)
-    expect(lines[2]).toContain('5,14.2500,"1\' 2 1/4""",NO,,YES,Over oak root');
+    expect(lines[2]).toContain('5,"1\' 2 1/4""",');
+    expect(lines[2]).toContain('NO,,YES,Over oak root');
     // Station 10 (turning point with datum offset 2.25)
-    expect(lines[3]).toContain('10,16.5000,"1\' 4 1/2""",YES,2.2500,NO,Laser moved');
+    expect(lines[3]).toContain('10,"1\' 4 1/2""",');
+    expect(lines[3]).toContain('YES,2.2500,NO,Laser moved');
   });
 
   it('parses CSV back into StationPoint array preserving all values and flags', () => {
@@ -137,7 +139,7 @@ describe('CSV Import, Export & Combine Operations', () => {
 
   it('generates a valid CSV template that parses seamlessly back into station points', () => {
     const csv = generateCSVTemplate(50, 5);
-    expect(csv).toContain('Station (ft),Last Reading,Completed,Locked,Notes');
+    expect(csv).toContain('Station (ft),Rod Reading,Completed,Locked,Notes');
 
     const parsed = parseTrackFromCSV(csv);
     expect(parsed.length).toBe(11); // 0, 5, 10, ..., 50 = 11 stations
@@ -150,7 +152,7 @@ describe('CSV Import, Export & Combine Operations', () => {
 
   it('generates a Google Sheets TSV template that parses seamlessly', () => {
     const tsv = generateGoogleSheetsTSVTemplate(30, 10);
-    expect(tsv).toContain("Station (ft)\tLast Reading\tCompleted\tLocked\tNotes");
+    expect(tsv).toContain("Station (ft)\tRod Reading\tCompleted\tLocked\tNotes");
 
     const parsed = parseTrackFromCSV(tsv);
     expect(parsed.length).toBe(4); // 0, 10, 20, 30
@@ -158,6 +160,16 @@ describe('CSV Import, Export & Combine Operations', () => {
     expect(parsed[0].readingInches).toBeCloseTo(14.25, 4);
     expect(parsed[3].distanceFt).toBe(30);
     expect(parsed[3].readingInches).toBeNull();
+  });
+
+  it('correctly respects user edits when user modifies the fractional column in Excel', () => {
+    const editedCSV = `Station (ft),Last Reading (in),Last Reading (ft/in),Completed,Notes
+0,14.0000,"1' 3""",YES,User edited fraction column to 1' 3" (15 inches)
+5,14.2500,"1' 2 1/4""",NO,Untouched`;
+
+    const parsed = parseTrackFromCSV(editedCSV);
+    expect(parsed[0].readingInches).toBeCloseTo(15.0, 4); // should be 15, not 14!
+    expect(parsed[1].readingInches).toBeCloseTo(14.25, 4);
   });
 });
 

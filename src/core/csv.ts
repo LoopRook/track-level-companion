@@ -1,5 +1,6 @@
-import { TrackProject, StationPoint } from './types';
+import { TrackProject, StationPoint, CalculatedStation } from './types';
 import { formatFeetInches, parseMeasurement } from './units';
+import { calculateTrackProfile } from './calculations';
 
 function escapeCSV(val: string): string {
   if (val.includes(',') || val.includes('"') || val.includes('\n') || val.includes('\t') || val.includes(';')) {
@@ -75,7 +76,7 @@ export function splitCSVLine(line: string, delimiter?: string): string[] {
  * Generates a clean, standard CSV template that users can download or copy to Google Drive / Sheets.
  */
 export function generateCSVTemplate(lengthFt: number = 50, intervalFt: number = 5): string {
-  const headers = ['Station (ft)', 'Last Reading', 'Completed', 'Locked', 'Notes'];
+  const headers = ['Station (ft)', 'Rod Reading', 'Completed', 'Locked', 'Notes'];
   const rows: string[] = [];
 
   for (let dist = 0; dist <= lengthFt; dist += intervalFt) {
@@ -90,8 +91,8 @@ export function generateCSVTemplate(lengthFt: number = 50, intervalFt: number = 
 
   return [
     '# Track Level Companion - Standard Field Data Template',
-    '# Open in Google Sheets or Excel. Fill in Last Readings, then re-upload.',
-    '# Accepted reading formats: 1\' 4 3/8", 16 3/8", 14.375, or 365mm',
+    '# Open in Google Sheets or Excel. Fill in Rod Readings, then re-upload.',
+    '# Accepted reading formats: 6.28, 1\' 4 3/8", 16 3/8", 14.375, or 365mm',
     headers.join(','),
     ...rows,
   ].join('\n');
@@ -101,7 +102,7 @@ export function generateCSVTemplate(lengthFt: number = 50, intervalFt: number = 
  * Generates a tab-separated (TSV) clipboard-ready format for instant paste into Google Sheets.
  */
 export function generateGoogleSheetsTSVTemplate(lengthFt: number = 50, intervalFt: number = 5): string {
-  const headers = ['Station (ft)', 'Last Reading', 'Completed', 'Locked', 'Notes'];
+  const headers = ['Station (ft)', 'Rod Reading', 'Completed', 'Locked', 'Notes'];
   const rows: string[] = [];
 
   for (let dist = 0; dist <= lengthFt; dist += intervalFt) {
@@ -116,35 +117,73 @@ export function generateGoogleSheetsTSVTemplate(lengthFt: number = 50, intervalF
 }
 
 /**
- * Generates a standard CSV string representing the track profile.
+ * Generates a clean, layman-friendly CSV string representing the track profile.
+ * Exports a single, unambiguous 'Rod Reading' column along with target & action field recommendations.
  */
-export function exportTrackToCSV(project: TrackProject): string {
+export function exportTrackToCSV(project: TrackProject, calculatedStations?: CalculatedStation[]): string {
+  const calcStations = calculatedStations || calculateTrackProfile(project);
+  const calcMap = new Map(calcStations.map(c => [c.id, c]));
+
   const headers = [
     'Station (ft)',
-    'Last Reading (in)',
-    'Last Reading (ft/in)',
+    'Rod Reading',
+    'Target Rod',
+    'Rel Elevation (in)',
+    'Action',
     'Completed',
     'Datum Offset (in)',
     'Locked',
     'Notes',
   ];
 
-  const rows = project.stations.map(s => [
-    s.distanceFt.toString(),
-    s.readingInches !== null && !isNaN(s.readingInches) ? s.readingInches.toFixed(4) : '',
-    s.readingInches !== null && !isNaN(s.readingInches) ? escapeCSV(formatFeetInches(s.readingInches)) : '',
-    s.completed ? 'YES' : 'NO',
-    s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0 ? s.datumOffsetInches.toFixed(4) : '',
-    s.isLocked ? 'YES' : 'NO',
-    s.notes ? escapeCSV(s.notes) : '',
-  ]);
+  const rows = project.stations.map(s => {
+    const calc = calcMap.get(s.id);
+    let readingFormatted = '';
+    if (s.readingInches !== null && !isNaN(s.readingInches)) {
+      if (project.unitFormat === 'decimal_inches') {
+        readingFormatted = s.readingInches.toFixed(2);
+      } else if (project.unitFormat === 'metric_mm') {
+        readingFormatted = (s.readingInches * 25.4).toFixed(1);
+      } else {
+        readingFormatted = formatFeetInches(s.readingInches, project.fractionResolution);
+      }
+    }
+
+    let targetFormatted = '';
+    if (calc?.targetReadingInches !== null && calc?.targetReadingInches !== undefined && !isNaN(calc.targetReadingInches)) {
+      if (project.unitFormat === 'decimal_inches') {
+        targetFormatted = calc.targetReadingInches.toFixed(2);
+      } else if (project.unitFormat === 'metric_mm') {
+        targetFormatted = (calc.targetReadingInches * 25.4).toFixed(1);
+      } else {
+        targetFormatted = formatFeetInches(calc.targetReadingInches, project.fractionResolution);
+      }
+    }
+
+    const relElevFormatted = calc?.elevationInches !== null && calc?.elevationInches !== undefined && !isNaN(calc.elevationInches)
+      ? `${calc.elevationInches >= 0 ? '+' : ''}${calc.elevationInches.toFixed(2)}"`
+      : '';
+    const actionFormatted = calc?.actionText || '';
+
+    return [
+      s.distanceFt.toString(),
+      escapeCSV(readingFormatted),
+      escapeCSV(targetFormatted),
+      escapeCSV(relElevFormatted),
+      escapeCSV(actionFormatted),
+      s.completed ? 'YES' : 'NO',
+      s.datumOffsetInches !== undefined && s.datumOffsetInches !== 0 ? s.datumOffsetInches.toFixed(4) : '',
+      s.isLocked ? 'YES' : 'NO',
+      s.notes ? escapeCSV(s.notes) : '',
+    ];
+  });
 
   return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
 }
 
 /**
  * Parses track stations from CSV text.
- * Highly robust: handles dynamic column orders, decimal/fraction formats, and headerless data.
+ * Highly robust: handles dynamic column orders, single/dual reading columns, decimal/fraction formats, and headerless data.
  */
 export function parseTrackFromCSV(csvText: string): StationPoint[] {
   if (!csvText || typeof csvText !== 'string') return [];
@@ -166,11 +205,11 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
 
   let distIdx = 0;
   let readingInIdx = 1;
-  let readingFtInIdx = 2;
-  let completedIdx = 3;
-  let offsetIdx = 4;
-  let lockedIdx = 5;
-  let notesIdx = 6;
+  let readingFtInIdx = -1;
+  let completedIdx = -1;
+  let offsetIdx = -1;
+  let lockedIdx = -1;
+  let notesIdx = -1;
 
   let startIndex = 0;
 
@@ -185,16 +224,22 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
     notesIdx = -1;
 
     firstParts.forEach((header, idx) => {
-      const h = header.toLowerCase();
+      const h = header.toLowerCase().trim();
       if (h.includes('datum') || h.includes('offset') || h.includes('shift')) {
         offsetIdx = idx;
       } else if (h.includes('station') || h.includes('dist') || h.includes('chainage') || h === 'ft' || h === 'feet' || h === 'distance (ft)') {
         distIdx = idx;
+      } else if (h.includes('target')) {
+        // Skip read-only target column
+      } else if (h.includes('elevation') || h.includes('rel elev')) {
+        // Skip read-only elevation column
+      } else if (h.includes('action') || h.includes('lift/lower')) {
+        // Skip read-only action column
       } else if (h.includes('(ft/in)') || h.includes('ft/in') || h.includes('fraction') || h.includes('feet/in')) {
         readingFtInIdx = idx;
       } else if (h.includes('reading (in)') || h.includes('last (in)') || h.includes('laser (in)') || (h.includes('reading') && h.includes('(in)')) || h.includes('decimal')) {
         readingInIdx = idx;
-      } else if (h.includes('reading') || h.includes('laser') || h.includes('rod') || h.includes('last')) {
+      } else if (h.includes('rod reading') || h === 'reading' || h === 'last reading' || h.includes('rod') || h.includes('laser') || h.includes('reading')) {
         readingInIdx = idx;
       } else if (h.includes('complete') || h.includes('done') || h.includes('status')) {
         completedIdx = idx;
@@ -220,18 +265,20 @@ export function parseTrackFromCSV(csvText: string): StationPoint[] {
     const dist = parseFloat(rawDist);
     if (isNaN(dist)) continue;
 
-    // Robust measurement parsing: check readingInIdx first, then readingFtInIdx
+    // Robust measurement parsing:
+    // If a user edited the fractional column in Excel/Google Sheets, give priority to non-empty readingFtInStr,
+    // otherwise parse readingInStr (which covers primary 'Rod Reading' or decimal reading).
     let reading: number | null = null;
     const readingInStr = readingInIdx >= 0 ? parts[readingInIdx] : undefined;
     const readingFtInStr = readingFtInIdx >= 0 ? parts[readingFtInIdx] : undefined;
 
-    if (readingInStr && readingInStr.trim() !== '') {
-      const parsed = parseMeasurement(readingInStr);
-      if (parsed !== null && !isNaN(parsed)) reading = parsed;
+    if (readingFtInStr && readingFtInStr.trim() !== '') {
+      const parsedFtIn = parseMeasurement(readingFtInStr);
+      if (parsedFtIn !== null && !isNaN(parsedFtIn)) reading = parsedFtIn;
     }
-    if (reading === null && readingFtInStr && readingFtInStr.trim() !== '') {
-      const parsed = parseMeasurement(readingFtInStr);
-      if (parsed !== null && !isNaN(parsed)) reading = parsed;
+    if (reading === null && readingInStr && readingInStr.trim() !== '') {
+      const parsedIn = parseMeasurement(readingInStr);
+      if (parsedIn !== null && !isNaN(parsedIn)) reading = parsedIn;
     }
 
     const completedStr = completedIdx >= 0 ? parts[completedIdx]?.toUpperCase() : undefined;

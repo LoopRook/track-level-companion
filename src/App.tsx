@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { TrackProject, StationPoint, CalculatedStation } from './core/types';
 import { calculateTrackProfile, getTrackSummary } from './core/calculations';
-import { StationConfig } from './components/StationConfig';
+import { StationConfigHeader, StationSummaryBar, StationAlignmentBar } from './components/StationConfig';
 import { ProfileChart } from './components/ProfileChart';
 import { ActionTable } from './components/ActionTable';
 import { FractionKeypad } from './components/FractionKeypad';
 import { DataManagementModal } from './components/DataManagementModal';
 import { UserGuideModal } from './components/UserGuideModal';
 import { NewTrackModal } from './components/NewTrackModal';
+import { UpdatePrompt } from './components/UpdatePrompt';
 import { useBodyScrollLock } from './core/useBodyScrollLock';
 
 const INITIAL_STATIONS: StationPoint[] = [
@@ -85,6 +86,43 @@ export const App: React.FC = () => {
   const [isNewTrackModalOpen, setIsNewTrackModalOpen] = useState(false);
 
   useBodyScrollLock(isKeypadOpen || isDataModalOpen || isGuideOpen || isNewTrackModalOpen);
+
+  // Desktop PWA Installation
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setInstallPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!installPrompt) return;
+    try {
+      installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      if (choice?.outcome === 'accepted') {
+        setInstallPrompt(null);
+      }
+    } catch (err) {
+      console.error('PWA install prompt error:', err);
+    }
+  };
 
   // Sync dark mode class
   useEffect(() => {
@@ -519,9 +557,9 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2.5 sm:p-4 max-w-5xl mx-auto space-y-3">
-      {/* Configuration & Header */}
-      <StationConfig
+    <div className="min-h-screen bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2.5 sm:p-4 max-w-5xl lg:max-w-7xl xl:max-w-[1600px] mx-auto space-y-3">
+      {/* Top Navbar / Header (Spans full width across top) */}
+      <StationConfigHeader
         project={project}
         onChangeProject={handleUpdateProject}
         isDarkMode={isDarkMode}
@@ -529,41 +567,61 @@ export const App: React.FC = () => {
         onOpenDataModal={() => setIsDataModalOpen(true)}
         onOpenGuideModal={() => setIsGuideOpen(true)}
         onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
+        onInstallApp={handleInstallApp}
+        canInstall={!!installPrompt}
         summary={summary}
-        calculatedStations={calculatedStations}
       />
 
-      {/* Visual Profile Chart ("Gentle Graph") */}
-      <ProfileChart
-        stations={calculatedStations}
-        gradeMode={project.gradeMode}
-        targetGradePercent={project.targetGradePercent}
-        onSelectStation={handleSelectStation}
-        selectedStationId={activeEditingStation?.id}
-        onApplyTargetGrade={(grade) => {
-          handleUpdateProject({
-            gradeMode: 'target_grade',
-            targetGradePercent: Number(grade.toFixed(2)),
-          });
-        }}
-      />
+      {/* Responsive Work Area: Single column on mobile/tablet, 2 columns on desktop (lg: >= 1024px) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-start">
+        {/* LEFT COLUMN: Field Stats Summary + Alignment Controls + Gentle Profile Graph */}
+        <div className="lg:col-span-7 space-y-3 lg:sticky lg:top-3">
+          <StationSummaryBar
+            project={project}
+            summary={summary}
+          />
 
-      {/* Actionable Trackside Checklist Table */}
-      <ActionTable
-        stations={calculatedStations}
-        unitFormat={project.unitFormat}
-        fractionResolution={project.fractionResolution}
-        onEditStation={handleSelectStation}
-        onToggleComplete={handleToggleComplete}
-        onToggleLock={handleToggleLock}
-        onDeleteStation={handleDeleteStation}
-        onAddNextStation={handleAddNextStation}
-        onInsertCustomStation={handleInsertCustomStation}
-        onExtendTrack={handleExtendTrack}
-        onSetTurningPoint={handleSetTurningPoint}
-        onResetDatum={handleResetDatum}
-        selectedStationId={activeEditingStation?.id}
-      />
+          <StationAlignmentBar
+            project={project}
+            onChangeProject={handleUpdateProject}
+            calculatedStations={calculatedStations}
+          />
+
+          {/* Visual Profile Chart ("Gentle Graph") */}
+          <ProfileChart
+            stations={calculatedStations}
+            gradeMode={project.gradeMode}
+            targetGradePercent={project.targetGradePercent}
+            onSelectStation={handleSelectStation}
+            selectedStationId={activeEditingStation?.id}
+            onApplyTargetGrade={(grade) => {
+              handleUpdateProject({
+                gradeMode: 'target_grade',
+                targetGradePercent: Number(grade.toFixed(2)),
+              });
+            }}
+          />
+        </div>
+
+        {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
+        <div className="lg:col-span-5 space-y-3">
+          <ActionTable
+            stations={calculatedStations}
+            unitFormat={project.unitFormat}
+            fractionResolution={project.fractionResolution}
+            onEditStation={handleSelectStation}
+            onToggleComplete={handleToggleComplete}
+            onToggleLock={handleToggleLock}
+            onDeleteStation={handleDeleteStation}
+            onAddNextStation={handleAddNextStation}
+            onInsertCustomStation={handleInsertCustomStation}
+            onExtendTrack={handleExtendTrack}
+            onSetTurningPoint={handleSetTurningPoint}
+            onResetDatum={handleResetDatum}
+            selectedStationId={activeEditingStation?.id}
+          />
+        </div>
+      </div>
 
       {/* Keypad Modal */}
       <FractionKeypad
@@ -588,6 +646,7 @@ export const App: React.FC = () => {
         isOpen={isDataModalOpen}
         onClose={() => setIsDataModalOpen(false)}
         currentProject={project}
+        calculatedStations={calculatedStations}
         onLoadProject={(p) => setProject(p)}
         onResetProject={handleResetProject}
         onLoadDemoTrack={handleLoadDemoTrack}
@@ -607,6 +666,9 @@ export const App: React.FC = () => {
         isOpen={isGuideOpen}
         onClose={() => setIsGuideOpen(false)}
       />
+
+      {/* Opt-in PWA Update Notification Toast */}
+      <UpdatePrompt />
     </div>
   );
 };

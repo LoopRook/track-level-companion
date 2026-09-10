@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { TrackProject, StationPoint } from '../core/types';
+import { TrackProject, StationPoint, CalculatedStation } from '../core/types';
 import { exportTrackToCSV, parseTrackFromCSV, appendStations, generateCSVTemplate, generateGoogleSheetsTSVTemplate } from '../core/csv';
 import { formatMeasurement } from '../core/units';
 import {
@@ -24,6 +24,7 @@ interface DataManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentProject: TrackProject;
+  calculatedStations?: CalculatedStation[];
   onLoadProject: (project: TrackProject) => void;
   onResetProject: () => void;
   onLoadDemoTrack: () => void;
@@ -41,6 +42,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   isOpen,
   onClose,
   currentProject,
+  calculatedStations,
   onLoadProject,
   onResetProject,
   onLoadDemoTrack,
@@ -116,7 +118,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
 
   // Export to CSV with native mobile share support & direct download
   const handleExportCSV = async (targetProj: TrackProject = currentProject) => {
-    const csvContent = exportTrackToCSV(targetProj);
+    const csvContent = exportTrackToCSV(targetProj, targetProj.id === currentProject.id ? calculatedStations : undefined);
     const safeName = targetProj.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     const filename = `${safeName || 'track'}_${targetProj.date || new Date().toISOString().split('T')[0]}.csv`;
 
@@ -159,7 +161,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
 
   // Copy CSV to clipboard
   const handleCopyCSV = async () => {
-    const csvContent = exportTrackToCSV(currentProject);
+    const csvContent = exportTrackToCSV(currentProject, calculatedStations);
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(csvContent);
@@ -447,7 +449,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                 {showRawCsv && (
                   <textarea
                     readOnly
-                    value={exportTrackToCSV(currentProject)}
+                    value={exportTrackToCSV(currentProject, calculatedStations)}
                     rows={6}
                     className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 font-mono text-[11px] text-zinc-800 dark:text-zinc-200 outline-none select-all"
                   />
