@@ -13,6 +13,7 @@ import { BetaNoticeModal } from './components/BetaNoticeModal';
 import { PrintReport } from './components/PrintReport';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { useBodyScrollLock } from './core/useBodyScrollLock';
+import { ListTodo, TrendingUp } from 'lucide-react';
 
 const INITIAL_STATIONS: StationPoint[] = [
   { id: 'st-0', distanceFt: 0, readingInches: 6.28 },
@@ -101,6 +102,28 @@ export const App: React.FC = () => {
       return false;
     }
   });
+
+  // Mobile layout mode: 'tabbed' (default) vs 'stacked'
+  const [mobileLayout, setMobileLayout] = useState<'tabbed' | 'stacked'>(() => {
+    try {
+      const saved = localStorage.getItem('tlc_mobile_layout');
+      if (saved === 'stacked' || saved === 'tabbed') return saved;
+    } catch {
+      // fallback
+    }
+    return 'tabbed';
+  });
+
+  const [mobileTab, setMobileTab] = useState<'checklist' | 'graph'>('checklist');
+
+  const handleSetMobileLayout = (layout: 'tabbed' | 'stacked') => {
+    setMobileLayout(layout);
+    try {
+      localStorage.setItem('tlc_mobile_layout', layout);
+    } catch (err) {
+      console.error('Failed to save mobile layout preference', err);
+    }
+  };
 
   useBodyScrollLock(
     isKeypadOpen ||
@@ -598,10 +621,56 @@ export const App: React.FC = () => {
           summary={summary}
         />
 
-        {/* Responsive Work Area: Single column on mobile/tablet, 2 columns on desktop (lg: >= 1024px) */}
+        {/* Mobile Tab Navigation (visible only on < lg screens when mobileLayout is 'tabbed') */}
+        {mobileLayout === 'tabbed' && (
+          <div className="lg:hidden sticky top-2 z-20 mb-3 bg-zinc-100/95 dark:bg-zinc-900/95 backdrop-blur-md p-1 rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-md flex gap-1">
+            <button
+              type="button"
+              onClick={() => setMobileTab('checklist')}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                mobileTab === 'checklist'
+                  ? 'bg-amber-500 text-black shadow-sm font-extrabold'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+              }`}
+            >
+              <ListTodo className="w-4 h-4" />
+              <span>Checklist</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
+                  mobileTab === 'checklist'
+                    ? 'bg-black/20 text-black'
+                    : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                }`}
+              >
+                {summary.totalStations}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMobileTab('graph')}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                mobileTab === 'graph'
+                  ? 'bg-amber-500 text-black shadow-sm font-extrabold'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>Profile Graph</span>
+            </button>
+          </div>
+        )}
+
+        {/* Responsive Work Area: Single column or tabbed on mobile/tablet, 2 columns on desktop (lg: >= 1024px) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-start">
           {/* LEFT COLUMN: Field Stats Summary + Alignment Controls + Gentle Profile Graph */}
-          <div className="lg:col-span-7 space-y-3 lg:sticky lg:top-3">
+          <div
+            className={`space-y-3 lg:sticky lg:top-3 lg:col-span-7 ${
+              mobileLayout === 'tabbed' && mobileTab !== 'graph'
+                ? 'hidden lg:block'
+                : 'block'
+            }`}
+          >
             <StationSummaryBar
               project={project}
               summary={summary}
@@ -631,7 +700,26 @@ export const App: React.FC = () => {
           </div>
 
           {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
-          <div className="lg:col-span-5 space-y-3 lg:sticky lg:top-3">
+          <div
+            className={`space-y-3 lg:sticky lg:top-3 lg:col-span-5 ${
+              mobileLayout === 'tabbed' && mobileTab !== 'checklist'
+                ? 'hidden lg:block'
+                : 'block'
+            }`}
+          >
+            {/* Mobile micro-summary when in tabbed checklist view */}
+            {mobileLayout === 'tabbed' && (
+              <div className="lg:hidden flex items-center justify-between px-3 py-1.5 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
+                <span className="text-zinc-600 dark:text-zinc-400 font-bold">{summary.lengthFt}' ({summary.totalStations} ties)</span>
+                <span className="font-bold text-amber-600 dark:text-amber-400">
+                  Grade: {project.gradeMode === 'end_to_end' ? 'End-to-End' : `${project.targetGradePercent >= 0 ? '+' : ''}${project.targetGradePercent.toFixed(2)}%`}
+                </span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold">
+                  ✓ {summary.onGradeCount}/{summary.measuredCount} On Grade
+                </span>
+              </div>
+            )}
+
             <ActionTable
               stations={calculatedStations}
               unitFormat={project.unitFormat}
@@ -694,6 +782,8 @@ export const App: React.FC = () => {
           onClose={() => setIsSettingsOpen(false)}
           project={project}
           onChangeProject={handleUpdateProject}
+          mobileLayout={mobileLayout}
+          onChangeMobileLayout={handleSetMobileLayout}
         />
 
         {/* Field Guide & Animated Tutorial Modal */}

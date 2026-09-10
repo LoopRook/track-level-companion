@@ -3,13 +3,15 @@ import { TrackProject, UnitFormat } from '../core/types';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 import { APP_VERSION_LABEL } from '../core/version';
-import { Settings, X, Check, RefreshCw, Sliders, Hash, ShieldCheck } from 'lucide-react';
+import { Settings, X, Check, RefreshCw, Sliders, Hash, ShieldCheck, Smartphone } from 'lucide-react';
 
 export interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   project: TrackProject;
   onChangeProject: (updated: Partial<TrackProject>) => void;
+  mobileLayout?: 'tabbed' | 'stacked';
+  onChangeMobileLayout?: (layout: 'tabbed' | 'stacked') => void;
 }
 
 const TOLERANCE_PRESETS = [
@@ -26,8 +28,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   project,
   onChangeProject,
+  mobileLayout,
+  onChangeMobileLayout,
 }) => {
   useBodyScrollLock(isOpen);
+
+  const activeMobileLayout = mobileLayout ?? 'tabbed';
 
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
   const [customTolerance, setCustomTolerance] = useState<string>(
@@ -225,7 +231,58 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <hr className="border-zinc-200 dark:border-zinc-800" />
 
-          {/* Section 4: App Version & PWA Offline Information */}
+          {/* Section 4: Mobile Screen Layout */}
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
+              <Smartphone className="w-4 h-4 text-amber-500" />
+              <span>Mobile Layout Mode</span>
+            </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Choose how the checklist and profile graph are arranged on phones and small screens (screens under 1024px width).
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => onChangeMobileLayout?.('tabbed')}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                  activeMobileLayout === 'tabbed'
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
+                    : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-sm">Tabbed View (Recommended)</span>
+                  {activeMobileLayout === 'tabbed' && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
+                </div>
+                <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
+                  Separate tabs for Checklist and Profile Graph. Eliminates scrolling past the graph when taking rod shots.
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onChangeMobileLayout?.('stacked')}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                  activeMobileLayout === 'stacked'
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
+                    : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-sm">Stacked View</span>
+                  {activeMobileLayout === 'stacked' && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
+                </div>
+                <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
+                  Single continuous column. Graph, alignment controls, and checklist table all on one scrollable page.
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <hr className="border-zinc-200 dark:border-zinc-800" />
+
+          {/* Section 5: App Version & PWA Offline Information */}
           <div className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
