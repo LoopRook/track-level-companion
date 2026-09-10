@@ -178,10 +178,17 @@ Under the **Import CSV** tab:
 - Upload any `.csv` file or paste spreadsheet rows from Excel or Google Sheets.
 - Previews station count, detects columns dynamically, and provides **`[ Load & Replace Track ]`** to open the survey.
 
+### Start New Track Survey (`+ New Track`):
+- Located prominently in the header bar and inside **Files / Export**:
+  1. **Blank Track (Station 0):** Starts fresh with Station 0 unmeasured. Enter readings and tap **`Next`** as you walk the track.
+  2. **Pre-Generated Grid:** Sets up empty stations along a specified distance (e.g. 50 ft at 5 ft intervals) ready to survey.
+  3. **Clear Readings Only:** Retains your custom station distances, intervals, and station names, but resets all rod readings, completed checkmarks, and datum offsets.
+- **Safety Auto-Save:** Includes an automatic safety checkbox (*"Save current track to saved profiles before clearing"*) so you never lose real track measurements.
+
 ### Saved Tracks & Presets:
 - Save named profiles to browser storage (`localStorage`).
 - One-tap **Load**, **Download CSV**, and **Delete**.
-- Built-in presets: `"Load Demo 50ft Track (with Dip)"` and `"Reset Track"`.
+- Built-in presets: `"Load Demo 50ft Track (with Dip)"`, `"+ New Track..."`, and `"Clear Active"`.
 
 ### 100% Offline PWA Operation:
 - **Zero Internet Required:** Track Level Companion is engineered as an offline Progressive Web App (PWA). All application logic, styles, and calculation engines are precached locally on your device by service workers.

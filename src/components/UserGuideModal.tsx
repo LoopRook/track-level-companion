@@ -14,7 +14,8 @@ import {
   Sun,
   Download,
   Play,
-  Spline
+  Spline,
+  Plus
 } from 'lucide-react';
 
 interface UserGuideModalProps {
@@ -542,6 +543,17 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                   </span>
                   <p className="text-zinc-500 leading-relaxed">
                     Working under intense glare? Tap the Sun/Moon toggle in the header for high-contrast daylight visibility.
+                  </p>
+                </div>
+
+                {/* + New Track / Start Fresh */}
+                <div className="p-3.5 bg-zinc-50 dark:bg-black rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-1">
+                  <span className="font-bold text-amber-600 dark:text-amber-400 block flex items-center gap-1">
+                    <Plus className="w-3.5 h-3.5 text-amber-500 stroke-[3]" />
+                    + New Track / Start Fresh
+                  </span>
+                  <p className="text-zinc-500 leading-relaxed">
+                    Tap <strong>+ New Track</strong> in the header to start a blank survey at Station 0, generate an empty grid, or wipe readings with automatic safety backup.
                   </p>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { UnitFormat, TrackProject, CalculatedStation } from '../core/types';
 import { calculateGradeInfo } from '../core/calculations';
-import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2, TrendingUp, Plus } from 'lucide-react';
 
 interface StationConfigProps {
   project: TrackProject;
@@ -10,6 +10,7 @@ interface StationConfigProps {
   onToggleDarkMode: () => void;
   onOpenDataModal: () => void;
   onOpenGuideModal: () => void;
+  onOpenNewTrackModal: () => void;
   calculatedStations?: CalculatedStation[];
   summary: {
     totalStations: number;
@@ -30,6 +31,7 @@ export const StationConfig: React.FC<StationConfigProps> = ({
   onToggleDarkMode,
   onOpenDataModal,
   onOpenGuideModal,
+  onOpenNewTrackModal,
   calculatedStations,
   summary,
 }) => {
@@ -93,7 +95,18 @@ export const StationConfig: React.FC<StationConfigProps> = ({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Start New Track */}
+          <button
+            type="button"
+            onClick={onOpenNewTrackModal}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition shadow-sm active:scale-95"
+            title="Start New Track (Blank, Pre-Generated Grid, or Clear Readings)"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[3]" />
+            <span>New Track</span>
+          </button>
+
           {/* Field Guide / Tutorial */}
           <button
             type="button"

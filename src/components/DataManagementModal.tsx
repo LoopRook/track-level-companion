@@ -15,7 +15,8 @@ import {
   Check,
   FileText,
   Layers,
-  AlertCircle
+  AlertCircle,
+  Plus
 } from 'lucide-react';
 
 interface DataManagementModalProps {
@@ -25,6 +26,7 @@ interface DataManagementModalProps {
   onLoadProject: (project: TrackProject) => void;
   onResetProject: () => void;
   onLoadDemoTrack: () => void;
+  onOpenNewTrack?: () => void;
 }
 
 const STORAGE_KEY = 'track_level_companion_projects';
@@ -41,6 +43,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   onLoadProject,
   onResetProject,
   onLoadDemoTrack,
+  onOpenNewTrack,
 }) => {
   const [activeTab, setActiveTab] = useState<'export' | 'import' | 'saved'>('export');
   const [savedProjects, setSavedProjects] = useState<TrackProject[]>(() => {
@@ -599,6 +602,31 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                     </div>
                   </div>
 
+                  {/* Start Fresh / Blank Grid Option */}
+                  {onOpenNewTrack && (
+                    <div className="p-3 bg-amber-500/10 dark:bg-amber-500/5 rounded-2xl border border-amber-500/20 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                          Starting a brand new track section?
+                        </div>
+                        <div className="text-[11px] text-zinc-500">
+                          Clear the current project and generate a blank field survey or custom grid.
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          onOpenNewTrack();
+                        }}
+                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs rounded-xl shadow-sm transition active:scale-95 flex items-center gap-1 shrink-0"
+                      >
+                        <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>+ New Track</span>
+                      </button>
+                    </div>
+                  )}
+
                   {/* Standard CSV & Google Sheets Template Card */}
                   <div className="p-4 bg-gradient-to-r from-amber-500/10 via-zinc-100 dark:via-zinc-900 to-amber-500/10 border border-amber-500/30 rounded-2xl space-y-3">
                     <div className="flex items-center gap-2">
@@ -753,22 +781,39 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                 )}
               </div>
 
-              {/* Quick Presets */}
+              {/* Quick Presets & New Track */}
               <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
                 <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                   Quick Presets & Track Reset
                 </label>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onOpenNewTrack) {
+                        onClose();
+                        onOpenNewTrack();
+                      } else {
+                        onResetProject();
+                        onClose();
+                      }
+                    }}
+                    className="py-2.5 px-3 bg-amber-500 hover:bg-amber-400 text-black font-black rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>+ New Track...</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       onLoadDemoTrack();
                       onClose();
                     }}
-                    className="flex-1 py-2 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5"
+                    className="py-2.5 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5"
                   >
                     <FileSpreadsheet className="w-4 h-4" />
-                    <span>Load Demo 50ft Track (with Dip)</span>
+                    <span>Load Demo 50ft</span>
                   </button>
 
                   <button
@@ -779,11 +824,11 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                         onClose();
                       }
                     }}
-                    className="py-2 px-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-red-100 dark:hover:bg-red-950/50 text-zinc-700 dark:text-zinc-300 hover:text-red-500 border border-zinc-200 dark:border-zinc-800 rounded-xl font-bold text-xs transition flex items-center gap-1"
+                    className="py-2.5 px-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-red-100 dark:hover:bg-red-950/50 text-zinc-700 dark:text-zinc-300 hover:text-red-500 border border-zinc-200 dark:border-zinc-800 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1"
                     title="Clear current track"
                   >
                     <RotateCcw className="w-4 h-4" />
-                    <span>Reset Track</span>
+                    <span>Clear Active</span>
                   </button>
                 </div>
               </div>

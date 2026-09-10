@@ -7,6 +7,7 @@ import { ActionTable } from './components/ActionTable';
 import { FractionKeypad } from './components/FractionKeypad';
 import { DataManagementModal } from './components/DataManagementModal';
 import { UserGuideModal } from './components/UserGuideModal';
+import { NewTrackModal } from './components/NewTrackModal';
 
 const INITIAL_STATIONS: StationPoint[] = [
   { id: 'st-0', distanceFt: 0, readingInches: 14.0 },
@@ -60,6 +61,7 @@ export const App: React.FC = () => {
   const [isKeypadOpen, setIsKeypadOpen] = useState(false);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isNewTrackModalOpen, setIsNewTrackModalOpen] = useState(false);
 
   // Sync dark mode class
   useEffect(() => {
@@ -409,6 +411,72 @@ export const App: React.FC = () => {
     });
   };
 
+  // Create new track with modal configuration (Blank, Pre-Generated Grid, or Clear Readings)
+  const handleCreateNewTrack = ({
+    name,
+    mode,
+    lengthFt,
+    intervalFt,
+    saveCurrentFirst,
+  }: {
+    name: string;
+    mode: 'blank_zero' | 'empty_grid' | 'clear_readings';
+    lengthFt: number;
+    intervalFt: number;
+    saveCurrentFirst: boolean;
+  }) => {
+    // Safety: If requested, save active project into saved tracks storage before replacing
+    if (saveCurrentFirst && project.stations.some(s => s.readingInches !== null)) {
+      try {
+        const existingStr = localStorage.getItem('track_level_companion_projects');
+        const existing: TrackProject[] = existingStr ? JSON.parse(existingStr) : [];
+        const filtered = existing.filter(p => p.name !== project.name);
+        localStorage.setItem('track_level_companion_projects', JSON.stringify([project, ...filtered]));
+      } catch (err) {
+        console.error('Failed to auto-save project before creating new track:', err);
+      }
+    }
+
+    let newStations: StationPoint[] = [];
+
+    if (mode === 'blank_zero') {
+      newStations = [
+        { id: `st-${Date.now()}-0`, distanceFt: 0, readingInches: null }
+      ];
+    } else if (mode === 'empty_grid') {
+      const step = intervalFt > 0 ? intervalFt : 5;
+      const max = Math.max(step, lengthFt);
+      for (let d = 0; d <= max; d += step) {
+        newStations.push({
+          id: `st-${Date.now()}-${d}`,
+          distanceFt: d,
+          readingInches: null,
+        });
+      }
+    } else if (mode === 'clear_readings') {
+      newStations = project.stations.map(s => ({
+        id: s.id,
+        distanceFt: s.distanceFt,
+        readingInches: null,
+        completed: false,
+        isLocked: false,
+        isTurningPoint: false,
+      }));
+    }
+
+    setProject(prev => ({
+      ...prev,
+      id: `track-${Date.now()}`,
+      name,
+      date: new Date().toISOString().split('T')[0],
+      stationIntervalFt: mode === 'empty_grid' ? intervalFt : prev.stationIntervalFt,
+      fixedDatumInches: undefined,
+      stations: newStations,
+    }));
+
+    setActiveEditingStation(null);
+  };
+
   // Load sample 50ft track with realistic dip
   const handleLoadDemoTrack = () => {
     setProject({
@@ -444,6 +512,7 @@ export const App: React.FC = () => {
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         onOpenDataModal={() => setIsDataModalOpen(true)}
         onOpenGuideModal={() => setIsGuideOpen(true)}
+        onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
         summary={summary}
         calculatedStations={calculatedStations}
       />
@@ -498,6 +567,15 @@ export const App: React.FC = () => {
         onLoadProject={(p) => setProject(p)}
         onResetProject={handleResetProject}
         onLoadDemoTrack={handleLoadDemoTrack}
+        onOpenNewTrack={() => setIsNewTrackModalOpen(true)}
+      />
+
+      {/* Start New Track Modal */}
+      <NewTrackModal
+        isOpen={isNewTrackModalOpen}
+        onClose={() => setIsNewTrackModalOpen(false)}
+        currentProject={project}
+        onCreateNewTrack={handleCreateNewTrack}
       />
 
       {/* Field Guide & Animated Tutorial Modal */}
