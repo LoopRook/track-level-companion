@@ -331,6 +331,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
+            aria-label="Close"
           >
             <X className="w-5 h-5" />
           </button>

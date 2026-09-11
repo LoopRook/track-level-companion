@@ -5,13 +5,19 @@ import { StationConfigHeader, StationSummaryBar, StationAlignmentBar } from './c
 import { ProfileChart } from './components/ProfileChart';
 import { ActionTable } from './components/ActionTable';
 import { FractionKeypad } from './components/FractionKeypad';
-import { DataManagementModal } from './components/DataManagementModal';
-import { UserGuideModal } from './components/UserGuideModal';
 import { NewTrackModal } from './components/NewTrackModal';
 import { SettingsModal } from './components/SettingsModal';
 import { BetaNoticeModal } from './components/BetaNoticeModal';
 import { PrintReport } from './components/PrintReport';
 import { UpdatePrompt } from './components/UpdatePrompt';
+
+// Lazy-load heavy secondary modals to optimize initial bundle parse time
+const DataManagementModal = React.lazy(() =>
+  import('./components/DataManagementModal').then(m => ({ default: m.DataManagementModal }))
+);
+const UserGuideModal = React.lazy(() =>
+  import('./components/UserGuideModal').then(m => ({ default: m.UserGuideModal }))
+);
 import { useBodyScrollLock } from './core/useBodyScrollLock';
 import { getHapticPreference, setHapticPreference } from './core/haptics';
 import { ListTodo, TrendingUp } from 'lucide-react';
@@ -772,16 +778,20 @@ export const App: React.FC = () => {
         />
 
         {/* Data Management / Export Modal */}
-        <DataManagementModal
-          isOpen={isDataModalOpen}
-          onClose={() => setIsDataModalOpen(false)}
-          currentProject={project}
-          calculatedStations={calculatedStations}
-          onLoadProject={(p) => setProject(p)}
-          onResetProject={handleResetProject}
-          onLoadDemoTrack={handleLoadDemoTrack}
-          onOpenNewTrack={() => setIsNewTrackModalOpen(true)}
-        />
+        <React.Suspense fallback={null}>
+          {isDataModalOpen && (
+            <DataManagementModal
+              isOpen={isDataModalOpen}
+              onClose={() => setIsDataModalOpen(false)}
+              currentProject={project}
+              calculatedStations={calculatedStations}
+              onLoadProject={(p) => setProject(p)}
+              onResetProject={handleResetProject}
+              onLoadDemoTrack={handleLoadDemoTrack}
+              onOpenNewTrack={() => setIsNewTrackModalOpen(true)}
+            />
+          )}
+        </React.Suspense>
 
         {/* Start New Track Modal */}
         <NewTrackModal
@@ -804,10 +814,14 @@ export const App: React.FC = () => {
         />
 
         {/* Field Guide & Animated Tutorial Modal */}
-        <UserGuideModal
-          isOpen={isGuideOpen}
-          onClose={() => setIsGuideOpen(false)}
-        />
+        <React.Suspense fallback={null}>
+          {isGuideOpen && (
+            <UserGuideModal
+              isOpen={isGuideOpen}
+              onClose={() => setIsGuideOpen(false)}
+            />
+          )}
+        </React.Suspense>
 
         {/* First Launch Beta Notice Modal */}
         <BetaNoticeModal

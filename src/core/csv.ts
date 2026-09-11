@@ -141,7 +141,7 @@ export function exportTrackToCSV(project: TrackProject, calculatedStations?: Cal
     let readingFormatted = '';
     if (s.readingInches !== null && !isNaN(s.readingInches)) {
       if (project.unitFormat === 'decimal_inches') {
-        readingFormatted = s.readingInches.toFixed(2);
+        readingFormatted = Number(s.readingInches.toFixed(4)).toString();
       } else if (project.unitFormat === 'metric_mm') {
         readingFormatted = (s.readingInches * 25.4).toFixed(1);
       } else {
@@ -152,7 +152,7 @@ export function exportTrackToCSV(project: TrackProject, calculatedStations?: Cal
     let targetFormatted = '';
     if (calc?.targetReadingInches !== null && calc?.targetReadingInches !== undefined && !isNaN(calc.targetReadingInches)) {
       if (project.unitFormat === 'decimal_inches') {
-        targetFormatted = calc.targetReadingInches.toFixed(2);
+        targetFormatted = Number(calc.targetReadingInches.toFixed(4)).toString();
       } else if (project.unitFormat === 'metric_mm') {
         targetFormatted = (calc.targetReadingInches * 25.4).toFixed(1);
       } else {
