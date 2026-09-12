@@ -8,8 +8,10 @@ import { FractionKeypad } from './components/FractionKeypad';
 import { NewTrackModal } from './components/NewTrackModal';
 import { SettingsModal } from './components/SettingsModal';
 import { BetaNoticeModal } from './components/BetaNoticeModal';
+import { IncomingShareModal } from './components/IncomingShareModal';
 import { PrintReport } from './components/PrintReport';
 import { UpdatePrompt } from './components/UpdatePrompt';
+import { parseTrackFromUrl } from './core/sharing';
 
 // Lazy-load heavy secondary modals to optimize initial bundle parse time
 const DataManagementModal = React.lazy(() =>
@@ -102,6 +104,7 @@ export const App: React.FC = () => {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isNewTrackModalOpen, setIsNewTrackModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [incomingSharedProject, setIncomingSharedProject] = useState<TrackProject | null>(null);
   const [isBetaNoticeOpen, setIsBetaNoticeOpen] = useState<boolean>(() => {
     try {
       return !localStorage.getItem('tlc_beta_notice_dismissed');
@@ -148,7 +151,8 @@ export const App: React.FC = () => {
     isGuideOpen ||
     isNewTrackModalOpen ||
     isSettingsOpen ||
-    isBetaNoticeOpen
+    isBetaNoticeOpen ||
+    Boolean(incomingSharedProject)
   );
 
   // Desktop PWA Installation
@@ -221,6 +225,50 @@ export const App: React.FC = () => {
   const summary = useMemo(() => {
     return getTrackSummary(calculatedStations);
   }, [calculatedStations]);
+
+  // Check for incoming shared track survey in URL hash or query params
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const checkIncomingTrack = () => {
+      const parsed = parseTrackFromUrl(window.location.href);
+      if (parsed) {
+        setIncomingSharedProject(parsed);
+      }
+    };
+
+    checkIncomingTrack();
+    window.addEventListener('hashchange', checkIncomingTrack);
+    return () => {
+      window.removeEventListener('hashchange', checkIncomingTrack);
+    };
+  }, []);
+
+  const handleConfirmLoadSharedProject = (sharedProject: TrackProject) => {
+    try {
+      const stored = localStorage.getItem('track_level_saved_projects');
+      const existing: TrackProject[] = stored ? JSON.parse(stored) : [];
+      const updated = [project, ...existing.filter(p => p.id !== project.id)];
+      localStorage.setItem('track_level_saved_projects', JSON.stringify(updated.slice(0, 30)));
+    } catch (e) {
+      console.error('Failed to backup current track before loading shared', e);
+    }
+
+    setProject(sharedProject);
+    setIncomingSharedProject(null);
+
+    if (window.history && window.history.replaceState) {
+      const cleanUrl = window.location.href.split('#')[0].split('?')[0];
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  };
+
+  const handleCancelSharedProject = () => {
+    setIncomingSharedProject(null);
+    if (window.history && window.history.replaceState) {
+      const cleanUrl = window.location.href.split('#')[0].split('?')[0];
+      window.history.replaceState(null, '', cleanUrl);
+    }
+  };
 
   // Project update helper
   const handleUpdateProject = (updated: Partial<TrackProject>) => {
@@ -827,6 +875,14 @@ export const App: React.FC = () => {
         <BetaNoticeModal
           isOpen={isBetaNoticeOpen}
           onClose={() => setIsBetaNoticeOpen(false)}
+        />
+
+        {/* Incoming Shared Track Survey Modal */}
+        <IncomingShareModal
+          isOpen={Boolean(incomingSharedProject)}
+          onClose={handleCancelSharedProject}
+          project={incomingSharedProject}
+          onConfirmLoad={handleConfirmLoadSharedProject}
         />
 
         {/* Opt-in PWA Update Notification Toast */}

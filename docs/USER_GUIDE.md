@@ -47,7 +47,6 @@ The app handles all inversions automatically, eliminating mental math errors in 
 - Glance at the **Track Vertical Profile** chart:
   - **Dips** sag below the dashed green target line.
   - **Humps** peak above the dashed green target line.
-  - Switch between **Curve** (smooth flex spline) and **Straight** (chords).
   - Adjust vertical zoom (`1x` true scale up to `15x` micro-precision).
   - Tap or scrub across any station nodes to inspect elevations, required actions, or evaluate grade slopes between ties.
 
@@ -174,22 +173,16 @@ Every station in the checklist table (and on mobile station cards) features dedi
 
 ---
 
-## 7. Leveling Margins, Tolerances & Live Steam Standards (Why ±1/16″?)
+## 7. Leveling Margins & Tolerances
 
-In **⚙ Settings**, you can configure the **Leveling Margin (On-Grade Tolerance)**. When a tie's calculated lift is within this threshold, it is marked **`ON GRADE ✓`** in green, suppressing unnecessary shim/tamp action recommendations.
+In **⚙ Settings**, you can configure the **Leveling Margin (On-Grade Tolerance)**. When a tie's calculated lift or lower is within this threshold, it is marked **`ON GRADE ✓`** in green, suppressing unnecessary shim or jacking action recommendations.
 
-### Track Leveling Margins & Tolerances:
-1. **Wheel Flange & Suspension Dynamics:**
-   - In scale and miniature railroading, locomotives often feature multi-axle driving wheelbases or stiff truck frames.
-   - If a dip or cross-level twist is excessive across a chord, rigid frames bridge across dips, transferring axle load away from center wheels. Unloaded wheels with shallow flanges can climb the rail head and increase derailment risk.
-2. **Practical Tamping & Shimming:**
-   - Common track shims are manufactured in **$\frac{1}{16}''$** and **$\frac{1}{8}''$** thicknesses. In crushed ballast, hand tamping naturally settles slightly under traffic.
-3. **Tolerance Presets in Settings:**
-   - **`±1/32"` ($\pm 0.031"$)**: Fine working tolerance for tight-tolerance trackwork or solid spans.
-   - **`±1/16"` ($\pm 0.062"$)**: Standard working margin for ballasted track leveling.
-   - **`0.05"` ($\pm 0.050"$)**: Decimal inch standard.
-   - **`±1/8"` ($\pm 0.125"$)**: Wider working margin for rough passes, yards, or sidings.
-   - **`1.0 mm` & `2.0 mm`**: Metric tolerance presets.
+### Available Margin Presets:
+- **`±1/32"` ($\pm 0.031"$)**: Fine working tolerance for tight trackwork or solid spans.
+- **`±1/16"` ($\pm 0.062"$)**: Default standard working margin for ballasted track leveling.
+- **`0.05"` ($\pm 0.050"$)**: Decimal inch standard.
+- **`±1/8"` ($\pm 0.125"$)**: Wider working margin for rough passes, yards, or sidings.
+- **`1.0 mm` & `2.0 mm`**: Metric tolerance presets.
 
 ---
 
@@ -221,7 +214,8 @@ Under the **Import CSV** tab:
    - Take rod readings on your phone or tablet in Google Sheets while walking the track.
    - When finished, either export as `.csv` or select and copy the cells, switch back to Track Level Companion, paste into the text box, and tap **`[ Load & Replace Track ]`**.
 
-### Export Track Data:
+### Export & Transfer Track Data:
+- **Share via QR Code (Instant Phone Transfer):** Opens a high-contrast QR code that encodes your active track survey into a compact URL. Another crew member points their smartphone or tablet camera at your screen to immediately open and load the exact survey on their device—**works 100% offline with zero cellular service required**. Also includes a **Copy Link** button for messaging.
 - **Download .CSV File:** Saves `{name}_{date}.csv` or opens the native mobile share sheet (`navigator.share`) on iOS and Android for AirDrop, Files, or messaging.
 - **Copy CSV to Clipboard:** One-tap copy of clean CSV text.
 - **View Raw CSV Text:** Drawer with full raw CSV text and one-click "Copy All".

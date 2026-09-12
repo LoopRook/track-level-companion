@@ -655,10 +655,10 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
 
                 <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-2 leading-relaxed">
                   <p>
-                    Vertical dips, humps, and cross-level twist directly affect wheel load distribution and riding safety. In scale and miniature railroading, stiff locomotive wheelbases or rigid truck frames can bridge across dips, momentarily transferring axle weight away from center wheels. When an axle is unloaded, shallow wheel flanges can climb the rail head and cause a derailment.
+                    The leveling margin sets the allowable deviation threshold for a tie. When a station's calculated lift or lower falls within this margin, the app marks it green (<strong>ON GRADE ✓</strong>) and suppresses unnecessary adjustment instructions.
                   </p>
                   <p>
-                    Because acceptable station deviation depends on equipment suspension, track construction, and club guidelines, Track Level Companion lets you set your desired on-grade tolerance:
+                    You can configure this threshold in <strong>Settings</strong> to match your desired working margin:
                   </p>
                   <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-900/80 border border-zinc-200 dark:border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
                     <div>

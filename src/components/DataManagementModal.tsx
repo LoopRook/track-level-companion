@@ -17,11 +17,13 @@ import {
   Layers,
   AlertCircle,
   Plus,
-  RefreshCw
+  RefreshCw,
+  QrCode
 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 import { APP_VERSION_LABEL } from '../core/version';
+import { QRCodeModal } from './QRCodeModal';
 
 interface DataManagementModalProps {
   isOpen: boolean;
@@ -68,6 +70,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   const [pastedText, setPastedText] = useState('');
   const [showRawCsv, setShowRawCsv] = useState(false);
   const [modalUpdateStatus, setModalUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -410,6 +413,15 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
 
               {/* Export Action Buttons */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsQrModalOpen(true)}
+                  className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl flex items-center justify-center gap-2 font-extrabold text-xs shadow-sm transition active:scale-95 sm:col-span-2"
+                >
+                  <QrCode className="w-4 h-4 stroke-[2.5]" />
+                  <span>Share via QR Code (Instant Phone Transfer)</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => handleExportCSV(currentProject)}
@@ -890,6 +902,13 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
             Close
           </button>
         </div>
+
+        {/* QR Code Modal */}
+        <QRCodeModal
+          isOpen={isQrModalOpen}
+          onClose={() => setIsQrModalOpen(false)}
+          project={currentProject}
+        />
       </div>
     </div>
   );

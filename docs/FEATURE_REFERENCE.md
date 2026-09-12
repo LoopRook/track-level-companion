@@ -164,6 +164,7 @@ Located in `src/components/DataManagementModal.tsx`.
 
 #### Tabs & Features:
 1. **`Export CSV`:**
+   - **Share via QR Code (Instant Phone Transfer):** Generates an offline, high-contrast QR code that encodes the active survey into a compact URL for instant phone-to-phone camera scanning without cellular service.
    - **Download .CSV File:** Downloads `{name}_{date}.csv` or triggers mobile native share sheet (`navigator.share`).
    - **Copy CSV to Clipboard:** Copies RFC-compliant CSV text with confirmation toast.
    - **View / Copy Raw CSV Text:** Expandable textarea with "Copy All" button.
