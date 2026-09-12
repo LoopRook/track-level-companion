@@ -215,7 +215,7 @@ Under the **Import CSV** tab:
    - When finished, either export as `.csv` or select and copy the cells, switch back to Track Level Companion, paste into the text box, and tap **`[ Load & Replace Track ]`**.
 
 ### Export & Transfer Track Data:
-- **Share via QR Code (Instant Phone Transfer):** Opens a high-contrast QR code that encodes your active track survey into a compact URL. Another crew member points their smartphone or tablet camera at your screen to immediately open and load the exact survey on their device—**works 100% offline with zero cellular service required**. Also includes a **Copy Link** button for messaging.
+- **Share via QR Code:** Opens a high-contrast QR code that encodes your active track survey into a compact URL. Another crew member points their smartphone or tablet camera at your screen to immediately open and load the exact survey on their device—**works 100% offline with zero cellular service required**. Also includes a **Copy Link** button for messaging.
 - **Download .CSV File:** Saves `{name}_{date}.csv` or opens the native mobile share sheet (`navigator.share`) on iOS and Android for AirDrop, Files, or messaging.
 - **Copy CSV to Clipboard:** One-tap copy of clean CSV text.
 - **View Raw CSV Text:** Drawer with full raw CSV text and one-click "Copy All".

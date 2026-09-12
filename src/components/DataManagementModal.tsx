@@ -419,7 +419,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                   className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl flex items-center justify-center gap-2 font-extrabold text-xs shadow-sm transition active:scale-95 sm:col-span-2"
                 >
                   <QrCode className="w-4 h-4 stroke-[2.5]" />
-                  <span>Share via QR Code (Instant Phone Transfer)</span>
+                  <span>Share via QR Code</span>
                 </button>
 
                 <button
