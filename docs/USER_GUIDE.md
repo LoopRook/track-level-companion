@@ -125,9 +125,7 @@ Measure the slope, elevation difference, and chord geometry between **any two ar
 
 ### 4.3 View Modes & Display Controls
 - **On-Graph Grade Slope Badges:** Every chord segment along the dashed green target line displays an on-screen grade pill (e.g. `+0.67% ↗`, `-0.50% ↘`, `0.00% Grade →`).
-- **Curve vs Straight:**
-  - **`Curve` (`<Spline />`):** Uses a Fritsch-Carlson monotone cubic spline that passes smoothly through every station without fake waves or overshoot.
-  - **`Straight` (`<TrendingUp />`):** Connects points with direct straight chord lines.
+- **Smooth Rail Profile:** The actual rail head profile is drawn with a Fritsch-Carlson monotone cubic spline that passes smoothly through every station without fake waves or overshoot.
 - **Vertical Zoom Sensitivity (`Vert:`):**
   - **`1x` (True Scale):** Real-world flat perspective.
   - **`3x` (Gentle / Default):** Standard track flex view.

@@ -50,9 +50,7 @@ Located in `src/components/ProfileChart.tsx`.
   - Toggles the subset grade evaluation dropdown bar and range inspection mode.
   - Labeled `"Evaluate Grade"` on desktop, `"Grade"` on mobile.
   - When a range is locked, displays active span badge (e.g. `30'`).
-- **Curve vs Straight Mode:**
-  - **`Curve` (`<Spline />`):** Uses Fritsch-Carlson Monotone Cubic Spline (`getSmoothSplinePath()`). Guarantees smooth curvature passing through every point without overshoot or artificial waves.
-  - **`Straight` (`<TrendingUp />`):** Draws straight point-to-point chords between adjacent stations.
+- **Smooth Rail Profile:** Uses Fritsch-Carlson Monotone Cubic Spline (`getSmoothSplinePath()`). Guarantees smooth curvature passing through every surveyed station without overshoot or artificial waves.
 - **Vertical Zoom Sensitivity (`Vert:`):**
   - **`1x` (True Scale):** Span multiplier `4.0`, min span `16.0"`, height `240px`. Flat, realistic perspective.
   - **`3x` (Gentle / Default):** Span multiplier `2.0`, min span `6.0"`, height `265px`. Standard track flex view.

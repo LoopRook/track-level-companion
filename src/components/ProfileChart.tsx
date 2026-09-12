@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CalculatedStation, GradeMode } from '../core/types';
 import { formatFeetInches, formatMeasurement } from '../core/units';
 import { calculateGradeInfo, calculateSubsetGrade, SubsetGradeInfo } from '../core/calculations';
-import { Spline, TrendingUp, Maximize2, Minimize2, Ruler, Download, Image as ImageIcon, Printer } from 'lucide-react';
+import { Maximize2, Minimize2, Ruler, Download, Image as ImageIcon, Printer } from 'lucide-react';
 
 interface ProfileChartProps {
   stations: CalculatedStation[];
@@ -87,8 +87,6 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
-  // Style: 'curve' (gentle smooth curve) vs 'straight' (point-to-point chords)
-  const [curveMode, setCurveMode] = useState<'curve' | 'straight'>('curve');
   // Zoom: '3x' is default gentle view, 8x/15x are exaggerated
   const [zoomScale, setZoomScale] = useState<ZoomScale>('3x');
   const [isScrollable, setIsScrollable] = useState<boolean>(false);
@@ -239,7 +237,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     return padding.top + innerHeight - ((elevInches - minY) / (maxY - minY)) * innerHeight;
   };
 
-  // Generate SVG path for actual rail profile
+  // Generate SVG path for actual rail profile (smooth Fritsch-Carlson monotone cubic spline)
   const actualPath = useMemo(() => {
     if (measuredStations.length < 2) return '';
 
@@ -248,15 +246,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       y: getY(s.elevationInches!),
     }));
 
-    if (curveMode === 'curve') {
-      return getSmoothSplinePath(pts);
-    }
-
-    // Straight chord lines
-    return pts.reduce((acc, p, idx) => {
-      return idx === 0 ? `M ${p.x.toFixed(1)} ${p.y.toFixed(1)}` : `${acc} L ${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
-    }, '');
-  }, [measuredStations, curveMode, minY, maxY, minX, maxX, innerWidth]);
+    return getSmoothSplinePath(pts);
+  }, [measuredStations, minY, maxY, minX, maxX, innerWidth]);
 
   // Generate SVG path for target grade
   const targetPath = useMemo(() => {
@@ -506,34 +497,6 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
         {/* Action Controls Toolbar */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Curve vs Straight Toggle */}
-          <div className="flex items-center bg-zinc-200/80 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-300 dark:border-zinc-800">
-            <button
-              onClick={() => setCurveMode('curve')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold transition active:scale-95 ${
-                curveMode === 'curve'
-                  ? 'bg-amber-500 text-black shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-              }`}
-              title="Smooth gentle curve connecting stations"
-            >
-              <Spline className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Curve</span>
-            </button>
-            <button
-              onClick={() => setCurveMode('straight')}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-bold transition active:scale-95 ${
-                curveMode === 'straight'
-                  ? 'bg-amber-500 text-black shadow-sm'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
-              }`}
-              title="Straight point-to-point lines"
-            >
-              <TrendingUp className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Straight</span>
-            </button>
-          </div>
-
           {/* Evaluate Grade / Subset Tool Button */}
           <button
             onClick={() => {
@@ -1282,7 +1245,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <span className="w-2.5 h-0.5 bg-zinc-900 dark:bg-white rounded"></span>
-            <span>Rail Head ({curveMode === 'curve' ? 'Smooth Curve' : 'Straight Chords'})</span>
+            <span>Rail Head (Actual)</span>
           </div>
           <div className="flex items-center gap-1">
             <span className="w-2.5 h-0.5 border-t border-dashed border-emerald-500"></span>

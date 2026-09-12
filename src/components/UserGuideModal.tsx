@@ -509,11 +509,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
                     <Spline className="w-4 h-4 text-amber-500" />
                     <span>Vertical Profile Chart Controls</span>
                   </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
-                    <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                      <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Curve vs Straight</strong>
-                      <span className="text-zinc-500">Toggle smooth Fritsch-Carlson monotone spline vs point-to-point chords.</span>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                     <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
                       <strong className="block text-zinc-900 dark:text-zinc-100 font-bold">Zoom (1x / 3x / 8x / 15x)</strong>
                       <span className="text-zinc-500">1x is true scale. 3x is standard view. 8x and 15x exaggerate micro-leveling.</span>
