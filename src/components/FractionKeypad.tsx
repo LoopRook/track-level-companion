@@ -85,6 +85,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   const [toastMessage, setToastMessage] = useState<{ text: string; id: number } | null>(null);
   const [pulseDistance, setPulseDistance] = useState(false);
   const prevDistRef = React.useRef(stationDistanceFt);
+  const isFreshInputRef = React.useRef(false);
 
   // Track if user has entered/selected a measurement (starts false if station reading is null)
   const [hasEnteredValue, setHasEnteredValue] = useState(false);
@@ -104,6 +105,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
     if (isOpen) {
       if (currentReadingInches !== null && !isNaN(currentReadingInches)) {
         setHasEnteredValue(true);
+        isFreshInputRef.current = true;
         const parts = toFractionalParts(currentReadingInches, fractionResolution);
         setFeet(parts.feet);
         setInches(parts.inches);
@@ -117,6 +119,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
       } else {
         // Default reading is blank: no selection until user taps a number
         setHasEnteredValue(false);
+        isFreshInputRef.current = false;
         setFeet(1);
         setInches(0);
         setTotalInchesOnly(12);
@@ -184,6 +187,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   // Handle Nudges
   const handleNudge = (deltaInches: number) => {
     triggerHaptic('light');
+    isFreshInputRef.current = false;
     setHasEnteredValue(true);
     const current = currentComputedInches ?? 12.0;
     const nextVal = Math.max(0, current + deltaInches);
@@ -202,6 +206,15 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   const handleKeypadDigit = (digit: string) => {
     triggerHaptic('selection');
     setHasEnteredValue(true);
+    if (isFreshInputRef.current) {
+      isFreshInputRef.current = false;
+      if (unitFormat === 'decimal_inches') {
+        setDecimalInputStr(digit === '.' ? '0.' : digit);
+      } else if (unitFormat === 'metric_mm') {
+        setMetricInputStr(digit === '.' ? '0.' : digit);
+      }
+      return;
+    }
     if (unitFormat === 'decimal_inches') {
       setDecimalInputStr((prev) => {
         if (digit === '.') {
@@ -223,6 +236,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
   const handleKeypadBackspace = () => {
     triggerHaptic('light');
+    isFreshInputRef.current = false;
     if (unitFormat === 'decimal_inches') {
       if (decimalInputStr.length <= 1) {
         setDecimalInputStr('');
@@ -242,6 +256,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
   const handleKeypadClear = () => {
     triggerHaptic('warning');
+    isFreshInputRef.current = false;
     setHasEnteredValue(false);
     setDecimalInputStr('');
     setMetricInputStr('');

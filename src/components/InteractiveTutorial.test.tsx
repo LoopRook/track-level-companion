@@ -109,7 +109,7 @@ describe('InteractiveTutorial Component', () => {
     expect(html).toContain('visible sag dip between 0 ft and 10 ft');
   });
 
-  it('renders Step 5 (Raising Rail Height: Jack & Tamp) with simulation button', () => {
+  it('renders Step 5 (Verification Shot: Raise to Grade) correctly', () => {
     const html = renderToString(
       <InteractiveTutorial
         isActive={true}
@@ -118,13 +118,12 @@ describe('InteractiveTutorial Component', () => {
         onPrevStep={vi.fn()}
         onExitTutorial={vi.fn()}
         onCompleteTutorial={vi.fn()}
-        onSimulateLevelStation={vi.fn()}
       />
     );
 
     expect(html).toMatch(/Step\s*(<!-- -->)?\s*5\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
-    expect(html).toContain('5. Raising Rail Height: Jack &amp; Tamp');
-    expect(html).toContain('Simulate Lift &amp; Re-shoot');
+    expect(html).toContain('5. Verification Shot: Raise to Grade');
+    expect(html).toContain('record your verification shot');
   });
 
   it('renders Step 6 (Crew Checkoff & Verification) correctly', () => {

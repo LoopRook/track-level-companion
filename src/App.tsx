@@ -353,7 +353,12 @@ export const App: React.FC = () => {
     if (!activeEditingStation) return;
 
     const currentStation = activeEditingStation;
-    const finalVal = valInches;
+    const finalVal =
+      isTutorialActive && currentStation.distanceFt === 5 && tutorialStep === 4
+        ? valInches !== null && Math.abs(valInches - 5.25) <= 0.05
+          ? valInches
+          : 5.25
+        : valInches;
 
     setProject(prev => ({
       ...prev,
@@ -409,6 +414,20 @@ export const App: React.FC = () => {
         // Station 5 saved: close keypad, populate remainder, and advance to Step 3 (Tolerance Margin)!
         populateTutorialTrack(5.25, valInches ?? 5.625);
         setTutorialStep(2);
+        setIsKeypadOpen(false);
+        setActiveEditingStation(null);
+        return;
+      } else if (activeEditingStation.distanceFt === 5 && tutorialStep === 4) {
+        // Station 5 verification shot saved: update Station 5, close keypad, and advance to Step 6 (Crew Checkoff)!
+        const finalVal =
+          valInches !== null && Math.abs(valInches - 5.25) <= 0.05 ? valInches : 5.25;
+        setProject(prev => ({
+          ...prev,
+          stations: prev.stations.map(s =>
+            s.id === activeEditingStation.id ? { ...s, readingInches: finalVal } : s
+          )
+        }));
+        setTutorialStep(5);
         setIsKeypadOpen(false);
         setActiveEditingStation(null);
         return;
@@ -832,12 +851,6 @@ export const App: React.FC = () => {
     }
   };
 
-  const isStation5Leveled = useMemo(() => {
-    if (!isTutorialActive) return false;
-    const st5 = project.stations.find(s => s.distanceFt === 5);
-    return st5 !== undefined && st5.readingInches !== null && Math.abs(st5.readingInches - 5.25) <= 0.05;
-  }, [isTutorialActive, project.stations]);
-
   const handleSimulateLevelStation = (stationId: string, readingInches: number) => {
     setProject(prev => ({
       ...prev,
@@ -1028,14 +1041,18 @@ export const App: React.FC = () => {
                 ? 'Step 1 of 2 — Benchmark: Enter 5.25" with keyboard, numpad, or touch keys, then press Enter or Save & Next'
                 : activeEditingStation?.distanceFt === 5
                 ? tutorialStep === 4
-                  ? 'Leveling Verification: Enter 5.25" to confirm rail is raised to grade'
+                  ? 'Step 5 of 7 — Verification Shot: Enter 5.25" to confirm rail is raised to grade, then press Enter or Save'
                   : 'Step 2 of 2 — Survey Tie: Enter 5.625" (5-5/8"). Press Enter or tap Save & Analyze Track!'
                 : undefined
               : undefined
           }
           tutorialSaveButtonLabel={
-            isTutorialActive && activeEditingStation?.distanceFt === 5 && tutorialStep === 1
-              ? 'Save & Analyze Track →'
+            isTutorialActive && activeEditingStation?.distanceFt === 5
+              ? tutorialStep === 4
+                ? '✓ Save Verification Shot (5.25")'
+                : tutorialStep === 1
+                ? 'Save & Analyze Track →'
+                : undefined
               : undefined
           }
           onSave={handleSaveStationReading}
@@ -1138,8 +1155,6 @@ export const App: React.FC = () => {
           onExitTutorial={handleExitTutorial}
           onCompleteTutorial={handleCompleteTutorial}
           onAutoFillStep={handleAutoFillTutorialStep}
-          onSimulateLevelStation={handleSimulateLevelStation}
-          isStation5Leveled={isStation5Leveled}
         />
 
         {/* Incoming Shared Track Survey Modal */}

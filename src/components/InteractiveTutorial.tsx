@@ -35,8 +35,6 @@ interface InteractiveTutorialProps {
   onExitTutorial: () => void;
   onCompleteTutorial: () => void;
   onAutoFillStep?: (stepIndex: number) => void;
-  onSimulateLevelStation?: (stationId: string, readingInches: number) => void;
-  isStation5Leveled?: boolean;
 }
 
 export const TUTORIAL_STEPS: TutorialStepConfig[] = [
@@ -99,13 +97,13 @@ export const TUTORIAL_STEPS: TutorialStepConfig[] = [
     id: 'level-track',
     stepNumber: 5,
     totalSteps: 7,
-    title: '5. Raising Rail Height: Jack & Tamp',
-    shortTitle: 'Leveling Work',
+    title: '5. Verification Shot: Raise to Grade',
+    shortTitle: 'Verification Shot',
     icon: Hammer,
-    targetSelector: '[data-tutorial="station-action-5"]',
+    targetSelector: '[data-tutorial="station-reading-5"]',
     content:
-      'Station 5 requires lifting: LIFT +3/8" (Jack & Tamp). In the field, your crew places a track jack under Station 5, raises the rail 3/8", and tamps ballast underneath. Now simulate taking the verification shot after leveling!',
-    actionHint: 'Tap "Simulate Lift & Re-shoot (5.25")" below, or tap Station 5 and enter 5.25".',
+      'Your crew placed the track jack at Station 5, raised the rail 3/8", and tamped ballast. Now record your verification shot! Tap Station 5\'s reading cell (5.625") and enter 5.25" to bring the tie onto target grade.',
+    actionHint: 'Tap Station 5\'s reading cell and enter 5.25" using your keyboard, numpad, or touch keys.',
     proTip:
       'Taking a verification shot confirms the rail physically lifted to the target grade line and turns the tie green.',
   },
@@ -147,8 +145,6 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   onExitTutorial,
   onCompleteTutorial,
   onAutoFillStep,
-  onSimulateLevelStation,
-  isStation5Leveled = false,
 }) => {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -366,32 +362,6 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
             </div>
           )}
 
-          {/* Leveling Action Simulation Button in Step 5 */}
-          {currentStepData.id === 'level-track' && onSimulateLevelStation && (
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => onSimulateLevelStation('tut-5', 5.25)}
-                className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-2 ${
-                  isStation5Leveled
-                    ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-extrabold'
-                    : 'bg-amber-500 hover:bg-amber-400 text-black font-extrabold'
-                }`}
-              >
-                {isStation5Leveled ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>✓ Leveled Re-shot: 5.25" (ON GRADE ✓)</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>⚡ Simulate Lift & Re-shoot (5.25")</span>
-                  </>
-                )}
-              </button>
-            </div>
-          )}
 
           {/* Pro Tip Box */}
           {currentStepData.proTip && (
