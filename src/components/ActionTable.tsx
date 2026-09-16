@@ -17,6 +17,7 @@ interface ActionTableProps {
   onExtendTrack?: (lengthFt: number, intervalFt: number, direction?: 'forward' | 'backward') => void;
   onSetTurningPoint?: (stationId: string, newReadingInches: number) => void;
   onResetDatum?: () => void;
+  onOpenMoveLaser?: () => void;
   selectedStationId?: string | null;
 }
 
@@ -35,6 +36,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   onExtendTrack,
   onSetTurningPoint,
   onResetDatum,
+  onOpenMoveLaser,
   selectedStationId,
 }) => {
   const [displayMode, setDisplayMode] = useState<TableDisplayMode>(() => {
@@ -128,6 +130,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           )}
           {onSetTurningPoint && (
             <button
+              data-tutorial="move-laser-btn"
               onClick={() => {
                 const measured = stations.filter(s => s.readingInches !== null);
                 const target = (measured.length > 0 ? measured[measured.length - 1] : stations[0]) || null;
@@ -135,6 +138,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   setTurningPointStation(target);
                   setTpNewReadingStr(target.readingInches !== null ? formatMeasurement(target.readingInches, unitFormat, fractionResolution) : '');
                   setTpError(null);
+                  onOpenMoveLaser?.();
                 }
               }}
               className="text-xs font-semibold px-2 sm:px-2.5 py-2 sm:py-1.5 rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition flex items-center justify-center gap-1"
@@ -205,7 +209,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
       {/* Active Laser Relocation / Datum Shift Banner */}
       {stations.some(s => s.isTurningPoint) && (
-        <div className="px-3 sm:px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 text-xs flex items-center justify-between gap-2 text-purple-700 dark:text-purple-300 shrink-0">
+        <div
+          data-tutorial="tp-active-banner"
+          className="px-3 sm:px-4 py-2 bg-purple-500/10 border-b border-purple-500/20 text-xs flex items-center justify-between gap-2 text-purple-700 dark:text-purple-300 shrink-0"
+        >
           <div className="flex items-center gap-1.5 flex-wrap">
             <Flag className="w-3.5 h-3.5 shrink-0 text-purple-500" />
             <span>
@@ -305,6 +312,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {onToggleLock && (
                     <button
                       type="button"
+                      data-tutorial={`station-lock-${s.distanceFt}`}
                       onClick={() => onToggleLock(s.id)}
                       className={`w-8 h-8 flex items-center justify-center rounded-lg border transition ${
                         isLocked
@@ -737,6 +745,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     <div className="flex items-center justify-end gap-1.5">
                       {onToggleLock && (
                         <button
+                          data-tutorial={`station-lock-${s.distanceFt}`}
                           onClick={() => onToggleLock(s.id)}
                           className={`w-8 h-8 flex items-center justify-center rounded-lg transition ${
                             isLocked
@@ -1002,6 +1011,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 <div className="space-y-1.5 pt-1">
                   <label className="text-zinc-500 font-bold block">New Reading from Relocated Laser:</label>
                   <input
+                    data-tutorial="tp-new-reading-input"
                     type="text"
                     value={tpNewReadingStr}
                     onChange={(e) => setTpNewReadingStr(e.target.value)}
@@ -1047,6 +1057,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 Cancel
               </button>
               <button
+                data-tutorial="tp-apply-btn"
                 disabled={turningPointStation.readingInches === null}
                 onClick={handleApplyTurningPoint}
                 className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs rounded-xl shadow-sm"

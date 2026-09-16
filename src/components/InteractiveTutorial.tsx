@@ -1,34 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
 import {
-  Compass,
-  Ruler,
-  TrendingUp,
-  Hammer,
   CheckCircle2,
-  Share2,
   X,
   ChevronRight,
   ChevronLeft,
   Sparkles
 } from 'lucide-react';
 
-export interface TutorialStepConfig {
-  id: string;
-  stepNumber: number;
-  totalSteps: number;
-  title: string;
-  shortTitle: string;
-  icon: React.ElementType;
-  targetSelector: string; // e.g. '[data-tutorial="station-reading-0"]'
-  content: string;
-  proTip?: string;
-  actionHint?: string;
-  autoFillOnNext?: () => void;
-}
+import { TutorialStepConfig, TUTORIAL_GETTING_STARTED } from '../core/tutorials';
+export type { TutorialStepConfig };
 
-interface InteractiveTutorialProps {
+export interface InteractiveTutorialProps {
   isActive: boolean;
   currentStep: number;
+  steps?: TutorialStepConfig[];
+  tutorialCategory?: string;
   isKeypadOpen?: boolean;
   onNextStep: () => void;
   onPrevStep: () => void;
@@ -37,108 +23,13 @@ interface InteractiveTutorialProps {
   onAutoFillStep?: (stepIndex: number) => void;
 }
 
-export const TUTORIAL_STEPS: TutorialStepConfig[] = [
-  {
-    id: 'benchmark',
-    stepNumber: 1,
-    totalSteps: 7,
-    title: '1. The Reference Benchmark (Station 0)',
-    shortTitle: 'Benchmark',
-    icon: Compass,
-    targetSelector: '[data-tutorial="station-reading-0"]',
-    content:
-      'Every track leveling survey starts at Station 0. Imagine your rotary laser is set up on a tripod nearby. You place your grade rod on top of the rail head at Station 0 to establish your baseline elevation datum.',
-    actionHint: 'Tap the cell to enter 5.25" with your keyboard/numpad or touch keys, or tap Next Step.',
-    proTip: 'All other ties along your track will be compared against this reference datum.',
-  },
-  {
-    id: 'survey-tie',
-    stepNumber: 2,
-    totalSteps: 7,
-    title: '2. Surveying Ties Down the Line',
-    shortTitle: 'Survey Tie',
-    icon: Ruler,
-    targetSelector: '[data-tutorial="station-reading-5"]',
-    content:
-      'Now walk 5 feet down the track to Station 5. Place the grade rod on the rail head and record the laser reading.',
-    actionHint: 'Enter 5.625" (5-5/8") and press Enter or tap "Save & Analyze Track".',
-    proTip:
-      'Surveying rule: A LARGER rod reading (5.625" vs 5.25") means the detector slid lower—the rail head is physically dipped!',
-  },
-  {
-    id: 'tolerance-margin',
-    stepNumber: 3,
-    totalSteps: 7,
-    title: '3. The Tolerance Margin',
-    shortTitle: 'Tolerance Margin',
-    icon: CheckCircle2,
-    targetSelector: '[data-tutorial="station-row-10"]',
-    content:
-      'Notice Station 10: The laser rod read 5.28"—which is 0.03" off your 5.25" target—yet its badge is green (ON GRADE ✓)! That is your tolerance margin (±0.05") in action. Railroad trackwork doesn\'t require millimeter perfection on every tie; staying within the green margin guarantees smooth running while saving hours of unnecessary shimming.',
-    actionHint: 'Review Station 10\'s green ON GRADE status, then tap Next Step.',
-    proTip:
-      'You can customize your railroad\'s tolerance threshold (e.g., ±1/16" or ±1/8") in Settings anytime.',
-  },
-  {
-    id: 'profile-graph',
-    stepNumber: 4,
-    totalSteps: 7,
-    title: '4. Visualizing the Sag Dip',
-    shortTitle: 'Profile Graph',
-    icon: TrendingUp,
-    targetSelector: '[data-tutorial="profile-chart"]',
-    content:
-      'The Profile Graph plots your entire rail surface in real time. Notice the visible sag dip between 0 ft and 10 ft. The green dashed line is your target grade plane.',
-    actionHint: 'Review the sag in the curve, then tap Next Step.',
-    proTip:
-      'Uncorrected sags collect ponding rainwater, trigger ballast mud-pumping, and create jarring equipment dips when trains pass.',
-  },
-  {
-    id: 'level-track',
-    stepNumber: 5,
-    totalSteps: 7,
-    title: '5. Verification Shot: Raise to Grade',
-    shortTitle: 'Verification Shot',
-    icon: Hammer,
-    targetSelector: '[data-tutorial="station-reading-5"]',
-    content:
-      'Your crew placed the track jack at Station 5, raised the rail 3/8", and tamped ballast. Now record your verification shot! Tap Station 5\'s reading cell (5.625") and enter 5.25" to bring the tie onto target grade.',
-    actionHint: 'Tap Station 5\'s reading cell and enter 5.25" using your keyboard, numpad, or touch keys.',
-    proTip:
-      'Taking a verification shot confirms the rail physically lifted to the target grade line and turns the tie green.',
-  },
-  {
-    id: 'complete-check',
-    stepNumber: 6,
-    totalSteps: 7,
-    title: '6. Crew Checkoff & Verification',
-    shortTitle: 'Checkoff',
-    icon: CheckCircle2,
-    targetSelector: '[data-tutorial="station-complete-5"]',
-    content:
-      'With Station 5 raised to grade and verified green (ON GRADE ✓), tap the circle checkbox to mark Station 5 as finished work (LEVELED ✓).',
-    actionHint: 'Tap the circle checkbox on Station 5 to mark it complete!',
-    proTip:
-      'Checking off completed ties keeps your track crew in sync so no one loses track of which ties are finished.',
-  },
-  {
-    id: 'export-share',
-    stepNumber: 7,
-    totalSteps: 7,
-    title: '7. Documenting & QR Sharing',
-    shortTitle: 'Share & Export',
-    icon: Share2,
-    targetSelector: '[data-tutorial="header-actions"]',
-    content:
-      'Tap Files to download a CSV backup or print a clean inspection report for your railroad records. Or tap Share via QR Code to beam the track to a crew member\'s phone with zero internet!',
-    actionHint: 'Tap Finish Tutorial to complete.',
-    proTip: 'Track Level Companion works 100% offline out in the woods or at the track.',
-  },
-];
+export const TUTORIAL_STEPS: TutorialStepConfig[] = TUTORIAL_GETTING_STARTED.steps;
 
 export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   isActive,
   currentStep,
+  steps,
+  tutorialCategory,
   isKeypadOpen = false,
   onNextStep,
   onPrevStep,
@@ -149,7 +40,8 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const currentStepData = TUTORIAL_STEPS[Math.min(currentStep, TUTORIAL_STEPS.length - 1)];
+  const activeSteps = steps && steps.length > 0 ? steps : TUTORIAL_STEPS;
+  const currentStepData = activeSteps[Math.min(currentStep, activeSteps.length - 1)];
 
   // Update target bounding box on step change or resize/scroll
   useEffect(() => {
@@ -204,7 +96,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
 
   if (!isActive || isKeypadOpen || !currentStepData) return null;
 
-  const isLastStep = currentStep >= TUTORIAL_STEPS.length - 1;
+  const isLastStep = currentStep >= activeSteps.length - 1;
   const StepIcon = currentStepData.icon;
 
   const handleNext = () => {
@@ -328,7 +220,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   Step {currentStepData.stepNumber} of {currentStepData.totalSteps}
                 </span>
                 <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                  Tutorial
+                  {tutorialCategory || 'Tutorial'}
                 </span>
               </div>
               <h3 className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight">
@@ -373,7 +265,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
 
           {/* Step Navigation Dots */}
           <div className="flex items-center justify-center gap-1.5 pt-1">
-            {TUTORIAL_STEPS.map((s, idx) => (
+            {activeSteps.map((s, idx) => (
               <div
                 key={s.id}
                 className={`h-1.5 rounded-full transition-all duration-200 ${

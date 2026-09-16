@@ -502,6 +502,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
         <div className="flex items-center gap-2 flex-wrap">
           {/* Evaluate Grade / Subset Tool Button */}
           <button
+            data-tutorial="evaluate-grade-btn"
             onClick={() => {
               const nextState = !isMeasureModeActive;
               setIsMeasureModeActive(nextState);
@@ -627,7 +628,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             <span className="font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1">
               <Ruler className="w-3.5 h-3.5" /> Subset:
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1" data-tutorial="evaluate-grade-from">
               <span className="text-zinc-500 font-sans text-[11px]">From:</span>
               <select
                 value={selectedStartId || ''}
@@ -659,7 +660,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             </div>
 
             {activeSubsetGrade && (
-              <>
+              <div data-tutorial="evaluate-grade-readout" className="flex items-center gap-2 flex-wrap">
                 <span className="text-zinc-400 hidden sm:inline">|</span>
                 <span className="text-zinc-700 dark:text-zinc-300">
                   Span: <strong className="text-zinc-900 dark:text-white">{activeSubsetGrade.distanceFt} ft</strong> ({activeSubsetGrade.stationCount} ties)
@@ -684,13 +685,14 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     {activeSubsetGrade.bestFitGradePercent.toFixed(2)}%)
                   </span>
                 )}
-              </>
+              </div>
             )}
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
             {activeSubsetGrade && onApplyTargetGrade && (
               <button
+                data-tutorial="evaluate-grade-apply"
                 onClick={() => onApplyTargetGrade(activeSubsetGrade.netGradePercent)}
                 className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition active:scale-95"
                 title={`Set target grade to ${activeSubsetGrade.netGradePercent.toFixed(2)}%`}

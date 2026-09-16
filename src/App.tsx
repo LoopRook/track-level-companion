@@ -14,6 +14,8 @@ import { UpdatePrompt } from './components/UpdatePrompt';
 import { parseTrackFromUrl } from './core/sharing';
 import { InteractiveTutorial } from './components/InteractiveTutorial';
 import { FirstTimeWelcomeModal } from './components/FirstTimeWelcomeModal';
+import { TutorialsModal } from './components/TutorialsModal';
+import { getTutorialById } from './core/tutorials';
 
 // Lazy-load heavy secondary modals to optimize initial bundle parse time
 const DataManagementModal = React.lazy(() =>
@@ -138,6 +140,8 @@ export const App: React.FC = () => {
   });
 
   // Interactive Tutorial Walkthrough State
+  const [isTutorialsModalOpen, setIsTutorialsModalOpen] = useState(false);
+  const [activeTutorialId, setActiveTutorialId] = useState<string | null>(null);
   const [isTutorialActive, setIsTutorialActive] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [stashedProject, setStashedProject] = useState<TrackProject | null>(null);
@@ -178,12 +182,16 @@ export const App: React.FC = () => {
   // Automatically switch mobile tab during tutorial to bring relevant element into view
   useEffect(() => {
     if (!isTutorialActive) return;
-    if (tutorialStep === 3) {
+    if (activeTutorialId === 'getting-started' && tutorialStep === 3) {
+      setMobileTab('graph');
+    } else if (activeTutorialId === 'locked-points' && tutorialStep === 2) {
+      setMobileTab('graph');
+    } else if (activeTutorialId === 'evaluate-grade' && (tutorialStep === 0 || tutorialStep === 1 || tutorialStep === 2)) {
       setMobileTab('graph');
     } else {
       setMobileTab('checklist');
     }
-  }, [isTutorialActive, tutorialStep]);
+  }, [isTutorialActive, activeTutorialId, tutorialStep]);
 
   // Haptic feedback preference (default: enabled)
   const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(() => {
@@ -203,6 +211,7 @@ export const App: React.FC = () => {
     isSettingsOpen ||
     isBetaNoticeOpen ||
     isWelcomeModalOpen ||
+    isTutorialsModalOpen ||
     Boolean(incomingSharedProject)
   );
 
@@ -654,6 +663,10 @@ export const App: React.FC = () => {
       fixedDatumInches: prev.fixedDatumInches !== undefined ? prev.fixedDatumInches + delta : undefined,
       stations: updatedStations,
     }));
+
+    if (isTutorialActive && activeTutorialId === 'laser-relocation' && tutorialStep < 3) {
+      setTutorialStep(3);
+    }
   };
 
   // Reset all laser relocation / datum offsets and restore original readings
@@ -702,6 +715,13 @@ export const App: React.FC = () => {
         s.id === stationId ? { ...s, isLocked: !s.isLocked } : s
       )
     }));
+
+    if (isTutorialActive && activeTutorialId === 'locked-points' && tutorialStep === 1) {
+      const toggled = project.stations.find(s => s.id === stationId);
+      if (toggled && toggled.distanceFt === 20) {
+        setTutorialStep(2);
+      }
+    }
   };
 
   // Delete station
@@ -813,13 +833,18 @@ export const App: React.FC = () => {
   };
 
   // Tutorial Handlers
-  const handleStartTutorial = () => {
+  const handleStartTutorial = (tutorialId: string = 'getting-started') => {
+    const def = getTutorialById(tutorialId) || getTutorialById('getting-started');
+    if (!def) return;
+
     if (!isTutorialActive) {
       setStashedProject(project);
     }
-    setProject(TUTORIAL_PROJECT);
+    setProject(def.createProject());
+    setActiveTutorialId(def.id);
     setIsTutorialActive(true);
     setTutorialStep(0);
+    setIsTutorialsModalOpen(false);
     setIsWelcomeModalOpen(false);
     setIsGuideOpen(false);
     setIsSettingsOpen(false);
@@ -830,6 +855,7 @@ export const App: React.FC = () => {
 
   const handleExitTutorial = () => {
     setIsTutorialActive(false);
+    setActiveTutorialId(null);
     setTutorialStep(0);
     if (stashedProject) {
       setProject(stashedProject);
@@ -839,6 +865,7 @@ export const App: React.FC = () => {
 
   const handleCompleteTutorial = () => {
     setIsTutorialActive(false);
+    setActiveTutorialId(null);
     setTutorialStep(0);
     try {
       localStorage.setItem('tlc_onboarding_dismissed', 'true');
@@ -862,28 +889,48 @@ export const App: React.FC = () => {
 
   const handleAutoFillTutorialStep = (stepIdx: number) => {
     if (!isTutorialActive) return;
-    if (stepIdx === 0) {
-      // Benchmark: If Station 0 reading is null, fill 5.25
-      setProject(prev => ({
-        ...prev,
-        stations: prev.stations.map(s =>
-          s.distanceFt === 0 && s.readingInches === null ? { ...s, readingInches: 5.25 } : s
-        ),
-      }));
-    } else if (stepIdx === 1) {
-      // Dipped Station 5: fill 5.625 and auto-populate remainder
-      populateTutorialTrack(5.25, 5.625);
-    } else if (stepIdx === 4) {
-      // Leveling step: raise Station 5 to 5.25
-      handleSimulateLevelStation('tut-5', 5.25);
-    } else if (stepIdx === 5) {
-      // Leveling checkoff: mark Station 5 completed
-      setProject(prev => ({
-        ...prev,
-        stations: prev.stations.map(s =>
-          s.distanceFt === 5 ? { ...s, completed: true } : s
-        ),
-      }));
+    if (activeTutorialId === 'getting-started' || !activeTutorialId) {
+      if (stepIdx === 0) {
+        // Benchmark: If Station 0 reading is null, fill 5.25
+        setProject(prev => ({
+          ...prev,
+          stations: prev.stations.map(s =>
+            s.distanceFt === 0 && s.readingInches === null ? { ...s, readingInches: 5.25 } : s
+          ),
+        }));
+      } else if (stepIdx === 1) {
+        // Dipped Station 5: fill 5.625 and auto-populate remainder
+        populateTutorialTrack(5.25, 5.625);
+      } else if (stepIdx === 4) {
+        // Leveling step: raise Station 5 to 5.25
+        handleSimulateLevelStation('tut-5', 5.25);
+      } else if (stepIdx === 5) {
+        // Leveling checkoff: mark Station 5 completed
+        setProject(prev => ({
+          ...prev,
+          stations: prev.stations.map(s =>
+            s.distanceFt === 5 ? { ...s, completed: true } : s
+          ),
+        }));
+      }
+    } else if (activeTutorialId === 'locked-points') {
+      if (stepIdx === 1) {
+        // Lock station 20
+        setProject(prev => ({
+          ...prev,
+          stations: prev.stations.map(s =>
+            s.distanceFt === 20 ? { ...s, isLocked: true } : s
+          ),
+        }));
+      }
+    } else if (activeTutorialId === 'laser-relocation') {
+      if (stepIdx === 2) {
+        // Apply relocation of +2.00 on Station 50 (from 5.50 to 7.50)
+        const st50 = project.stations.find(s => s.distanceFt === 50);
+        if (st50) {
+          handleSetTurningPoint(st50.id, 7.50);
+        }
+      }
     }
   };
 
@@ -900,7 +947,7 @@ export const App: React.FC = () => {
           onOpenGuideModal={() => setIsGuideOpen(true)}
           onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
           onOpenSettingsModal={() => setIsSettingsOpen(true)}
-          onStartTutorial={handleStartTutorial}
+          onStartTutorial={() => setIsTutorialsModalOpen(true)}
           onInstallApp={handleInstallApp}
           canInstall={!!installPrompt}
           summary={summary}
@@ -1018,6 +1065,11 @@ export const App: React.FC = () => {
               onExtendTrack={handleExtendTrack}
               onSetTurningPoint={handleSetTurningPoint}
               onResetDatum={handleResetDatum}
+              onOpenMoveLaser={() => {
+                if (isTutorialActive && activeTutorialId === 'laser-relocation' && tutorialStep === 1) {
+                  setTutorialStep(2);
+                }
+              }}
               selectedStationId={activeEditingStation?.id}
             />
           </div>
@@ -1098,7 +1150,10 @@ export const App: React.FC = () => {
           onChangeMobileLayout={handleSetMobileLayout}
           hapticsEnabled={hapticsEnabled}
           onChangeHapticsEnabled={handleSetHapticsEnabled}
-          onStartTutorial={handleStartTutorial}
+          onStartTutorial={() => {
+            setIsSettingsOpen(false);
+            setIsTutorialsModalOpen(true);
+          }}
         />
 
         {/* Field Guide & Animated Tutorial Modal */}
@@ -1107,10 +1162,20 @@ export const App: React.FC = () => {
             <UserGuideModal
               isOpen={isGuideOpen}
               onClose={() => setIsGuideOpen(false)}
-              onStartTutorial={handleStartTutorial}
+              onStartTutorial={() => {
+                setIsGuideOpen(false);
+                setIsTutorialsModalOpen(true);
+              }}
             />
           )}
         </React.Suspense>
+
+        {/* Interactive Tutorials Hub Modal */}
+        <TutorialsModal
+          isOpen={isTutorialsModalOpen}
+          onClose={() => setIsTutorialsModalOpen(false)}
+          onSelectTutorial={handleStartTutorial}
+        />
 
         {/* First Launch Beta Notice Modal */}
         <BetaNoticeModal
@@ -1133,7 +1198,7 @@ export const App: React.FC = () => {
           onClose={() => setIsWelcomeModalOpen(false)}
           onStartTutorial={() => {
             setIsWelcomeModalOpen(false);
-            handleStartTutorial();
+            handleStartTutorial('getting-started');
           }}
           onExploreDemo={() => {
             setIsWelcomeModalOpen(false);
@@ -1146,16 +1211,23 @@ export const App: React.FC = () => {
         />
 
         {/* Interactive Practice Run Tutorial Overlay */}
-        <InteractiveTutorial
-          isActive={isTutorialActive}
-          currentStep={tutorialStep}
-          isKeypadOpen={isKeypadOpen}
-          onNextStep={() => setTutorialStep(prev => prev + 1)}
-          onPrevStep={() => setTutorialStep(prev => Math.max(0, prev - 1))}
-          onExitTutorial={handleExitTutorial}
-          onCompleteTutorial={handleCompleteTutorial}
-          onAutoFillStep={handleAutoFillTutorialStep}
-        />
+        {(() => {
+          const activeDef = activeTutorialId ? getTutorialById(activeTutorialId) : null;
+          return (
+            <InteractiveTutorial
+              isActive={isTutorialActive}
+              currentStep={tutorialStep}
+              steps={activeDef?.steps}
+              tutorialCategory={activeDef?.category}
+              isKeypadOpen={isKeypadOpen}
+              onNextStep={() => setTutorialStep(prev => prev + 1)}
+              onPrevStep={() => setTutorialStep(prev => Math.max(0, prev - 1))}
+              onExitTutorial={handleExitTutorial}
+              onCompleteTutorial={handleCompleteTutorial}
+              onAutoFillStep={handleAutoFillTutorialStep}
+            />
+          );
+        })()}
 
         {/* Incoming Shared Track Survey Modal */}
         <IncomingShareModal
