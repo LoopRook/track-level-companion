@@ -154,16 +154,16 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   // Chart Height adapts to give more physical headroom as zoom increases
   const chartHeight = useMemo(() => {
     switch (zoomScale) {
-      case '1x': return 240;
-      case '3x': return 265;
-      case '8x': return 300;
-      case '15x': return 340;
-      default: return 265;
+      case '1x': return 160;
+      case '3x': return 180;
+      case '8x': return 210;
+      case '15x': return 250;
+      default: return 180;
     }
   }, [zoomScale]);
 
-  const baseWidth = 850;
-  const padding = { top: 35, right: 35, bottom: 40, left: 65 };
+  const baseWidth = 1200;
+  const padding = { top: 25, right: 35, bottom: 34, left: 60 };
 
   // Width
   const effectiveWidth = isScrollable ? Math.max(baseWidth, stations.length * 60) : baseWidth;
@@ -734,7 +734,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
       {/* Selected Station Banner / Active Readout - Persistent height prevents SVG layout shifts */}
       {!isMeasureModeActive && (
-        <div className="min-h-[42px] px-3.5 py-2 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between text-xs font-mono gap-2 transition-colors">
+        <div className="min-h-[36px] px-3.5 py-1.5 bg-zinc-100 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between text-xs font-mono gap-2 transition-colors">
           {activeSubsetGrade ? (
             <>
               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">

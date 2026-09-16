@@ -936,7 +936,7 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <div className="app-interactive-screen min-h-screen bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2.5 sm:p-4 max-w-5xl lg:max-w-7xl xl:max-w-[1600px] mx-auto space-y-3">
+      <div className="app-interactive-screen min-h-screen md:h-screen md:overflow-hidden bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2 sm:p-2.5 md:p-3 lg:p-4 max-w-5xl md:max-w-full lg:max-w-7xl xl:max-w-[1600px] mx-auto flex flex-col gap-2.5 lg:gap-3">
         {/* Top Navbar / Header (Spans full width across top) */}
         <StationConfigHeader
           project={project}
@@ -953,9 +953,9 @@ export const App: React.FC = () => {
           summary={summary}
         />
 
-        {/* Mobile Tab Navigation (visible only on < lg screens when mobileLayout is 'tabbed') */}
+        {/* Mobile Tab Navigation (visible only on < md phone screens when mobileLayout is 'tabbed') */}
         {mobileLayout === 'tabbed' && (
-          <div className="lg:hidden sticky top-2 z-20 mb-3 bg-zinc-100/95 dark:bg-zinc-900/95 backdrop-blur-md p-1 rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-md flex gap-1">
+          <div className="md:hidden sticky top-2 z-20 mb-2 bg-zinc-100/95 dark:bg-zinc-900/95 backdrop-blur-md p-1 rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-md flex gap-1">
             <button
               type="button"
               onClick={() => setMobileTab('checklist')}
@@ -993,14 +993,49 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Responsive Work Area: Single column or tabbed on mobile/tablet, 2 columns on desktop (lg: >= 1024px) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-start">
-          {/* LEFT COLUMN: Field Stats Summary + Alignment Controls + Gentle Profile Graph */}
+        {/* TOP SECTION: Full-Width Panoramic Profile Graph (Visible across full width on tablet & desktop >= 768px) */}
+        <div
+          className={`w-full shrink-0 ${
+            mobileLayout === 'tabbed' && mobileTab !== 'graph' ? 'hidden md:block' : 'block'
+          }`}
+        >
+          <ProfileChart
+            stations={calculatedStations}
+            gradeMode={project.gradeMode}
+            targetGradePercent={project.targetGradePercent}
+            trackName={project.name}
+            onSelectStation={handleSelectStation}
+            selectedStationId={activeEditingStation?.id}
+            onToggleMeasureMode={(isActive) => {
+              if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 0 && isActive) {
+                setTutorialStep(1);
+              }
+            }}
+            onSubsetSpanChange={() => {
+              if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 1) {
+                setTutorialStep(2);
+              }
+            }}
+            onApplyTargetGrade={(grade) => {
+              handleUpdateProject({
+                gradeMode: 'target_grade',
+                targetGradePercent: Number(grade.toFixed(2)),
+              });
+              if (isTutorialActive && activeTutorialId === 'evaluate-grade') {
+                handleCompleteTutorial();
+              }
+            }}
+          />
+        </div>
+
+        {/* BOTTOM SECTION: Split View below the graph (Summary & Alignment on Left, Checklist Table on Right) */}
+        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-4 items-stretch">
+          {/* LEFT COLUMN: Field Stats Summary (2x2) + Alignment Controls */}
           <div
-            className={`flex flex-col gap-3 lg:sticky lg:top-3 lg:col-span-6 xl:col-span-6 ${
+            className={`md:col-span-5 xl:col-span-4 flex flex-col gap-2.5 sm:gap-3 md:overflow-y-auto pr-0 md:pr-1 ${
               mobileLayout === 'tabbed' && mobileTab !== 'graph'
-                ? 'hidden lg:block'
-                : 'block'
+                ? 'hidden md:flex'
+                : 'flex'
             }`}
           >
             <StationSummaryBar
@@ -1013,48 +1048,19 @@ export const App: React.FC = () => {
               onChangeProject={handleUpdateProject}
               calculatedStations={calculatedStations}
             />
-
-            {/* Visual Profile Chart ("Gentle Graph") */}
-            <ProfileChart
-              stations={calculatedStations}
-              gradeMode={project.gradeMode}
-              targetGradePercent={project.targetGradePercent}
-              trackName={project.name}
-              onSelectStation={handleSelectStation}
-              selectedStationId={activeEditingStation?.id}
-              onToggleMeasureMode={(isActive) => {
-                if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 0 && isActive) {
-                  setTutorialStep(1);
-                }
-              }}
-              onSubsetSpanChange={() => {
-                if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 1) {
-                  setTutorialStep(2);
-                }
-              }}
-              onApplyTargetGrade={(grade) => {
-                handleUpdateProject({
-                  gradeMode: 'target_grade',
-                  targetGradePercent: Number(grade.toFixed(2)),
-                });
-                if (isTutorialActive && activeTutorialId === 'evaluate-grade') {
-                  handleCompleteTutorial();
-                }
-              }}
-            />
           </div>
 
           {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
           <div
-            className={`flex flex-col gap-3 lg:sticky lg:top-3 lg:col-span-6 xl:col-span-6 ${
+            className={`md:col-span-7 xl:col-span-8 flex flex-col min-h-0 h-full ${
               mobileLayout === 'tabbed' && mobileTab !== 'checklist'
-                ? 'hidden lg:block'
-                : 'block'
+                ? 'hidden md:flex'
+                : 'flex'
             }`}
           >
             {/* Mobile micro-summary when in tabbed checklist view */}
             {mobileLayout === 'tabbed' && (
-              <div className="lg:hidden flex items-center justify-between px-3 py-1.5 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
+              <div className="md:hidden flex items-center justify-between px-3 py-1.5 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono mb-2">
                 <span className="text-zinc-600 dark:text-zinc-400 font-bold">{summary.lengthFt}' ({summary.totalStations} ties)</span>
                 <span className="font-bold text-amber-600 dark:text-amber-400">
                   Grade: {project.gradeMode === 'end_to_end' ? 'End-to-End' : `${project.targetGradePercent >= 0 ? '+' : ''}${project.targetGradePercent.toFixed(2)}%`}

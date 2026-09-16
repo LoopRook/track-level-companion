@@ -87,7 +87,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
   };
 
   return (
-    <header className="bg-white dark:bg-black text-zinc-900 dark:text-white rounded-2xl p-3.5 sm:p-4 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors">
+    <header className="bg-white dark:bg-black text-zinc-900 dark:text-white rounded-2xl p-2.5 sm:p-3 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-colors">
       {/* Title & Mobile Theme Toggle Row */}
       <div className="flex items-center justify-between w-full sm:w-auto gap-3">
         <div className="flex items-center gap-3">
@@ -258,10 +258,10 @@ const getToleranceLabel = (tol?: number, unit?: UnitFormat) => {
 
 export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, summary }) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex flex-col justify-between min-h-[76px] sm:min-h-[80px]">
-        <div className="min-h-[26px] sm:min-h-[28px] flex items-start justify-between gap-1">
-          <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider block">
+    <div className="grid grid-cols-2 md:grid-cols-2 gap-2.5 sm:gap-3">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 sm:p-3 rounded-xl flex flex-col justify-between min-h-[74px] sm:min-h-[78px] shadow-xs">
+        <div className="min-h-[24px] flex items-start justify-between gap-1 mb-1">
+          <span className="text-[10px] sm:text-[11px] font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider block">
             Track Length
           </span>
           {summary.completedCount !== undefined && summary.completedCount > 0 && (
@@ -273,7 +273,7 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
             </span>
           )}
         </div>
-        <div className="text-lg font-mono font-bold text-zinc-900 dark:text-zinc-100 mt-auto pt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+        <div className="text-lg sm:text-xl font-mono font-bold text-zinc-900 dark:text-zinc-100 mt-auto pt-1 flex items-baseline flex-wrap gap-x-1.5">
           <span>{summary.lengthFt} ft</span>
           <span className="text-[11px] text-zinc-500 font-normal whitespace-nowrap">
             ({summary.measuredCount}/{summary.totalStations} shot)
@@ -281,13 +281,13 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
         </div>
       </div>
 
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex flex-col justify-between min-h-[76px] sm:min-h-[80px]">
-        <div className="min-h-[26px] sm:min-h-[28px] flex items-start justify-between gap-1">
-          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 sm:p-3 rounded-xl flex flex-col justify-between min-h-[74px] sm:min-h-[78px] shadow-xs">
+        <div className="min-h-[24px] flex items-start justify-between gap-1 mb-1">
+          <span className="text-[10px] sm:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
             On Grade ({getToleranceLabel(project.toleranceInches, project.unitFormat)})
           </span>
         </div>
-        <div className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-auto pt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+        <div className="text-lg sm:text-xl font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-auto pt-1 flex items-baseline flex-wrap gap-x-1.5">
           <span>
             {summary.measuredCount >= 2
               ? `${Math.round((summary.onGradeCount / summary.measuredCount) * 100)}%`
@@ -299,13 +299,13 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
         </div>
       </div>
 
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex flex-col justify-between min-h-[76px] sm:min-h-[80px]">
-        <div className="min-h-[26px] sm:min-h-[28px] flex items-start justify-between gap-1">
-          <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider block">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 sm:p-3 rounded-xl flex flex-col justify-between min-h-[74px] sm:min-h-[78px] shadow-xs">
+        <div className="min-h-[24px] flex items-start justify-between gap-1 mb-1">
+          <span className="text-[10px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider block">
             Needs Lift (Low spots)
           </span>
         </div>
-        <div className="text-lg font-mono font-bold text-sky-700 dark:text-sky-400 mt-auto pt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+        <div className="text-lg sm:text-xl font-mono font-bold text-sky-700 dark:text-sky-400 mt-auto pt-1 flex items-baseline flex-wrap gap-x-1.5">
           <span>{summary.measuredCount >= 2 ? `${summary.liftCount} pts` : '—'}</span>
           {summary.measuredCount >= 2 && summary.maxLift > 0 && (
             <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
@@ -326,13 +326,13 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
         </div>
       </div>
 
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex flex-col justify-between min-h-[76px] sm:min-h-[80px]">
-        <div className="min-h-[26px] sm:min-h-[28px] flex items-start justify-between gap-1">
-          <span className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 sm:p-3 rounded-xl flex flex-col justify-between min-h-[74px] sm:min-h-[78px] shadow-xs">
+        <div className="min-h-[24px] flex items-start justify-between gap-1 mb-1">
+          <span className="text-[10px] sm:text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">
             Needs Lower (High spots)
           </span>
         </div>
-        <div className="text-lg font-mono font-bold text-amber-800 dark:text-amber-400 mt-auto pt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+        <div className="text-lg sm:text-xl font-mono font-bold text-amber-800 dark:text-amber-400 mt-auto pt-1 flex items-baseline flex-wrap gap-x-1.5">
           <span>{summary.measuredCount >= 2 ? `${summary.lowerCount} pts` : '—'}</span>
           {summary.measuredCount >= 2 && summary.maxLower > 0 && (
             <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap">
@@ -369,7 +369,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
   return (
     <div
       data-tutorial="alignment-bar"
-      className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3 shadow-sm flex flex-wrap items-center justify-between gap-2.5 text-xs transition-colors"
+      className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl p-3 sm:p-3.5 shadow-sm flex flex-wrap items-center justify-between gap-2.5 text-xs transition-colors"
     >
       {/* Grade Mode Selection */}
       <div className="flex items-center gap-2 flex-wrap">
