@@ -319,7 +319,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                           ? 'text-amber-500 bg-amber-500/15 border-amber-500/40'
                           : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                       }`}
-                      title={isLocked ? 'Unlock tie (allow normal lift/cut)' : 'Lock tie (fixed over root/structure)'}
+                      title={isLocked ? 'Unlock tie (allow normal lift/lower)' : 'Lock tie (fixed over root/structure)'}
                     >
                       {isLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                     </button>
@@ -752,7 +752,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                               ? 'text-amber-500 bg-amber-500/15 hover:bg-amber-500/25'
                               : 'text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                           }`}
-                          title={isLocked ? 'Unlock tie (allow normal lift/cut)' : 'Lock tie (fixed point / tree root)'}
+                          title={isLocked ? 'Unlock tie (allow normal lift/lower)' : 'Lock tie (fixed point / tree root)'}
                         >
                           {isLocked ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                         </button>

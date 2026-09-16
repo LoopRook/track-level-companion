@@ -94,7 +94,7 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-reading-5"]',
       content:
         'Now walk 5 feet down the track to Station 5. Place the grade rod on the rail head and record the laser reading.',
-      actionHint: 'Enter 5.625" (5-5/8") and press Enter or tap "Save & Analyze Track".',
+      actionHint: 'Enter 5.625" (5-5/8") and press Enter or tap "Save", or tap Next Step.',
       proTip:
         'Surveying rule: A LARGER rod reading (5.625" vs 5.25") means the detector slid lower—the rail head is physically dipped!',
     },
@@ -136,7 +136,7 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-reading-5"]',
       content:
         'Your crew placed the track jack at Station 5, raised the rail 3/8", and tamped ballast. Now record your verification shot! Tap Station 5\'s reading cell (5.625") and enter 5.25" to bring the tie onto target grade.',
-      actionHint: 'Tap Station 5\'s reading cell and enter 5.25" using your keyboard, numpad, or touch keys.',
+      actionHint: 'Tap Station 5\'s reading cell and enter 5.25" using your keyboard, numpad, or touch keys, or tap Next Step.',
       proTip:
         'Taking a verification shot confirms the rail physically lifted to the target grade line and turns the tie green.',
     },
@@ -150,7 +150,7 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-complete-5"]',
       content:
         'With Station 5 raised to grade and verified green (ON GRADE ✓), tap the circle checkbox to mark Station 5 as finished work (LEVELED ✓).',
-      actionHint: 'Tap the circle checkbox on Station 5 to mark it complete!',
+      actionHint: 'Tap the circle checkbox on Station 5 to mark it complete, or tap Next Step.',
       proTip:
         'Checking off completed ties keeps your track crew in sync so no one loses track of which ties are finished.',
     },
@@ -210,8 +210,8 @@ export const TUTORIAL_LOCKED_POINTS: TutorialDefinition = {
       icon: Sparkles,
       targetSelector: '[data-tutorial="station-row-20"]',
       content:
-        'Station 20 sits atop an immovable tree root or fixed bridge abutment. Notice the yellow CUT badge (-0.80"): standard end-to-end leveling asks you to dig down, which is physically impossible through solid bridge concrete or heavy roots!',
-      actionHint: 'Notice Station 20 requires cutting. We need to lock this station so the grade line lifts over it.',
+        'Station 20 sits atop an immovable tree root or fixed bridge abutment. Notice the amber LOWER badge (LOWER -0.80"): standard end-to-end leveling asks you to lower the rail, which is physically impossible through solid bridge concrete or heavy roots!',
+      actionHint: 'Notice Station 20 requires lowering. We need to lock this station so the grade line lifts over it.',
       proTip:
         'In live steam and grand-scale railroading, you almost never dig down into settled roadbed; you raise the surrounding track up to clear high spots.',
     },
@@ -238,7 +238,7 @@ export const TUTORIAL_LOCKED_POINTS: TutorialDefinition = {
       icon: TrendingUp,
       targetSelector: '[data-tutorial="profile-chart"]',
       content:
-        'Observe the Profile Chart! The green grade plane instantly adjusted upward, pivoting cleanly through Station 20. Instead of cutting the fixed root, the app now calculates gentle, safe ballast lifts on the surrounding ties!',
+        'Observe the Profile Chart! The green grade plane instantly adjusted upward, pivoting cleanly through Station 20. Instead of lowering through the fixed obstacle, the app now calculates gentle, safe ballast lifts on the surrounding ties!',
       actionHint: 'Review the new lifted grade profile on the graph, then tap Next Step.',
       proTip:
         'You can lock multiple fixed points along a long track section. The app will calculate multi-chord grade breaks seamlessly.',
