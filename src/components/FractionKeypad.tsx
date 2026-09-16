@@ -23,6 +23,7 @@ interface FractionKeypadProps {
   stationIndex?: number;
   totalStations?: number;
   tutorialHint?: string;
+  tutorialSaveButtonLabel?: string;
   onSave: (valInches: number | null) => void;
   onSaveAndNext?: (valInches: number | null) => void;
   onSaveAndPrev?: (valInches: number | null) => void;
@@ -71,6 +72,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   stationIndex,
   totalStations,
   tutorialHint,
+  tutorialSaveButtonLabel,
   onSave,
   onSaveAndNext,
   onSaveAndPrev,
@@ -125,7 +127,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         setDirectText('');
       }
     }
-  }, [isOpen, currentReadingInches, unitFormat, fractionResolution]);
+  }, [isOpen, stationDistanceFt, currentReadingInches, unitFormat, fractionResolution]);
 
   // Pulse animation on distance change
   useEffect(() => {
@@ -1005,22 +1007,34 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
             </button>
           )}
 
-          <button
-            onClick={handleSave}
-            className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md transition active:scale-98 flex items-center justify-center gap-1.5"
-          >
-            <Check className="w-4 h-4 stroke-[2.5]" />
-            Save
-          </button>
-
-          {onSaveAndNext && (
+          {tutorialSaveButtonLabel ? (
             <button
-              onClick={handleSaveAndNext}
-              className="group flex-1 py-3 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-extrabold text-sm shadow-md hover:bg-zinc-800 dark:hover:bg-zinc-100 transition active:scale-98 flex items-center justify-center gap-1.5"
+              onClick={onSaveAndNext ? handleSaveAndNext : handleSave}
+              className="flex-1 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-md transition active:scale-98 flex items-center justify-center gap-1.5"
             >
-              <span>Next Station</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-1 group-active:translate-x-2" />
+              <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+              <span>{tutorialSaveButtonLabel}</span>
             </button>
+          ) : (
+            <>
+              <button
+                onClick={handleSave}
+                className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md transition active:scale-98 flex items-center justify-center gap-1.5"
+              >
+                <Check className="w-4 h-4 stroke-[2.5]" />
+                Save
+              </button>
+
+              {onSaveAndNext && (
+                <button
+                  onClick={handleSaveAndNext}
+                  className="group flex-1 py-3 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-extrabold text-sm shadow-md hover:bg-zinc-800 dark:hover:bg-zinc-100 transition active:scale-98 flex items-center justify-center gap-1.5"
+                >
+                  <span>Next Station</span>
+                  <ArrowRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-1 group-active:translate-x-2" />
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

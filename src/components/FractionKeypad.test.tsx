@@ -69,4 +69,19 @@ describe('FractionKeypad Component', () => {
     expect(html).toContain('Target:');
     expect(html).toContain('5.25');
   });
+
+  it('renders custom tutorialSaveButtonLabel when provided in tutorial mode', () => {
+    const html = renderToString(
+      <FractionKeypad
+        isOpen={true}
+        stationDistanceFt={5}
+        currentReadingInches={5.625}
+        tutorialSaveButtonLabel="Save &amp; Analyze Track →"
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />
+    );
+
+    expect(html).toContain('Save &amp; Analyze Track →');
+  });
 });

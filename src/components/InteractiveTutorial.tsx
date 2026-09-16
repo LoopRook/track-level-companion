@@ -35,83 +35,99 @@ interface InteractiveTutorialProps {
   onExitTutorial: () => void;
   onCompleteTutorial: () => void;
   onAutoFillStep?: (stepIndex: number) => void;
+  onSimulateLevelStation?: (stationId: string, readingInches: number) => void;
+  isStation5Leveled?: boolean;
 }
 
 export const TUTORIAL_STEPS: TutorialStepConfig[] = [
   {
     id: 'benchmark',
     stepNumber: 1,
-    totalSteps: 6,
+    totalSteps: 7,
     title: '1. The Reference Benchmark (Station 0)',
     shortTitle: 'Benchmark',
     icon: Compass,
     targetSelector: '[data-tutorial="station-reading-0"]',
     content:
-      'Every track leveling survey starts at Station 0. Imagine your rotary laser is set up on a tripod nearby. You place your grade rod on top of the rail head at Station 0 to establish your baseline elevation.',
-    actionHint: 'Tap the reading cell to enter 5.25" with the keypad, or tap Next Step.',
+      'Every track leveling survey starts at Station 0. Imagine your rotary laser is set up on a tripod nearby. You place your grade rod on top of the rail head at Station 0 to establish your baseline elevation datum.',
+    actionHint: 'Tap the cell to enter 5.25" with your keyboard/numpad or touch keys, or tap Next Step.',
     proTip: 'All other ties along your track will be compared against this reference datum.',
   },
   {
     id: 'survey-tie',
     stepNumber: 2,
-    totalSteps: 6,
+    totalSteps: 7,
     title: '2. Surveying Ties Down the Line',
     shortTitle: 'Survey Tie',
     icon: Ruler,
     targetSelector: '[data-tutorial="station-reading-5"]',
     content:
       'Now walk 5 feet down the track to Station 5. Place the grade rod on the rail head and record the laser reading.',
-    actionHint: 'Tap the cell to enter 5.625" (5-5/8"), or tap Next Step.',
+    actionHint: 'Enter 5.625" (5-5/8") and press Enter or tap "Save & Analyze Track".',
     proTip:
-      'Surveying rule: A LARGER rod reading (5.625" vs 5.25") means the detector slid down lower—the rail head is physically dipped!',
+      'Surveying rule: A LARGER rod reading (5.625" vs 5.25") means the detector slid lower—the rail head is physically dipped!',
+  },
+  {
+    id: 'tolerance-margin',
+    stepNumber: 3,
+    totalSteps: 7,
+    title: '3. The Tolerance Margin',
+    shortTitle: 'Tolerance Margin',
+    icon: CheckCircle2,
+    targetSelector: '[data-tutorial="station-row-10"]',
+    content:
+      'Notice Station 10: The laser rod read 5.28"—which is 0.03" off your 5.25" target—yet its badge is green (ON GRADE ✓)! That is your tolerance margin (±0.05") in action. Railroad trackwork doesn\'t require millimeter perfection on every tie; staying within the green margin guarantees smooth running while saving hours of unnecessary shimming.',
+    actionHint: 'Review Station 10\'s green ON GRADE status, then tap Next Step.',
+    proTip:
+      'You can customize your railroad\'s tolerance threshold (e.g., ±1/16" or ±1/8") in Settings anytime.',
   },
   {
     id: 'profile-graph',
-    stepNumber: 3,
-    totalSteps: 6,
-    title: '3. Reading the Vertical Profile Graph',
+    stepNumber: 4,
+    totalSteps: 7,
+    title: '4. Visualizing the Sag Dip',
     shortTitle: 'Profile Graph',
     icon: TrendingUp,
     targetSelector: '[data-tutorial="profile-chart"]',
     content:
-      'The Profile Graph plots your rail surface in real time. Notice the visible sag dip between 0 ft and 10 ft. The green dashed line is your target grade.',
+      'The Profile Graph plots your entire rail surface in real time. Notice the visible sag dip between 0 ft and 10 ft. The green dashed line is your target grade plane.',
     actionHint: 'Review the sag in the curve, then tap Next Step.',
     proTip:
-      'Uncorrected sags cause ponding water, mud pumping, and jarring equipment dips during train operations.',
+      'Uncorrected sags collect ponding rainwater, trigger ballast mud-pumping, and create jarring equipment dips when trains pass.',
   },
   {
-    id: 'action-math',
-    stepNumber: 4,
-    totalSteps: 6,
-    title: '4. The Cut/Fill Action (Jack & Tamp)',
-    shortTitle: 'Cut/Fill Action',
+    id: 'level-track',
+    stepNumber: 5,
+    totalSteps: 7,
+    title: '5. Raising Rail Height: Jack & Tamp',
+    shortTitle: 'Leveling Work',
     icon: Hammer,
     targetSelector: '[data-tutorial="station-action-5"]',
     content:
-      'The app computes the exact track work required: Jack 3/8" (Lift & Tamp). It calculates whether each tie needs lifting or lowering to meet the target grade.',
-    actionHint: 'Observe the calculated Jack amount, then tap Next Step.',
+      'Station 5 requires lifting: LIFT +3/8" (Jack & Tamp). In the field, your crew places a track jack under Station 5, raises the rail 3/8", and tamps ballast underneath. Now simulate taking the verification shot after leveling!',
+    actionHint: 'Tap "Simulate Lift & Re-shoot (5.25")" below, or tap Station 5 and enter 5.25".',
     proTip:
-      'Use this exact number to slide in matching shims or adjust your track jack before tamping ballast.',
+      'Taking a verification shot confirms the rail physically lifted to the target grade line and turns the tie green.',
   },
   {
     id: 'complete-check',
-    stepNumber: 5,
-    totalSteps: 6,
-    title: '5. Leveling to Green & Checkoff',
+    stepNumber: 6,
+    totalSteps: 7,
+    title: '6. Crew Checkoff & Verification',
     shortTitle: 'Checkoff',
     icon: CheckCircle2,
     targetSelector: '[data-tutorial="station-complete-5"]',
     content:
-      'Once your crew jacks and tamps the tie, take a verification shot. When the reading matches the target, the tie turns green (ON GRADE ✓).',
-    actionHint: 'Tap the circle checkbox on Station 5 to mark it completed!',
+      'With Station 5 raised to grade and verified green (ON GRADE ✓), tap the circle checkbox to mark Station 5 as finished work (LEVELED ✓).',
+    actionHint: 'Tap the circle checkbox on Station 5 to mark it complete!',
     proTip:
-      'Checking off completed ties keeps your crew organized so no one loses track of which ties are finished.',
+      'Checking off completed ties keeps your track crew in sync so no one loses track of which ties are finished.',
   },
   {
     id: 'export-share',
-    stepNumber: 6,
-    totalSteps: 6,
-    title: '6. Documenting & QR Sharing',
+    stepNumber: 7,
+    totalSteps: 7,
+    title: '7. Documenting & QR Sharing',
     shortTitle: 'Share & Export',
     icon: Share2,
     targetSelector: '[data-tutorial="header-actions"]',
@@ -131,6 +147,8 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   onExitTutorial,
   onCompleteTutorial,
   onAutoFillStep,
+  onSimulateLevelStation,
+  isStation5Leveled = false,
 }) => {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -278,9 +296,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
 
   return (
     <div className="fixed inset-0 z-40 pointer-events-none overscroll-none">
-      {/* Semi-transparent Backdrop */}
+      {/* Soft, Ambient Dimming Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 dark:bg-black/60 pointer-events-none transition-opacity duration-300"
+        className="fixed inset-0 bg-slate-950/20 dark:bg-slate-950/30 backdrop-blur-[0.5px] pointer-events-none transition-opacity duration-300"
       />
 
       {/* Spotlight Cutout / Pulsing Border around Target Element */}
@@ -345,6 +363,33 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
             <div className="p-2.5 sm:p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200 font-semibold">
               <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div className="flex-1">{currentStepData.actionHint}</div>
+            </div>
+          )}
+
+          {/* Leveling Action Simulation Button in Step 5 */}
+          {currentStepData.id === 'level-track' && onSimulateLevelStation && (
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => onSimulateLevelStation('tut-5', 5.25)}
+                className={`w-full py-2.5 px-3 rounded-xl font-bold text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-2 ${
+                  isStation5Leveled
+                    ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-extrabold'
+                    : 'bg-amber-500 hover:bg-amber-400 text-black font-extrabold'
+                }`}
+              >
+                {isStation5Leveled ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span>✓ Leveled Re-shot: 5.25" (ON GRADE ✓)</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>⚡ Simulate Lift & Re-shoot (5.25")</span>
+                  </>
+                )}
+              </button>
             </div>
           )}
 

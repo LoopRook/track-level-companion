@@ -244,7 +244,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <div
               key={s.id}
               onClick={() => onEditStation(s)}
-              data-tutorial={s.distanceFt === 0 ? 'station-card-0' : s.distanceFt === 5 ? 'station-card-5' : undefined}
+              data-tutorial={s.distanceFt === 0 ? 'station-card-0' : s.distanceFt === 5 ? 'station-card-5' : s.distanceFt === 10 ? 'station-card-10' : undefined}
               className={`p-3 transition-all cursor-pointer rounded-xl ${
                 isSelected
                   ? 'bg-amber-500/10 dark:bg-amber-500/15 ring-1 ring-inset ring-amber-500/50'
@@ -358,7 +358,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
               {/* Middle Row: Readings & Target/Elevation */}
               <div
-                data-tutorial={s.distanceFt === 0 ? 'station-reading-0' : s.distanceFt === 5 ? 'station-reading-5' : undefined}
+                data-tutorial={s.distanceFt === 0 ? 'station-reading-0' : s.distanceFt === 5 ? 'station-reading-5' : s.distanceFt === 10 ? 'station-reading-10' : undefined}
                 className="grid grid-cols-2 gap-2 py-1.5 px-2.5 bg-zinc-100/60 dark:bg-zinc-900/60 rounded-xl mb-2 text-xs"
               >
                 <div>
@@ -547,7 +547,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               return (
                 <tr
                   key={s.id}
-                  data-tutorial={s.distanceFt === 0 ? 'station-row-0' : s.distanceFt === 5 ? 'station-row-5' : undefined}
+                  data-tutorial={s.distanceFt === 0 ? 'station-row-0' : s.distanceFt === 5 ? 'station-row-5' : s.distanceFt === 10 ? 'station-row-10' : undefined}
                   className={`transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-amber-500/10 dark:bg-amber-500/15 font-medium'
@@ -610,7 +610,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   {/* Laser Reading */}
                   <td
                     className="py-3 px-3 font-mono"
-                    data-tutorial={s.distanceFt === 0 ? 'station-reading-0' : s.distanceFt === 5 ? 'station-reading-5' : undefined}
+                    data-tutorial={s.distanceFt === 0 ? 'station-reading-0' : s.distanceFt === 5 ? 'station-reading-5' : s.distanceFt === 10 ? 'station-reading-10' : undefined}
                   >
                     {s.isTurningPoint ? (
                       <div className="flex flex-col gap-0.5">

@@ -77,10 +77,10 @@ export const TUTORIAL_PROJECT: TrackProject = {
   stations: [
     { id: 'tut-0', distanceFt: 0, readingInches: null },
     { id: 'tut-5', distanceFt: 5, readingInches: null },
-    { id: 'tut-10', distanceFt: 10, readingInches: 5.25 },
-    { id: 'tut-15', distanceFt: 15, readingInches: 5.25 },
-    { id: 'tut-20', distanceFt: 20, readingInches: 5.25 },
-    { id: 'tut-25', distanceFt: 25, readingInches: 5.25 },
+    { id: 'tut-10', distanceFt: 10, readingInches: null },
+    { id: 'tut-15', distanceFt: 15, readingInches: null },
+    { id: 'tut-20', distanceFt: 20, readingInches: null },
+    { id: 'tut-25', distanceFt: 25, readingInches: null },
   ],
 };
 
@@ -178,9 +178,9 @@ export const App: React.FC = () => {
   // Automatically switch mobile tab during tutorial to bring relevant element into view
   useEffect(() => {
     if (!isTutorialActive) return;
-    if (tutorialStep === 2) {
+    if (tutorialStep === 3) {
       setMobileTab('graph');
-    } else if (tutorialStep === 0 || tutorialStep === 1 || tutorialStep === 3 || tutorialStep === 4) {
+    } else {
       setMobileTab('checklist');
     }
   }, [isTutorialActive, tutorialStep]);
@@ -333,21 +333,43 @@ export const App: React.FC = () => {
     setIsKeypadOpen(true);
   };
 
+  // Helper to auto-populate remaining practice survey ties after Station 5 is recorded
+  const populateTutorialTrack = (st0Val: number, st5Val: number) => {
+    setProject(prev => ({
+      ...prev,
+      stations: prev.stations.map(s => {
+        if (s.distanceFt === 0) return { ...s, readingInches: st0Val };
+        if (s.distanceFt === 5) return { ...s, readingInches: st5Val };
+        if (s.distanceFt === 10) return { ...s, readingInches: 5.28 }; // Within ±0.05" margin -> ON GRADE ✓
+        if (s.distanceFt === 15) return { ...s, readingInches: 5.65 }; // Low spot -> LIFT +3/8"
+        if (s.distanceFt === 20) return { ...s, readingInches: 4.95 }; // High spot -> LOWER -1/4"
+        if (s.distanceFt === 25) return { ...s, readingInches: 5.24 }; // Within margin -> ON GRADE ✓
+        return s;
+      }),
+    }));
+  };
+
   const handleSaveStationReading = (valInches: number | null) => {
     if (!activeEditingStation) return;
+
+    const currentStation = activeEditingStation;
+    const finalVal = valInches;
 
     setProject(prev => ({
       ...prev,
       stations: prev.stations.map(s =>
-        s.id === activeEditingStation.id ? { ...s, readingInches: valInches } : s
+        s.id === currentStation.id ? { ...s, readingInches: finalVal } : s
       )
     }));
 
     if (isTutorialActive) {
-      if (activeEditingStation.distanceFt === 0 && tutorialStep === 0) {
+      if (currentStation.distanceFt === 0 && tutorialStep === 0) {
         setTutorialStep(1);
-      } else if (activeEditingStation.distanceFt === 5 && tutorialStep === 1) {
+      } else if (currentStation.distanceFt === 5 && tutorialStep === 1) {
+        populateTutorialTrack(5.25, finalVal ?? 5.625);
         setTutorialStep(2);
+      } else if (currentStation.distanceFt === 5 && tutorialStep === 4) {
+        setTutorialStep(5);
       }
     }
 
@@ -358,6 +380,40 @@ export const App: React.FC = () => {
   // Save and automatically advance to next station (or create next station)
   const handleSaveAndNext = (valInches: number | null) => {
     if (!activeEditingStation) return;
+
+    if (isTutorialActive) {
+      if (activeEditingStation.distanceFt === 0 && tutorialStep === 0) {
+        // Save Station 0 and advance keypad directly to Station 5
+        const updatedStations = project.stations.map(s =>
+          s.id === activeEditingStation.id ? { ...s, readingInches: valInches ?? 5.25 } : s
+        );
+        setProject(prev => ({ ...prev, stations: updatedStations }));
+        setTutorialStep(1);
+
+        const nextStation = updatedStations.find(s => s.distanceFt === 5);
+        if (nextStation) {
+          const nextCalc = calculateTrackProfile({ ...project, stations: updatedStations }).find(
+            s => s.id === nextStation.id
+          );
+          setActiveEditingStation(nextCalc || {
+            ...nextStation,
+            elevationInches: null,
+            targetElevationInches: null,
+            liftInches: null,
+            action: 'none',
+            actionText: '—',
+          });
+        }
+        return;
+      } else if (activeEditingStation.distanceFt === 5 && tutorialStep === 1) {
+        // Station 5 saved: close keypad, populate remainder, and advance to Step 3 (Tolerance Margin)!
+        populateTutorialTrack(5.25, valInches ?? 5.625);
+        setTutorialStep(2);
+        setIsKeypadOpen(false);
+        setActiveEditingStation(null);
+        return;
+      }
+    }
 
     const currentIdx = project.stations.findIndex(s => s.id === activeEditingStation.id);
 
@@ -387,14 +443,6 @@ export const App: React.FC = () => {
       ...prev,
       stations: updatedStations,
     }));
-
-    if (isTutorialActive) {
-      if (activeEditingStation.distanceFt === 0 && tutorialStep === 0) {
-        setTutorialStep(1);
-      } else if (activeEditingStation.distanceFt === 5 && tutorialStep === 1) {
-        setTutorialStep(2);
-      }
-    }
 
     // Find calculated state for the next station
     const nextCalc = calculateTrackProfile({ ...project, stations: updatedStations }).find(
@@ -621,8 +669,8 @@ export const App: React.FC = () => {
 
     if (isTutorialActive) {
       const toggled = project.stations.find(s => s.id === stationId);
-      if (toggled && toggled.distanceFt === 5 && tutorialStep === 4) {
-        setTutorialStep(5);
+      if (toggled && toggled.distanceFt === 5 && tutorialStep === 5) {
+        setTutorialStep(6);
       }
     }
   };
@@ -784,6 +832,21 @@ export const App: React.FC = () => {
     }
   };
 
+  const isStation5Leveled = useMemo(() => {
+    if (!isTutorialActive) return false;
+    const st5 = project.stations.find(s => s.distanceFt === 5);
+    return st5 !== undefined && st5.readingInches !== null && Math.abs(st5.readingInches - 5.25) <= 0.05;
+  }, [isTutorialActive, project.stations]);
+
+  const handleSimulateLevelStation = (stationId: string, readingInches: number) => {
+    setProject(prev => ({
+      ...prev,
+      stations: prev.stations.map(s =>
+        s.id === stationId ? { ...s, readingInches } : s
+      ),
+    }));
+  };
+
   const handleAutoFillTutorialStep = (stepIdx: number) => {
     if (!isTutorialActive) return;
     if (stepIdx === 0) {
@@ -795,14 +858,12 @@ export const App: React.FC = () => {
         ),
       }));
     } else if (stepIdx === 1) {
-      // Dipped Station 5: If Station 5 reading is null, fill 5.625
-      setProject(prev => ({
-        ...prev,
-        stations: prev.stations.map(s =>
-          s.distanceFt === 5 && s.readingInches === null ? { ...s, readingInches: 5.625 } : s
-        ),
-      }));
+      // Dipped Station 5: fill 5.625 and auto-populate remainder
+      populateTutorialTrack(5.25, 5.625);
     } else if (stepIdx === 4) {
+      // Leveling step: raise Station 5 to 5.25
+      handleSimulateLevelStation('tut-5', 5.25);
+    } else if (stepIdx === 5) {
       // Leveling checkoff: mark Station 5 completed
       setProject(prev => ({
         ...prev,
@@ -964,10 +1025,17 @@ export const App: React.FC = () => {
           tutorialHint={
             isTutorialActive
               ? activeEditingStation?.distanceFt === 0
-                ? 'Benchmark: Enter 5.25" with keyboard, numpad, or touch keys, then press Enter or Save'
+                ? 'Step 1 of 2 — Benchmark: Enter 5.25" with keyboard, numpad, or touch keys, then press Enter or Save & Next'
                 : activeEditingStation?.distanceFt === 5
-                ? 'Survey Tie: Enter 5.625" (5-5/8") to simulate a 3/8" sag dip'
+                ? tutorialStep === 4
+                  ? 'Leveling Verification: Enter 5.25" to confirm rail is raised to grade'
+                  : 'Step 2 of 2 — Survey Tie: Enter 5.625" (5-5/8"). Press Enter or tap Save & Analyze Track!'
                 : undefined
+              : undefined
+          }
+          tutorialSaveButtonLabel={
+            isTutorialActive && activeEditingStation?.distanceFt === 5 && tutorialStep === 1
+              ? 'Save & Analyze Track →'
               : undefined
           }
           onSave={handleSaveStationReading}
@@ -1070,6 +1138,8 @@ export const App: React.FC = () => {
           onExitTutorial={handleExitTutorial}
           onCompleteTutorial={handleCompleteTutorial}
           onAutoFillStep={handleAutoFillTutorialStep}
+          onSimulateLevelStation={handleSimulateLevelStation}
+          isStation5Leveled={isStation5Leveled}
         />
 
         {/* Incoming Shared Track Survey Modal */}

@@ -50,7 +50,7 @@ describe('InteractiveTutorial Component', () => {
       />
     );
 
-    expect(html).toMatch(/Step\s*(<!-- -->)?\s*1\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*6/);
+    expect(html).toMatch(/Step\s*(<!-- -->)?\s*1\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
     expect(html).toContain('1. The Reference Benchmark (Station 0)');
     expect(html).toContain('Every track leveling survey starts at Station 0');
     expect(html).toContain('Next Step');
@@ -69,13 +69,13 @@ describe('InteractiveTutorial Component', () => {
       />
     );
 
-    expect(html).toMatch(/Step\s*(<!-- -->)?\s*2\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*6/);
+    expect(html).toMatch(/Step\s*(<!-- -->)?\s*2\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
     expect(html).toContain('2. Surveying Ties Down the Line');
     expect(html).toContain('LARGER rod reading');
     expect(html).toContain('Back');
   });
 
-  it('renders Step 3 (Profile Graph) correctly', () => {
+  it('renders Step 3 (The Tolerance Margin) correctly', () => {
     const html = renderToString(
       <InteractiveTutorial
         isActive={true}
@@ -87,12 +87,12 @@ describe('InteractiveTutorial Component', () => {
       />
     );
 
-    expect(html).toMatch(/Step\s*(<!-- -->)?\s*3\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*6/);
-    expect(html).toContain('3. Reading the Vertical Profile Graph');
-    expect(html).toContain('visible sag dip between 0 ft and 10 ft');
+    expect(html).toMatch(/Step\s*(<!-- -->)?\s*3\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
+    expect(html).toContain('3. The Tolerance Margin');
+    expect(html).toContain('tolerance margin (±0.05&quot;) in action');
   });
 
-  it('renders Step 4 (Cut/Fill Action) correctly', () => {
+  it('renders Step 4 (Visualizing the Sag Dip) correctly', () => {
     const html = renderToString(
       <InteractiveTutorial
         isActive={true}
@@ -104,12 +104,12 @@ describe('InteractiveTutorial Component', () => {
       />
     );
 
-    expect(html).toMatch(/Step\s*(<!-- -->)?\s*4\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*6/);
-    expect(html).toContain('4. The Cut/Fill Action (Jack &amp; Tamp)');
-    expect(html).toContain('Jack 3/8&quot; (Lift &amp; Tamp)');
+    expect(html).toMatch(/Step\s*(<!-- -->)?\s*4\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
+    expect(html).toContain('4. Visualizing the Sag Dip');
+    expect(html).toContain('visible sag dip between 0 ft and 10 ft');
   });
 
-  it('renders Step 5 (Leveling & Checkoff) correctly', () => {
+  it('renders Step 5 (Raising Rail Height: Jack & Tamp) with simulation button', () => {
     const html = renderToString(
       <InteractiveTutorial
         isActive={true}
@@ -118,15 +118,16 @@ describe('InteractiveTutorial Component', () => {
         onPrevStep={vi.fn()}
         onExitTutorial={vi.fn()}
         onCompleteTutorial={vi.fn()}
+        onSimulateLevelStation={vi.fn()}
       />
     );
 
-    expect(html).toMatch(/Step\s*(<!-- -->)?\s*5\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*6/);
-    expect(html).toContain('5. Leveling to Green &amp; Checkoff');
-    expect(html).toContain('ON GRADE ✓');
+    expect(html).toMatch(/Step\s*(<!-- -->)?\s*5\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
+    expect(html).toContain('5. Raising Rail Height: Jack &amp; Tamp');
+    expect(html).toContain('Simulate Lift &amp; Re-shoot');
   });
 
-  it('renders Step 6 (Documenting & QR Sharing) correctly with Finish button', () => {
+  it('renders Step 6 (Crew Checkoff & Verification) correctly', () => {
     const html = renderToString(
       <InteractiveTutorial
         isActive={true}
@@ -138,8 +139,25 @@ describe('InteractiveTutorial Component', () => {
       />
     );
 
-    expect(html).toMatch(/Step\s*(<!-- -->)?\s*6\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*6/);
-    expect(html).toContain('6. Documenting &amp; QR Sharing');
+    expect(html).toMatch(/Step\s*(<!-- -->)?\s*6\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
+    expect(html).toContain('6. Crew Checkoff &amp; Verification');
+    expect(html).toContain('LEVELED ✓');
+  });
+
+  it('renders Step 7 (Documenting & QR Sharing) correctly with Finish button', () => {
+    const html = renderToString(
+      <InteractiveTutorial
+        isActive={true}
+        currentStep={6}
+        onNextStep={vi.fn()}
+        onPrevStep={vi.fn()}
+        onExitTutorial={vi.fn()}
+        onCompleteTutorial={vi.fn()}
+      />
+    );
+
+    expect(html).toMatch(/Step\s*(<!-- -->)?\s*7\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
+    expect(html).toContain('7. Documenting &amp; QR Sharing');
     expect(html).toContain('Finish Practice Run');
   });
 
