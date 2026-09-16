@@ -2,7 +2,7 @@
   "name": "track-level-companion",
   "private": true,
   "license": "UNLICENSED",
-  "version": "0.14.6",
+  "version": "0.14.7",
   "type": "module",
   "scripts": {
     "dev": "vite",

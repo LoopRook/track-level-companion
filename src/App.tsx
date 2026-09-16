@@ -936,22 +936,24 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <div className="app-interactive-screen min-h-screen md:h-screen md:overflow-hidden bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2 sm:p-2.5 md:p-3 lg:p-4 max-w-5xl md:max-w-full lg:max-w-7xl xl:max-w-[1600px] mx-auto flex flex-col gap-2.5 lg:gap-3">
-        {/* Top Navbar / Header (Spans full width across top) */}
-        <StationConfigHeader
-          project={project}
-          onChangeProject={handleUpdateProject}
-          isDarkMode={isDarkMode}
-          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-          onOpenDataModal={() => setIsDataModalOpen(true)}
-          onOpenGuideModal={() => setIsGuideOpen(true)}
-          onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
-          onOpenSettingsModal={() => setIsSettingsOpen(true)}
-          onStartTutorial={() => setIsTutorialsModalOpen(true)}
-          onInstallApp={handleInstallApp}
-          canInstall={!!installPrompt}
-          summary={summary}
-        />
+      <div className="app-interactive-screen min-h-screen md:h-screen md:overflow-hidden bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2 sm:p-2.5 md:p-3 lg:p-4 max-w-5xl md:max-w-full lg:max-w-7xl xl:max-w-[1600px] mx-auto flex flex-col gap-2 sm:gap-2.5 md:gap-3">
+        {/* Mobile Header (visible only on < md phone screens) */}
+        <div className="md:hidden shrink-0">
+          <StationConfigHeader
+            project={project}
+            onChangeProject={handleUpdateProject}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+            onOpenDataModal={() => setIsDataModalOpen(true)}
+            onOpenGuideModal={() => setIsGuideOpen(true)}
+            onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
+            onOpenSettingsModal={() => setIsSettingsOpen(true)}
+            onStartTutorial={() => setIsTutorialsModalOpen(true)}
+            onInstallApp={handleInstallApp}
+            canInstall={!!installPrompt}
+            summary={summary}
+          />
+        </div>
 
         {/* Mobile Tab Navigation (visible only on < md phone screens when mobileLayout is 'tabbed') */}
         {mobileLayout === 'tabbed' && (
@@ -993,7 +995,7 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* TOP SECTION: Full-Width Panoramic Profile Graph (Visible across full width on tablet & desktop >= 768px) */}
+        {/* TOP SECTION: Full-Width Panoramic Profile Graph (Prime position across top of page on tablet & desktop >= 768px) */}
         <div
           className={`w-full shrink-0 ${
             mobileLayout === 'tabbed' && mobileTab !== 'graph' ? 'hidden md:block' : 'block'
@@ -1028,9 +1030,9 @@ export const App: React.FC = () => {
           />
         </div>
 
-        {/* BOTTOM SECTION: Split View below the graph (Summary & Alignment on Left, Checklist Table on Right) */}
+        {/* BOTTOM SECTION: Split View below the graph (Left: Field Control Center, Right: Checklist Table) */}
         <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-4 items-stretch">
-          {/* LEFT COLUMN: Field Stats Summary (2x2) + Alignment Controls */}
+          {/* LEFT COLUMN: Field Control Center (Header Card + Summary Cards 2x2 + Alignment Controls) */}
           <div
             className={`md:col-span-5 xl:col-span-4 flex flex-col gap-2.5 sm:gap-3 md:overflow-y-auto pr-0 md:pr-1 ${
               mobileLayout === 'tabbed' && mobileTab !== 'graph'
@@ -1038,6 +1040,24 @@ export const App: React.FC = () => {
                 : 'flex'
             }`}
           >
+            {/* Desktop / Tablet Panel Header Card */}
+            <div className="hidden md:block shrink-0">
+              <StationConfigHeader
+                project={project}
+                onChangeProject={handleUpdateProject}
+                isDarkMode={isDarkMode}
+                onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+                onOpenDataModal={() => setIsDataModalOpen(true)}
+                onOpenGuideModal={() => setIsGuideOpen(true)}
+                onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
+                onOpenSettingsModal={() => setIsSettingsOpen(true)}
+                onStartTutorial={() => setIsTutorialsModalOpen(true)}
+                onInstallApp={handleInstallApp}
+                canInstall={!!installPrompt}
+                summary={summary}
+              />
+            </div>
+
             <StationSummaryBar
               project={project}
               summary={summary}

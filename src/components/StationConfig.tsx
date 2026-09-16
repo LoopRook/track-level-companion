@@ -87,26 +87,27 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
   };
 
   return (
-    <header className="bg-white dark:bg-black text-zinc-900 dark:text-white rounded-2xl p-2.5 sm:p-3 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition-colors">
-      {/* Title & Mobile Theme Toggle Row */}
-      <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 dark:bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-500 shadow-sm shrink-0">
-            <Compass className="w-5 h-5 stroke-[2.2]" />
+    <header className="bg-white dark:bg-black text-zinc-900 dark:text-white rounded-2xl p-2.5 sm:p-3 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col gap-2.5 transition-colors">
+      {/* Title & Theme Toggle Row */}
+      <div className="flex items-center justify-between w-full gap-2">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/20 dark:bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-500 shadow-sm shrink-0">
+            <Compass className="w-4.5 h-4.5 stroke-[2.2]" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={project.name}
                 onChange={(e) => onChangeProject({ name: e.target.value })}
-                className="bg-transparent font-extrabold text-base sm:text-lg text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 rounded px-1.5 -ml-1.5 py-0.5 outline-none transition w-44 sm:w-80 md:w-96 truncate"
+                className="bg-transparent font-extrabold text-sm sm:text-base text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:bg-zinc-100 dark:focus:bg-zinc-900 rounded px-1 -ml-1 py-0.5 outline-none transition w-full truncate"
                 placeholder="Track Section Name"
                 title="Click to rename track section"
               />
             </div>
-            <div className="flex items-center gap-2 text-xs text-zinc-400 dark:text-zinc-300 font-medium">
-              <span>Track Level Companion • {summary.lengthFt} ft Section</span>
+            <div className="flex items-center gap-2 text-[11px] text-zinc-400 dark:text-zinc-300 font-medium truncate">
+              <span className="truncate">{summary.lengthFt} ft Section</span>
+              <span>•</span>
               {!isOnline ? (
                 <span
                   className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
@@ -119,7 +120,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
                 <button
                   type="button"
                   onClick={handleCheckForUpdates}
-                  className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition cursor-pointer"
+                  className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition cursor-pointer whitespace-nowrap"
                   title="Service Worker active (offline ready). Tap to check for app updates."
                 >
                   <CheckCircle2 className={`w-3 h-3 text-emerald-500 ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
@@ -128,7 +129,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
                       ? 'Checking...'
                       : updateStatus === 'updated'
                       ? 'Up to Date ✓'
-                      : 'Offline Ready • Check for Updates'}
+                      : 'Offline Ready'}
                   </span>
                 </button>
               )}
@@ -136,10 +137,10 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           </div>
         </div>
 
-        {/* Theme Toggle on mobile */}
+        {/* Theme Toggle */}
         <button
           onClick={onToggleDarkMode}
-          className="sm:hidden p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0"
+          className="h-8 w-8 flex items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0"
           title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
           aria-label="Toggle Sunlight Mode"
         >
@@ -152,17 +153,17 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
       </div>
 
       {/* Action Controls */}
-      <div data-tutorial="header-actions" className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+      <div data-tutorial="header-actions" className="flex items-center gap-1.5 w-full flex-wrap">
         {/* Desktop / PWA Install Button */}
         {canInstall && onInstallApp && (
           <button
             type="button"
             onClick={onInstallApp}
-            className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black transition shadow-sm active:scale-95 whitespace-nowrap"
+            className="flex-1 h-8 flex items-center justify-center gap-1 px-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black transition shadow-sm active:scale-95 whitespace-nowrap"
             title="Install Track Level Companion as a standalone desktop app"
           >
             <Download className="w-3.5 h-3.5 stroke-[2.5] shrink-0" />
-            <span>Install App</span>
+            <span>Install</span>
           </button>
         )}
 
@@ -170,11 +171,11 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
         <button
           type="button"
           onClick={onOpenNewTrackModal}
-          className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition shadow-sm active:scale-95 whitespace-nowrap"
+          className="flex-1 h-8 flex items-center justify-center gap-1 px-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition shadow-sm active:scale-95 whitespace-nowrap"
           title="Start New Track (Blank, Pre-Generated Grid, or Clear Readings)"
         >
           <Plus className="w-3.5 h-3.5 stroke-[3] shrink-0" />
-          <span>New Track</span>
+          <span>New</span>
         </button>
 
         {/* Interactive Tutorials */}
@@ -182,7 +183,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           <button
             type="button"
             onClick={onStartTutorial}
-            className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95 whitespace-nowrap"
+            className="flex-1 h-8 flex items-center justify-center gap-1 px-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95 whitespace-nowrap"
             title="Open Interactive Tutorials"
           >
             <Play className="w-3 h-3 fill-amber-500 text-amber-500 shrink-0" />
@@ -194,7 +195,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
         <button
           type="button"
           onClick={onOpenGuideModal}
-          className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
+          className="flex-1 h-8 flex items-center justify-center gap-1 px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
           title="Open Field Guide & Feature Handbook"
         >
           <BookOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
@@ -206,10 +207,10 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           type="button"
           onClick={onOpenDataModal}
           data-tutorial="header-files-btn"
-          className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
+          className="flex-1 h-8 flex items-center justify-center gap-1 px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
         >
           <Sliders className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-          <span>Files<span className="hidden xs:inline"> / Export</span></span>
+          <span>Files</span>
         </button>
 
         {/* Settings */}
@@ -217,27 +218,13 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           <button
             type="button"
             onClick={onOpenSettingsModal}
-            className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
+            className="flex-1 h-8 flex items-center justify-center gap-1 px-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
             title="Open App Settings (Grade Tolerance, Keypad Resolution, Default Units)"
           >
             <Settings className="w-3.5 h-3.5 text-amber-500 shrink-0" />
             <span>Settings</span>
           </button>
         )}
-
-        {/* Theme Toggle on desktop */}
-        <button
-          onClick={onToggleDarkMode}
-          className="hidden sm:flex h-9 sm:h-8 w-9 sm:w-8 items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0"
-          title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
-          aria-label="Toggle Sunlight Mode"
-        >
-          {isDarkMode ? (
-            <Sun className="w-4 h-4 text-amber-400" />
-          ) : (
-            <Moon className="w-4 h-4 text-zinc-600" />
-          )}
-        </button>
       </div>
     </header>
   );
