@@ -406,10 +406,10 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       icon: Flag,
       targetSelector: '[data-tutorial="station-row-50"]',
       content:
-        'You have surveyed 50 feet of track with your rotary laser on Tripod Position 1. Ahead lies heavy brush or a curve that obstructs the laser beam. Before moving your tripod, pick an established tie—Station 50—to serve as your Turning Point (TP) benchmark.',
-      actionHint: 'Station 50 is our benchmark tie with a recorded rod reading of 5.50". Tap Next Step.',
+        'Why do you need a Turning Point? When curves, trees, or distance obstruct your laser beam, you must move your tripod forward. To keep all your elevations connected without math errors, you designate an already surveyed tie—Station 50—to serve as your shared benchmark between both laser locations.',
+      actionHint: 'Station 50 is our benchmark tie (recorded at 5.50" under Laser Setup 1). Click "Move Laser" in the toolbar, or tap Next Step.',
       proTip:
-        'Always pick a solid, undisturbed tie or firm rail joint as your turning point benchmark.',
+        'In railroad surveying, a Turning Point (TP) is simply a tie measured from both tripod setups so the computer can calculate the exact height difference between them.',
     },
     {
       id: 'lr-relocate-btn',
@@ -420,10 +420,10 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       icon: Flag,
       targetSelector: '[data-tutorial="move-laser-btn"]',
       content:
-        'Pick up your tripod, move 50 feet forward down the line, and level it. Now place your rod back on Station 50. Because the tripod is at a different ground elevation, the detector will read a new number. Click "Move Laser" in the checklist toolbar.',
-      actionHint: 'Click "Move Laser" in the toolbar, or tap Next Step.',
+        'Imagine you moved your tripod 50 feet forward down the track and leveled it at Position 2. You place your grade rod back on Station 50. Because the new tripod sits at a different ground elevation, the detector reads a new number. Click "Move Laser" in the toolbar to open the relocation tool.',
+      actionHint: 'Click "Move Laser" in the toolbar to open the relocation dialog.',
       proTip:
-        'Never change your rod detector clamp setting when performing a turning point relocation shot.',
+        'Crucial rule: Never move the detector clamp on your rod when relocating the laser!',
     },
     {
       id: 'lr-enter-reading',
@@ -434,10 +434,10 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       icon: Sparkles,
       targetSelector: '[data-tutorial="tp-new-reading-input"]',
       content:
-        'Suppose your new laser setup reads 7.50" (7-1/2") on Station 50 instead of 5.50". The app calculates a datum shift of +2.00".',
-      actionHint: 'Enter 7.50 (or 7 1/2) in the new reading field and click "Apply Laser Relocation".',
+        'Look at the dialog: Station 50 previously read 5.50". With your laser at its new tripod location, suppose your rod now reads 7.50" (7-1/2"). Type 7.50 into the reading box. The app will calculate a +2.00" datum shift to seamlessly align all previous ties to your new laser setup!',
+      actionHint: 'Type 7.50 (or 7 1/2) into the reading box and click "Apply Laser Relocation".',
       proTip:
-        'The app takes care of the math: it shifts previously recorded ties so your active laser matches your survey seamlessly.',
+        'The app shifts previously recorded ties so your active laser matches your survey seamlessly with zero manual arithmetic.',
     },
     {
       id: 'lr-continuity-banner',
@@ -448,10 +448,10 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       icon: CheckCircle2,
       targetSelector: '[data-tutorial="tp-active-banner"]',
       content:
-        'Look at the purple banner! The app automatically converted all previously recorded stations to match your new active laser scale. All physical elevations, target grades, and lifts remain 100% accurate with zero cumulative error!',
-      actionHint: 'Tap Finish Tutorial to return to your workspace.',
+        'Look at the purple banner! The app automatically converted all previously recorded stations (0 ft to 50 ft) to match your new active laser scale (+2.00"). All physical elevations, target grades, and ballast lifts remain 100% accurate. You can now survey Stations 60 and 70 with zero cumulative math error!',
+      actionHint: 'Review the purple banner and shifted ties, then tap Finish Tutorial to return to your workspace.',
       proTip:
-        'You can move the laser as many times as needed across hundreds of feet of track. Station 0\'s true elevation datum is never lost.',
+        'You can move the laser as many times as needed across miles of track. Station 0\'s true elevation datum is never lost.',
     },
   ],
 };

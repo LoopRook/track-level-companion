@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CalculatedStation, UnitFormat } from '../core/types';
 import { formatMeasurement, parseMeasurement } from '../core/units';
-import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock } from 'lucide-react';
+import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock, X } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
 interface ActionTableProps {
@@ -961,18 +961,32 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl max-h-[90vh] modal-scroll-container overscroll-contain touch-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Flag className="w-4 h-4 text-purple-500" />
-              <span>Relocate Laser (Datum Shift)</span>
-            </h4>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              When moving the rotary laser tripod forward or continuing next weekend, take one reading on this benchmark tie with your{' '}
-              <strong>new laser setup</strong>.
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <Flag className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span>Relocate Laser (Datum Shift)</span>
+                </h4>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed mt-1">
+                  When moving the rotary laser tripod forward or continuing next weekend, take one reading on this benchmark tie with your{' '}
+                  <strong>new laser setup</strong>.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTurningPointStation(null)}
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shrink-0"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-zinc-500 font-bold block mb-1">Benchmark Tie (Station):</label>
+                <label className="text-xs text-zinc-500 dark:text-zinc-400 font-bold block mb-1">
+                  Shared Benchmark Tie (Station):
+                </label>
                 <select
                   value={turningPointStation.id}
                   onChange={(e) => {
@@ -983,7 +997,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       setTpError(null);
                     }
                   }}
-                  className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 outline-none font-mono"
+                  className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 outline-none font-mono focus:border-purple-500 transition"
                 >
                   {stations.map(s => (
                     <option key={s.id} value={s.id}>
@@ -1000,26 +1014,28 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               )}
 
               <div className="space-y-2 bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono">
-                <div className="flex justify-between items-center pb-1 border-b border-zinc-200 dark:border-zinc-800">
-                  <span className="text-zinc-500">Old Reading on Benchmark:</span>
-                  <span className="font-bold text-zinc-900 dark:text-zinc-100">
+                <div className="flex justify-between items-center pb-1.5 border-b border-zinc-200 dark:border-zinc-800">
+                  <span className="text-zinc-500 font-sans">Old Reading on Benchmark:</span>
+                  <span className="font-bold text-zinc-900 dark:text-zinc-100 px-2 py-0.5 rounded bg-zinc-200/60 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700">
                     {turningPointStation.readingInches !== null
                       ? formatMeasurement(turningPointStation.readingInches, unitFormat, fractionResolution)
                       : 'None recorded'}
                   </span>
                 </div>
                 <div className="space-y-1.5 pt-1">
-                  <label className="text-zinc-500 font-bold block">New Reading from Relocated Laser:</label>
+                  <label className="text-zinc-700 dark:text-zinc-300 font-bold block font-sans">
+                    New Reading from Relocated Laser:
+                  </label>
                   <input
                     data-tutorial="tp-new-reading-input"
                     type="text"
                     value={tpNewReadingStr}
                     onChange={(e) => setTpNewReadingStr(e.target.value)}
-                    placeholder="e.g. 1' 4 3/8 or 16.5"
-                    className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none font-mono"
+                    placeholder="e.g. 7.50, 7 1/2, or 1' 4 3/8"
+                    className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none font-mono focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition shadow-inner"
                     autoFocus
                   />
-                  {tpError && <p className="text-red-500 text-[11px] font-sans">{tpError}</p>}
+                  {tpError && <p className="text-red-500 text-[11px] font-sans font-medium">{tpError}</p>}
                 </div>
               </div>
 
@@ -1031,13 +1047,16 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   const st0NewReading = st0 && st0.readingInches !== null ? st0.readingInches + shift : null;
 
                   return (
-                    <div className="p-2.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-800 dark:text-purple-300 text-xs space-y-1.5 font-sans">
-                      <div className="font-bold font-mono">
-                        Laser Relocation Shift: {shift >= 0 ? '+' : ''}{formatMeasurement(shift, unitFormat, fractionResolution)}
+                    <div className="p-3 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-800 dark:text-purple-300 text-xs space-y-1.5 font-sans animate-in fade-in duration-150">
+                      <div className="flex items-center justify-between font-mono font-bold">
+                        <span>Laser Relocation Shift:</span>
+                        <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-900 dark:text-purple-100">
+                          {shift >= 0 ? '+' : ''}{formatMeasurement(shift, unitFormat, fractionResolution)}
+                        </span>
                       </div>
                       <p className="text-[11px] leading-tight text-purple-700 dark:text-purple-400">
                         {shift !== 0
-                          ? `Previously measured stations (0 ft to ${turningPointStation.distanceFt} ft) will convert to your active laser's scale (${shift >= 0 ? '+' : ''}${formatMeasurement(shift, unitFormat, fractionResolution)}). ${st0NewReading !== null ? `Station 0 rod reading equivalent: ${formatMeasurement(st0NewReading, unitFormat, fractionResolution)}.` : ''}`
+                          ? `Previously measured stations (0 ft to ${turningPointStation.distanceFt} ft) will convert to your active laser's scale (${shift >= 0 ? '+' : ''}${formatMeasurement(shift, unitFormat, fractionResolution)}). ${st0NewReading !== null ? `Station 0 equivalent: ${formatMeasurement(st0NewReading, unitFormat, fractionResolution)}.` : ''}`
                           : `Both setups are at the same elevation (0" shift).`}
                       </p>
                       <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">
@@ -1046,21 +1065,29 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     </div>
                   );
                 }
-                return null;
+                return (
+                  <div className="p-2.5 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/60 text-zinc-400 text-xs font-sans">
+                    <p className="text-[11px] leading-tight">
+                      💡 Enter your rod reading above to calculate the elevation datum shift.
+                    </p>
+                  </div>
+                );
               })()}
             </div>
-            <div className="flex gap-2 justify-end pt-2">
+            <div className="flex gap-2 justify-end pt-1">
               <button
+                type="button"
                 onClick={() => setTurningPointStation(null)}
                 className="px-3 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
               >
                 Cancel
               </button>
               <button
+                type="button"
                 data-tutorial="tp-apply-btn"
                 disabled={turningPointStation.readingInches === null}
                 onClick={handleApplyTurningPoint}
-                className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs rounded-xl shadow-sm"
+                className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs rounded-xl shadow-sm transition active:scale-95"
               >
                 Apply Laser Relocation
               </button>

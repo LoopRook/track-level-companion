@@ -43,9 +43,13 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   const activeSteps = steps && steps.length > 0 ? steps : TUTORIAL_STEPS;
   const currentStepData = activeSteps[Math.min(currentStep, activeSteps.length - 1)];
 
-  // Update target bounding box on step change or resize/scroll
+  // Update target bounding box on step change or resize/scroll/input
   useEffect(() => {
     if (!isActive || !currentStepData) return;
+
+    let hasScrolledIntoView = false;
+    let animFrameId: number;
+    let resizeObserver: ResizeObserver | null = null;
 
     const updateRect = () => {
       const candidates = Array.from(document.querySelectorAll(currentStepData.targetSelector));
@@ -61,21 +65,38 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
         setTargetRect((prev) => {
           if (
             prev &&
-            Math.abs(prev.top - rect.top) < 1 &&
-            Math.abs(prev.left - rect.left) < 1 &&
-            Math.abs(prev.width - rect.width) < 1 &&
-            Math.abs(prev.height - rect.height) < 1
+            Math.abs(prev.top - rect.top) < 0.5 &&
+            Math.abs(prev.left - rect.left) < 0.5 &&
+            Math.abs(prev.width - rect.width) < 0.5 &&
+            Math.abs(prev.height - rect.height) < 0.5
           ) {
             return prev;
           }
           return rect;
         });
 
-        // Scroll element into view smoothly if off-screen
-        const isOffScreen =
-          rect.top < 60 || rect.bottom > window.innerHeight - 120 || rect.left < 0 || rect.right > window.innerWidth;
-        if (isOffScreen) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Scroll element into view smoothly once when step loads if off-screen
+        if (!hasScrolledIntoView) {
+          const isOffScreen =
+            rect.top < 60 || rect.bottom > window.innerHeight - 120 || rect.left < 0 || rect.right > window.innerWidth;
+          if (isOffScreen) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          hasScrolledIntoView = true;
+        }
+
+        // Dynamically observe the target element, its parent, and body for any size shifts
+        if (!resizeObserver && typeof ResizeObserver !== 'undefined') {
+          resizeObserver = new ResizeObserver(() => {
+            updateRect();
+          });
+          resizeObserver.observe(el);
+          if (el.parentElement) {
+            resizeObserver.observe(el.parentElement);
+          }
+          if (document.body) {
+            resizeObserver.observe(document.body);
+          }
         }
       } else {
         setTargetRect(null);
@@ -83,14 +104,28 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
     };
 
     updateRect();
-    const timeout = setTimeout(updateRect, 150);
+
+    // Continuous smooth animation-frame tracking so typing or modal layout shifts are tracked instantly
+    const trackLoop = () => {
+      updateRect();
+      animFrameId = requestAnimationFrame(trackLoop);
+    };
+    animFrameId = requestAnimationFrame(trackLoop);
+
     window.addEventListener('resize', updateRect);
     window.addEventListener('scroll', updateRect, true);
+    window.addEventListener('input', updateRect, true);
+    window.addEventListener('change', updateRect, true);
 
     return () => {
-      clearTimeout(timeout);
+      cancelAnimationFrame(animFrameId);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       window.removeEventListener('resize', updateRect);
       window.removeEventListener('scroll', updateRect, true);
+      window.removeEventListener('input', updateRect, true);
+      window.removeEventListener('change', updateRect, true);
     };
   }, [isActive, currentStep, currentStepData?.targetSelector]);
 
@@ -133,9 +168,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
 
     if (isDesktop) {
       // Side-by-side mode (Desktop / Laptop / Tablet Landscape):
-      // If target is in the right half of the screen (e.g. ActionTable or header actions),
-      // dock card securely on the LEFT side of the screen.
-      if (targetCenterX > viewportWidth / 2) {
+      // If target is in the right half or center of the screen (e.g. ActionTable, header actions, or centered modals),
+      // dock card securely on the LEFT side of the screen where there is plenty of room.
+      if (targetCenterX >= viewportWidth * 0.45) {
         return {
           position: 'fixed',
           bottom: '24px',
@@ -145,7 +180,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
           width: `${cardMaxWidth}px`,
         };
       } else {
-        // Target is in the left half of the screen (e.g. ProfileChart or StationConfig),
+        // Target is on the left side of the screen (e.g. ProfileChart or StationConfig),
         // dock card securely on the RIGHT side of the screen.
         return {
           position: 'fixed',
@@ -183,7 +218,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-40 pointer-events-none overscroll-none">
+    <div className="fixed inset-0 z-[60] pointer-events-none overscroll-none">
       {/* Soft, Ambient Dimming Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/20 dark:bg-slate-950/30 backdrop-blur-[0.5px] pointer-events-none transition-opacity duration-300"
@@ -192,7 +227,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
       {/* Spotlight Cutout / Pulsing Border around Target Element */}
       {targetRect && (
         <div
-          className="fixed pointer-events-none transition-all duration-300 ease-out z-40 rounded-xl ring-4 ring-amber-400 dark:ring-amber-400 ring-offset-2 ring-offset-black/70 shadow-[0_0_25px_rgba(251,191,36,0.6)] animate-pulse"
+          className="fixed pointer-events-none transition-all duration-100 ease-out z-[60] rounded-xl ring-4 ring-amber-400 dark:ring-amber-400 ring-offset-2 ring-offset-black/70 shadow-[0_0_25px_rgba(251,191,36,0.6)] animate-pulse"
           style={{
             top: `${Math.max(4, targetRect.top - 4)}px`,
             left: `${Math.max(4, targetRect.left - 4)}px`,
@@ -206,7 +241,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
       <div
         ref={cardRef}
         style={getCardStyle()}
-        className="z-50 pointer-events-auto bg-white dark:bg-zinc-950 border-2 border-amber-500/80 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ease-out animate-in fade-in"
+        className="z-[60] pointer-events-auto bg-white dark:bg-zinc-950 border-2 border-amber-500/80 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ease-out animate-in fade-in"
       >
         {/* Top Header Bar */}
         <div className="bg-amber-500/10 dark:bg-amber-500/15 px-4 py-3 border-b border-amber-500/30 flex items-center justify-between gap-3">
