@@ -29,6 +29,7 @@ export interface TutorialStepConfig {
 interface InteractiveTutorialProps {
   isActive: boolean;
   currentStep: number;
+  isKeypadOpen?: boolean;
   onNextStep: () => void;
   onPrevStep: () => void;
   onExitTutorial: () => void;
@@ -36,9 +37,95 @@ interface InteractiveTutorialProps {
   onAutoFillStep?: (stepIndex: number) => void;
 }
 
+export const TUTORIAL_STEPS: TutorialStepConfig[] = [
+  {
+    id: 'benchmark',
+    stepNumber: 1,
+    totalSteps: 6,
+    title: '1. The Reference Benchmark (Station 0)',
+    shortTitle: 'Benchmark',
+    icon: Compass,
+    targetSelector: '[data-tutorial="station-reading-0"]',
+    content:
+      'Every track leveling survey starts at Station 0. Imagine your rotary laser is set up on a tripod nearby. You place your grade rod on top of the rail head at Station 0 to establish your baseline elevation.',
+    actionHint: 'Tap the reading cell to enter 5.25" with the keypad, or tap Next Step.',
+    proTip: 'All other ties along your track will be compared against this reference datum.',
+  },
+  {
+    id: 'survey-tie',
+    stepNumber: 2,
+    totalSteps: 6,
+    title: '2. Surveying Ties Down the Line',
+    shortTitle: 'Survey Tie',
+    icon: Ruler,
+    targetSelector: '[data-tutorial="station-reading-5"]',
+    content:
+      'Now walk 5 feet down the track to Station 5. Place the grade rod on the rail head and record the laser reading.',
+    actionHint: 'Tap the cell to enter 5.625" (5-5/8"), or tap Next Step.',
+    proTip:
+      'Surveying rule: A LARGER rod reading (5.625" vs 5.25") means the detector slid down lower—the rail head is physically dipped!',
+  },
+  {
+    id: 'profile-graph',
+    stepNumber: 3,
+    totalSteps: 6,
+    title: '3. Reading the Vertical Profile Graph',
+    shortTitle: 'Profile Graph',
+    icon: TrendingUp,
+    targetSelector: '[data-tutorial="profile-chart"]',
+    content:
+      'The Profile Graph plots your rail surface in real time. Notice the visible sag dip between 0 ft and 10 ft. The green dashed line is your target grade.',
+    actionHint: 'Review the sag in the curve, then tap Next Step.',
+    proTip:
+      'Uncorrected sags cause ponding water, mud pumping, and jarring equipment dips during train operations.',
+  },
+  {
+    id: 'action-math',
+    stepNumber: 4,
+    totalSteps: 6,
+    title: '4. The Cut/Fill Action (Jack & Tamp)',
+    shortTitle: 'Cut/Fill Action',
+    icon: Hammer,
+    targetSelector: '[data-tutorial="station-action-5"]',
+    content:
+      'The app computes the exact track work required: Jack 3/8" (Lift & Tamp). It calculates whether each tie needs lifting or lowering to meet the target grade.',
+    actionHint: 'Observe the calculated Jack amount, then tap Next Step.',
+    proTip:
+      'Use this exact number to slide in matching shims or adjust your track jack before tamping ballast.',
+  },
+  {
+    id: 'complete-check',
+    stepNumber: 5,
+    totalSteps: 6,
+    title: '5. Leveling to Green & Checkoff',
+    shortTitle: 'Checkoff',
+    icon: CheckCircle2,
+    targetSelector: '[data-tutorial="station-complete-5"]',
+    content:
+      'Once your crew jacks and tamps the tie, take a verification shot. When the reading matches the target, the tie turns green (ON GRADE ✓).',
+    actionHint: 'Tap the circle checkbox on Station 5 to mark it completed!',
+    proTip:
+      'Checking off completed ties keeps your crew organized so no one loses track of which ties are finished.',
+  },
+  {
+    id: 'export-share',
+    stepNumber: 6,
+    totalSteps: 6,
+    title: '6. Documenting & QR Sharing',
+    shortTitle: 'Share & Export',
+    icon: Share2,
+    targetSelector: '[data-tutorial="header-actions"]',
+    content:
+      'Tap Files to download a CSV backup or print a clean inspection report for your railroad records. Or tap Share via QR Code to beam the track to a crew member\'s phone with zero internet!',
+    actionHint: 'Tap Finish Practice Run to complete your tutorial.',
+    proTip: 'Track Level Companion works 100% offline out in the woods or at the track.',
+  },
+];
+
 export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   isActive,
   currentStep,
+  isKeypadOpen = false,
   onNextStep,
   onPrevStep,
   onExitTutorial,
@@ -48,92 +135,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const steps: TutorialStepConfig[] = [
-    {
-      id: 'benchmark',
-      stepNumber: 1,
-      totalSteps: 6,
-      title: '1. The Reference Benchmark (Station 0)',
-      shortTitle: 'Benchmark',
-      icon: Compass,
-      targetSelector: '[data-tutorial="station-reading-0"]',
-      content:
-        'Every track leveling survey starts at Station 0. Imagine your rotary laser is set up on a tripod nearby. You place your grade rod on top of the rail head at Station 0 to establish your baseline elevation.',
-      actionHint: 'Tap the reading cell to enter 5.25" with the keypad, or tap Next Step.',
-      proTip: 'All other ties along your track will be compared against this reference datum.',
-    },
-    {
-      id: 'survey-tie',
-      stepNumber: 2,
-      totalSteps: 6,
-      title: '2. Surveying Ties Down the Line',
-      shortTitle: 'Survey Tie',
-      icon: Ruler,
-      targetSelector: '[data-tutorial="station-reading-5"]',
-      content:
-        'Now walk 5 feet down the track to Station 5. Place the grade rod on the rail head and record the laser reading.',
-      actionHint: 'Tap the cell to enter 5.625" (5-5/8"), or tap Next Step.',
-      proTip:
-        'Surveying rule: A LARGER rod reading (5.625" vs 5.25") means the detector slid down lower—the rail head is physically dipped!',
-    },
-    {
-      id: 'profile-graph',
-      stepNumber: 3,
-      totalSteps: 6,
-      title: '3. Reading the Vertical Profile Graph',
-      shortTitle: 'Profile Graph',
-      icon: TrendingUp,
-      targetSelector: '[data-tutorial="profile-chart"]',
-      content:
-        'The Profile Graph plots your rail surface in real time. Notice the visible sag dip between 0 ft and 10 ft. The green dashed line is your target grade.',
-      actionHint: 'Review the sag in the curve, then tap Next Step.',
-      proTip:
-        'Uncorrected sags cause ponding water, mud pumping, and jarring equipment dips during train operations.',
-    },
-    {
-      id: 'action-math',
-      stepNumber: 4,
-      totalSteps: 6,
-      title: '4. The Cut/Fill Action (Jack & Tamp)',
-      shortTitle: 'Cut/Fill Action',
-      icon: Hammer,
-      targetSelector: '[data-tutorial="station-action-5"]',
-      content:
-        'The app computes the exact track work required: Jack 3/8" (Lift & Tamp). It calculates whether each tie needs lifting or lowering to meet the target grade.',
-      actionHint: 'Observe the calculated Jack amount, then tap Next Step.',
-      proTip:
-        'Use this exact number to slide in matching shims or adjust your track jack before tamping ballast.',
-    },
-    {
-      id: 'complete-check',
-      stepNumber: 5,
-      totalSteps: 6,
-      title: '5. Leveling to Green & Checkoff',
-      shortTitle: 'Checkoff',
-      icon: CheckCircle2,
-      targetSelector: '[data-tutorial="station-complete-5"]',
-      content:
-        'Once your crew jacks and tamps the tie, take a verification shot. When the reading matches the target, the tie turns green (ON GRADE ✓).',
-      actionHint: 'Tap the circle checkbox on Station 5 to mark it completed!',
-      proTip:
-        'Checking off completed ties keeps your crew organized so no one loses track of which ties are finished.',
-    },
-    {
-      id: 'export-share',
-      stepNumber: 6,
-      totalSteps: 6,
-      title: '6. Documenting & QR Sharing',
-      shortTitle: 'Share & Export',
-      icon: Share2,
-      targetSelector: '[data-tutorial="header-actions"]',
-      content:
-        'Tap Files to download a CSV backup or print a clean inspection report for your railroad records. Or tap Share via QR Code to beam the track to a crew member\'s phone with zero internet!',
-      actionHint: 'Tap Finish Practice Run to complete your tutorial.',
-      proTip: 'Track Level Companion works 100% offline out in the woods or at the track.',
-    },
-  ];
-
-  const currentStepData = steps[Math.min(currentStep, steps.length - 1)];
+  const currentStepData = TUTORIAL_STEPS[Math.min(currentStep, TUTORIAL_STEPS.length - 1)];
 
   // Update target bounding box on step change or resize/scroll
   useEffect(() => {
@@ -150,7 +152,19 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
 
       if (el) {
         const rect = el.getBoundingClientRect();
-        setTargetRect(rect);
+        setTargetRect((prev) => {
+          if (
+            prev &&
+            Math.abs(prev.top - rect.top) < 1 &&
+            Math.abs(prev.left - rect.left) < 1 &&
+            Math.abs(prev.width - rect.width) < 1 &&
+            Math.abs(prev.height - rect.height) < 1
+          ) {
+            return prev;
+          }
+          return rect;
+        });
+
         // Scroll element into view smoothly if off-screen
         const isOffScreen =
           rect.top < 60 || rect.bottom > window.innerHeight - 120 || rect.left < 0 || rect.right > window.innerWidth;
@@ -172,11 +186,11 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
       window.removeEventListener('resize', updateRect);
       window.removeEventListener('scroll', updateRect, true);
     };
-  }, [isActive, currentStep, currentStepData]);
+  }, [isActive, currentStep, currentStepData?.targetSelector]);
 
-  if (!isActive || !currentStepData) return null;
+  if (!isActive || isKeypadOpen || !currentStepData) return null;
 
-  const isLastStep = currentStep >= steps.length - 1;
+  const isLastStep = currentStep >= TUTORIAL_STEPS.length - 1;
   const StepIcon = currentStepData.icon;
 
   const handleNext = () => {
@@ -190,8 +204,80 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
     }
   };
 
+  // Dynamic card positioning so the coachmark NEVER overlaps the target element
+  const getCardStyle = (): React.CSSProperties => {
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 850;
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 768;
+
+    const cardMaxWidth = Math.min(440, viewportWidth - 32);
+
+    if (!targetRect) {
+      return {
+        position: 'fixed',
+        bottom: '24px',
+        left: isDesktop ? '24px' : '12px',
+        maxWidth: `${cardMaxWidth}px`,
+        width: isDesktop ? `${cardMaxWidth}px` : 'calc(100vw - 24px)',
+      };
+    }
+
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+
+    if (isDesktop) {
+      // Side-by-side mode (Desktop / Laptop / Tablet Landscape):
+      // If target is in the right half of the screen (e.g. ActionTable or header actions),
+      // dock card securely on the LEFT side of the screen.
+      if (targetCenterX > viewportWidth / 2) {
+        return {
+          position: 'fixed',
+          bottom: '24px',
+          left: '24px',
+          right: 'auto',
+          maxWidth: `${cardMaxWidth}px`,
+          width: `${cardMaxWidth}px`,
+        };
+      } else {
+        // Target is in the left half of the screen (e.g. ProfileChart or StationConfig),
+        // dock card securely on the RIGHT side of the screen.
+        return {
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          left: 'auto',
+          maxWidth: `${cardMaxWidth}px`,
+          width: `${cardMaxWidth}px`,
+        };
+      }
+    } else {
+      // Single-column mode (Mobile portrait):
+      // If target is in the upper half of the viewport, place card at the BOTTOM
+      if (targetCenterY < viewportHeight / 2) {
+        return {
+          position: 'fixed',
+          bottom: '16px',
+          left: '12px',
+          right: '12px',
+          maxWidth: 'calc(100vw - 24px)',
+          width: 'calc(100vw - 24px)',
+        };
+      } else {
+        // Target is in the lower half of the viewport, place card at the TOP
+        return {
+          position: 'fixed',
+          top: '16px',
+          left: '12px',
+          right: '12px',
+          maxWidth: 'calc(100vw - 24px)',
+          width: 'calc(100vw - 24px)',
+        };
+      }
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none flex flex-col justify-end sm:justify-start overscroll-none">
+    <div className="fixed inset-0 z-40 pointer-events-none overscroll-none">
       {/* Semi-transparent Backdrop */}
       <div
         className="fixed inset-0 bg-black/40 dark:bg-black/60 pointer-events-none transition-opacity duration-300"
@@ -200,7 +286,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
       {/* Spotlight Cutout / Pulsing Border around Target Element */}
       {targetRect && (
         <div
-          className="fixed pointer-events-none transition-all duration-300 ease-out z-50 rounded-xl ring-4 ring-amber-400 dark:ring-amber-400 ring-offset-2 ring-offset-black/70 shadow-[0_0_25px_rgba(251,191,36,0.6)] animate-pulse"
+          className="fixed pointer-events-none transition-all duration-300 ease-out z-40 rounded-xl ring-4 ring-amber-400 dark:ring-amber-400 ring-offset-2 ring-offset-black/70 shadow-[0_0_25px_rgba(251,191,36,0.6)] animate-pulse"
           style={{
             top: `${Math.max(4, targetRect.top - 4)}px`,
             left: `${Math.max(4, targetRect.left - 4)}px`,
@@ -210,10 +296,11 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
         />
       )}
 
-      {/* Floating Coachmark Card (Floats securely at bottom on mobile, or bottom-center/bottom-right on desktop) */}
+      {/* Floating Coachmark Card (Dynamically positioned away from target element) */}
       <div
         ref={cardRef}
-        className="relative z-50 pointer-events-auto m-3 sm:m-6 max-w-xl sm:mx-auto w-full self-center bg-white dark:bg-zinc-950 border-2 border-amber-500/80 rounded-2xl shadow-2xl overflow-hidden transition-all duration-200 animate-in fade-in slide-in-from-bottom-4"
+        style={getCardStyle()}
+        className="z-50 pointer-events-auto bg-white dark:bg-zinc-950 border-2 border-amber-500/80 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ease-out animate-in fade-in"
       >
         {/* Top Header Bar */}
         <div className="bg-amber-500/10 dark:bg-amber-500/15 px-4 py-3 border-b border-amber-500/30 flex items-center justify-between gap-3">
@@ -271,7 +358,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
 
           {/* Step Navigation Dots */}
           <div className="flex items-center justify-center gap-1.5 pt-1">
-            {steps.map((s, idx) => (
+            {TUTORIAL_STEPS.map((s, idx) => (
               <div
                 key={s.id}
                 className={`h-1.5 rounded-full transition-all duration-200 ${

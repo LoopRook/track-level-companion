@@ -961,6 +961,15 @@ export const App: React.FC = () => {
           fractionResolution={project.fractionResolution}
           stationIndex={activeEditingStation ? project.stations.findIndex(s => s.id === activeEditingStation.id) + 1 : undefined}
           totalStations={project.stations.length}
+          tutorialHint={
+            isTutorialActive
+              ? activeEditingStation?.distanceFt === 0
+                ? 'Benchmark: Enter 5.25" with keyboard, numpad, or touch keys, then press Enter or Save'
+                : activeEditingStation?.distanceFt === 5
+                ? 'Survey Tie: Enter 5.625" (5-5/8") to simulate a 3/8" sag dip'
+                : undefined
+              : undefined
+          }
           onSave={handleSaveStationReading}
           onSaveAndNext={handleSaveAndNext}
           onSaveAndPrev={handleSaveAndPrev}
@@ -1055,6 +1064,7 @@ export const App: React.FC = () => {
         <InteractiveTutorial
           isActive={isTutorialActive}
           currentStep={tutorialStep}
+          isKeypadOpen={isKeypadOpen}
           onNextStep={() => setTutorialStep(prev => prev + 1)}
           onPrevStep={() => setTutorialStep(prev => Math.max(0, prev - 1))}
           onExitTutorial={handleExitTutorial}

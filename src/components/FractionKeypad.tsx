@@ -22,6 +22,7 @@ interface FractionKeypadProps {
   fractionResolution?: 16 | 8 | 32;
   stationIndex?: number;
   totalStations?: number;
+  tutorialHint?: string;
   onSave: (valInches: number | null) => void;
   onSaveAndNext?: (valInches: number | null) => void;
   onSaveAndPrev?: (valInches: number | null) => void;
@@ -69,6 +70,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   fractionResolution = 16,
   stationIndex,
   totalStations,
+  tutorialHint,
   onSave,
   onSaveAndNext,
   onSaveAndPrev,
@@ -151,8 +153,6 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   // Calculate current computed inches based on active unit mode
   let currentComputedInches: number | null = null;
 
@@ -196,16 +196,26 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
     setDirectText(formatMeasurement(nextVal, unitFormat, fractionResolution));
   };
 
-  // Touch Numeric Keypad typing for Decimal & Metric
+  // Touch & Keyboard Numeric Keypad typing for Decimal & Metric
   const handleKeypadDigit = (digit: string) => {
     triggerHaptic('selection');
     setHasEnteredValue(true);
     if (unitFormat === 'decimal_inches') {
-      if (digit === '.' && decimalInputStr.includes('.')) return;
-      setDecimalInputStr((prev) => (prev === '0' || prev === '' ? digit : prev + digit));
+      setDecimalInputStr((prev) => {
+        if (digit === '.') {
+          if (prev.includes('.')) return prev;
+          return prev === '' ? '0.' : prev + '.';
+        }
+        return prev === '0' || prev === '' ? digit : prev + digit;
+      });
     } else if (unitFormat === 'metric_mm') {
-      if (digit === '.' && metricInputStr.includes('.')) return;
-      setMetricInputStr((prev) => (prev === '0' || prev === '' ? digit : prev + digit));
+      setMetricInputStr((prev) => {
+        if (digit === '.') {
+          if (prev.includes('.')) return prev;
+          return prev === '' ? '0.' : prev + '.';
+        }
+        return prev === '0' || prev === '' ? digit : prev + digit;
+      });
     }
   };
 
@@ -283,6 +293,162 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
   const fractionsList = fractionResolution === 8 ? FRACTIONS_8 : FRACTIONS_16;
 
+  // Ref for keyboard event listener to avoid stale closures
+  const stateRef = React.useRef({
+    isOpen,
+    useDirectInput,
+    unitFormat,
+    fractionResolution,
+    currentComputedInches,
+    handleSave,
+    handleSaveAndNext,
+    handleSaveAndPrev,
+    handleKeypadDigit,
+    handleKeypadBackspace,
+    handleKeypadClear,
+    handleNudge,
+    onClose,
+  });
+
+  stateRef.current = {
+    isOpen,
+    useDirectInput,
+    unitFormat,
+    fractionResolution,
+    currentComputedInches,
+    handleSave,
+    handleSaveAndNext,
+    handleSaveAndPrev,
+    handleKeypadDigit,
+    handleKeypadBackspace,
+    handleKeypadClear,
+    handleNudge,
+    onClose,
+  };
+
+  // Physical desktop keyboard & Numpad support
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isInputFocused =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement;
+
+      // Escape closes keypad
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        stateRef.current.onClose();
+        return;
+      }
+
+      // Enter or NumpadEnter saves & advances
+      if (e.key === 'Enter' || e.code === 'NumpadEnter') {
+        e.preventDefault();
+        if (onSaveAndNext) {
+          stateRef.current.handleSaveAndNext();
+        } else {
+          stateRef.current.handleSave();
+        }
+        return;
+      }
+
+      // If user is focused inside a text input, let native text typing handle other keys
+      if (isInputFocused) return;
+
+      // Digits 0-9 (standard keyboard & numpad)
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        const { unitFormat } = stateRef.current;
+        if (unitFormat === 'decimal_inches' || unitFormat === 'metric_mm') {
+          stateRef.current.handleKeypadDigit(e.key);
+        } else {
+          // In fractional mode, switch to direct input and start typing
+          setUseDirectInput(true);
+          setDirectText(e.key);
+          setHasEnteredValue(true);
+        }
+        return;
+      }
+
+      // Decimal point: '.' or ',' or NumpadDecimal
+      if (e.key === '.' || e.key === ',' || e.code === 'NumpadDecimal') {
+        e.preventDefault();
+        const { unitFormat } = stateRef.current;
+        if (unitFormat === 'decimal_inches' || unitFormat === 'metric_mm') {
+          stateRef.current.handleKeypadDigit('.');
+        } else {
+          setUseDirectInput(true);
+          setDirectText('.');
+          setHasEnteredValue(true);
+        }
+        return;
+      }
+
+      // Backspace
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        stateRef.current.handleKeypadBackspace();
+        return;
+      }
+
+      // Delete or 'c' to clear
+      if (e.key === 'Delete' || e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        stateRef.current.handleKeypadClear();
+        return;
+      }
+
+      // Nudge Up: '+' or '=' or NumpadAdd or ArrowUp
+      if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const { unitFormat, fractionResolution } = stateRef.current;
+        if (unitFormat === 'metric_mm') {
+          stateRef.current.handleNudge(1 / 25.4);
+        } else if (unitFormat === 'decimal_inches') {
+          stateRef.current.handleNudge(0.1);
+        } else {
+          stateRef.current.handleNudge(1 / fractionResolution);
+        }
+        return;
+      }
+
+      // Nudge Down: '-' or NumpadSubtract or ArrowDown
+      if (e.key === '-' || e.code === 'NumpadSubtract' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const { unitFormat, fractionResolution } = stateRef.current;
+        if (unitFormat === 'metric_mm') {
+          stateRef.current.handleNudge(-1 / 25.4);
+        } else if (unitFormat === 'decimal_inches') {
+          stateRef.current.handleNudge(-0.1);
+        } else {
+          stateRef.current.handleNudge(-1 / fractionResolution);
+        }
+        return;
+      }
+
+      // Quick Station Navigation: ArrowLeft (Prev) / ArrowRight (Next)
+      if (e.key === 'ArrowLeft' && onSaveAndPrev) {
+        e.preventDefault();
+        stateRef.current.handleSaveAndPrev();
+        return;
+      }
+
+      if (e.key === 'ArrowRight' && onSaveAndNext) {
+        e.preventDefault();
+        stateRef.current.handleSaveAndNext();
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+    };
+  }, [isOpen, onSaveAndNext, onSaveAndPrev]);
+
+  if (!isOpen) return null;
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 overscroll-none touch-none"
@@ -333,6 +499,16 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Practice Tutorial Guidance Banner inside Keypad */}
+        {tutorialHint && (
+          <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2.5 flex items-center gap-2 text-amber-900 dark:text-amber-200 text-xs font-semibold shrink-0 animate-in fade-in">
+            <span className="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[10px] font-mono font-black uppercase shrink-0">
+              Practice Run
+            </span>
+            <span className="flex-1 leading-snug">{tutorialHint}</span>
+          </div>
+        )}
 
         {/* Animated Saved Toast Banner */}
         {toastMessage && (
@@ -568,6 +744,10 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                   <Delete className="w-5 h-5" />
                 </button>
               </div>
+
+              <div className="hidden sm:flex items-center justify-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono pt-1">
+                <span>⌨️ Desktop: type on Numpad/Keyboard • Enter to Save • Esc to Close</span>
+              </div>
             </div>
           ) : unitFormat === 'metric_mm' ? (
             /* METRIC (MM) TOUCH KEYPAD */
@@ -610,6 +790,10 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 >
                   <Delete className="w-5 h-5" />
                 </button>
+              </div>
+
+              <div className="hidden sm:flex items-center justify-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono pt-1">
+                <span>⌨️ Desktop: type on Numpad/Keyboard • Enter to Save • Esc to Close</span>
               </div>
             </div>
           ) : unitFormat === 'inches_fraction' ? (

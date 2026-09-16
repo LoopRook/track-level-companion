@@ -157,4 +157,20 @@ describe('InteractiveTutorial Component', () => {
 
     expect(html).toBe('');
   });
+
+  it('renders nothing when isKeypadOpen is true (yields to keypad to prevent overlap)', () => {
+    const html = renderToString(
+      <InteractiveTutorial
+        isActive={true}
+        currentStep={0}
+        isKeypadOpen={true}
+        onNextStep={vi.fn()}
+        onPrevStep={vi.fn()}
+        onExitTutorial={vi.fn()}
+        onCompleteTutorial={vi.fn()}
+      />
+    );
+
+    expect(html).toBe('');
+  });
 });
