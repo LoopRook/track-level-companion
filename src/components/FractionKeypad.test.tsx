@@ -48,7 +48,7 @@ describe('FractionKeypad Component', () => {
       />
     );
 
-    expect(html).toContain('Practice Run');
+    expect(html).toContain('Tutorial');
     expect(html).toContain('Benchmark: Enter 5.25&quot; using numpad or keys, then press Enter or Save');
   });
 

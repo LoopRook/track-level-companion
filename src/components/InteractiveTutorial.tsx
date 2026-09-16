@@ -131,7 +131,7 @@ export const TUTORIAL_STEPS: TutorialStepConfig[] = [
     targetSelector: '[data-tutorial="header-actions"]',
     content:
       'Tap Files to download a CSV backup or print a clean inspection report for your railroad records. Or tap Share via QR Code to beam the track to a crew member\'s phone with zero internet!',
-    actionHint: 'Tap Finish Practice Run to complete your tutorial.',
+    actionHint: 'Tap Finish Tutorial to complete.',
     proTip: 'Track Level Companion works 100% offline out in the woods or at the track.',
   },
 ];
@@ -328,7 +328,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   Step {currentStepData.stepNumber} of {currentStepData.totalSteps}
                 </span>
                 <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                  Interactive Practice Run
+                  Tutorial
                 </span>
               </div>
               <h3 className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight">
@@ -341,7 +341,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
             type="button"
             onClick={onExitTutorial}
             className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition shrink-0"
-            title="Exit Practice Tutorial"
+            title="Exit Tutorial"
             aria-label="Exit Tutorial"
           >
             <X className="w-4 h-4" />
@@ -366,7 +366,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
           {/* Pro Tip Box */}
           {currentStepData.proTip && (
             <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-[11px] text-zinc-600 dark:text-zinc-400">
-              <span className="font-bold text-zinc-800 dark:text-zinc-200">Trackside Tip: </span>
+              <span className="font-bold text-zinc-800 dark:text-zinc-200">Tip: </span>
               {currentStepData.proTip}
             </div>
           )}
@@ -415,7 +415,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
               onClick={handleNext}
               className="px-4 py-2 rounded-xl text-xs font-black text-black bg-amber-500 hover:bg-amber-400 active:scale-95 transition shadow-sm flex items-center gap-1.5"
             >
-              <span>{isLastStep ? 'Finish Practice Run' : 'Next Step'}</span>
+              <span>{isLastStep ? 'Finish Tutorial' : 'Next Step'}</span>
               {isLastStep ? (
                 <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
               ) : (

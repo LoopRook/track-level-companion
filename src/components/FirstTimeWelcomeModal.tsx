@@ -93,7 +93,7 @@ export const FirstTimeWelcomeModal: React.FC<FirstTimeWelcomeModalProps> = ({
           </p>
 
           <div className="space-y-2.5">
-            {/* OPTION 1: 90-Second Hands-On Tutorial (Recommended) */}
+            {/* OPTION 1: Interactive Tutorial (Recommended) */}
             <div
               onClick={() => handleOption(onStartTutorial)}
               className="p-3.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 hover:bg-amber-500/15 cursor-pointer transition flex items-start gap-3 text-zinc-900 dark:text-white group"
@@ -104,14 +104,14 @@ export const FirstTimeWelcomeModal: React.FC<FirstTimeWelcomeModalProps> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
                   <h4 className="text-xs sm:text-sm font-black text-zinc-900 dark:text-white">
-                    Start 90-Second Practice Tutorial
+                    Start Tutorial
                   </h4>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-black shrink-0">
                     Recommended
                   </span>
                 </div>
                 <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mt-1 leading-relaxed">
-                  A hands-on guided run: set a reference benchmark, shoot a dipped tie, read the vertical profile curve, and jack the tie to green.
+                  Interactive walkthrough: set a reference benchmark, shoot ties, read profile curves, and verify leveling.
                 </p>
               </div>
             </div>

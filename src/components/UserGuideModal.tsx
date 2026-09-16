@@ -148,13 +148,13 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
         {/* Step Content Body */}
         <div className="p-4 sm:p-5 modal-scroll-container flex-1 min-h-0 space-y-4 text-sm">
           
-          {/* Hands-On Practice Run Banner */}
+          {/* Interactive Tutorial Banner */}
           {onStartTutorial && (
             <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
                 <Play className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
                 <span className="text-zinc-800 dark:text-zinc-200">
-                  Prefer learning by doing? Take the <strong>90-second hands-on practice run</strong>.
+                  Prefer an interactive walkthrough? Start the <strong>step-by-step tutorial</strong>.
                 </span>
               </div>
               <button
@@ -165,7 +165,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
                 }}
                 className="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-bold text-xs hover:bg-amber-400 transition whitespace-nowrap shadow-xs active:scale-95 shrink-0"
               >
-                Start Practice Run
+                Start Tutorial
               </button>
             </div>
           )}

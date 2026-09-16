@@ -64,7 +64,7 @@ const DEFAULT_PROJECT: TrackProject = {
 
 export const TUTORIAL_PROJECT: TrackProject = {
   id: 'tutorial-project-v1',
-  name: 'Practice Run (25ft Section)',
+  name: 'Tutorial (25ft Section)',
   date: new Date().toISOString().split('T')[0],
   gauge: '7 1/4"',
   unitFormat: 'decimal_inches',

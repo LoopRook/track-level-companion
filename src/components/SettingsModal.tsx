@@ -361,15 +361,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </p>
           </div>
 
-          {/* Section: Hands-On Practice Tutorial */}
+          {/* Section: Interactive Tutorial */}
           {onStartTutorial && (
             <div className="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl flex items-center justify-between gap-3">
               <div>
                 <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">
-                  Hands-On Practice Tutorial
+                  Tutorials
                 </h4>
                 <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5">
-                  Replay the 90-second guided run to practice benchmarks, sags, and jacking.
+                  Walk through benchmarks, rod readings, sags, leveling, and tolerance margins.
                 </p>
               </div>
               <button
@@ -380,7 +380,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 }}
                 className="px-3 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs hover:bg-amber-400 transition shadow-xs whitespace-nowrap active:scale-95 shrink-0"
               >
-                Replay Tutorial
+                Start Tutorial
               </button>
             </div>
           )}

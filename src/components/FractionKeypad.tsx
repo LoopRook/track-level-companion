@@ -521,7 +521,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         {tutorialHint && (
           <div className="bg-amber-500/15 border-b border-amber-500/30 px-4 py-2.5 flex items-center gap-2 text-amber-900 dark:text-amber-200 text-xs font-semibold shrink-0 animate-in fade-in">
             <span className="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[10px] font-mono font-black uppercase shrink-0">
-              Practice Run
+              Tutorial
             </span>
             <span className="flex-1 leading-snug">{tutorialHint}</span>
           </div>

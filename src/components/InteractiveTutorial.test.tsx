@@ -16,7 +16,7 @@ describe('FirstTimeWelcomeModal Component', () => {
     );
 
     expect(html).toContain('Welcome to Track Level Companion');
-    expect(html).toContain('Start 90-Second Practice Tutorial');
+    expect(html).toContain('Start Tutorial');
     expect(html).toContain('Explore Sample Track (85ft Demo)');
     expect(html).toContain('Start Blank Field Survey');
     expect(html).toContain('Recommended');
@@ -157,7 +157,7 @@ describe('InteractiveTutorial Component', () => {
 
     expect(html).toMatch(/Step\s*(<!-- -->)?\s*7\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
     expect(html).toContain('7. Documenting &amp; QR Sharing');
-    expect(html).toContain('Finish Practice Run');
+    expect(html).toContain('Finish Tutorial');
   });
 
   it('renders nothing when isActive is false', () => {

@@ -177,16 +177,16 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           <span>New Track</span>
         </button>
 
-        {/* Hands-On Practice Tutorial */}
+        {/* Interactive Tutorials */}
         {onStartTutorial && (
           <button
             type="button"
             onClick={onStartTutorial}
             className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95 whitespace-nowrap"
-            title="Start 90-Second Hands-On Practice Tutorial"
+            title="Open Interactive Tutorials"
           >
             <Play className="w-3 h-3 fill-amber-500 text-amber-500 shrink-0" />
-            <span>Tutorial</span>
+            <span>Tutorials</span>
           </button>
         )}
 
