@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { UnitFormat, TrackProject, CalculatedStation } from '../core/types';
 import { calculateGradeInfo } from '../core/calculations';
-import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2, TrendingUp, Plus, Download, Settings } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass, BookOpen, WifiOff, CheckCircle2, TrendingUp, Plus, Download, Settings, Play } from 'lucide-react';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 
 export interface StationSummaryData {
@@ -25,6 +25,7 @@ export interface StationConfigHeaderProps {
   onOpenGuideModal: () => void;
   onOpenNewTrackModal: () => void;
   onOpenSettingsModal?: () => void;
+  onStartTutorial?: () => void;
   onInstallApp?: () => void;
   canInstall?: boolean;
   summary: StationSummaryData;
@@ -50,6 +51,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
   onOpenGuideModal,
   onOpenNewTrackModal,
   onOpenSettingsModal,
+  onStartTutorial,
   onInstallApp,
   canInstall,
   summary,
@@ -150,7 +152,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
       </div>
 
       {/* Action Controls */}
-      <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+      <div data-tutorial="header-actions" className="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
         {/* Desktop / PWA Install Button */}
         {canInstall && onInstallApp && (
           <button
@@ -175,12 +177,25 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           <span>New Track</span>
         </button>
 
-        {/* Field Guide / Tutorial */}
+        {/* Hands-On Practice Tutorial */}
+        {onStartTutorial && (
+          <button
+            type="button"
+            onClick={onStartTutorial}
+            className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95 whitespace-nowrap"
+            title="Start 90-Second Hands-On Practice Tutorial"
+          >
+            <Play className="w-3 h-3 fill-amber-500 text-amber-500 shrink-0" />
+            <span>Tutorial</span>
+          </button>
+        )}
+
+        {/* Field Guide / Handbook */}
         <button
           type="button"
           onClick={onOpenGuideModal}
-          className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 text-xs font-bold transition border border-amber-500/30 active:scale-95 whitespace-nowrap"
-          title="Open Field Guide & Feature Tutorial"
+          className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
+          title="Open Field Guide & Feature Handbook"
         >
           <BookOpen className="w-3.5 h-3.5 text-amber-500 shrink-0" />
           <span>Guide</span>
@@ -190,6 +205,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
         <button
           type="button"
           onClick={onOpenDataModal}
+          data-tutorial="header-files-btn"
           className="flex-1 sm:flex-initial h-9 sm:h-8 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 text-xs font-bold transition border border-zinc-200 dark:border-zinc-800 active:scale-95 whitespace-nowrap"
         >
           <Sliders className="w-3.5 h-3.5 text-amber-500 shrink-0" />
@@ -345,7 +361,10 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
   }, [calculatedStations, project.gradeMode, project.targetGradePercent]);
 
   return (
-    <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3 shadow-sm flex flex-wrap items-center justify-between gap-2.5 text-xs transition-colors">
+    <div
+      data-tutorial="alignment-bar"
+      className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3 shadow-sm flex flex-wrap items-center justify-between gap-2.5 text-xs transition-colors"
+    >
       {/* Grade Mode Selection */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider text-[10px]">

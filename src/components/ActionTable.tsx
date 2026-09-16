@@ -110,6 +110,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
         <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 w-full sm:w-auto">
           <button
             onClick={onAddNextStation}
+            data-tutorial="add-next-btn"
             className="text-xs font-bold px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black transition flex items-center justify-center gap-1 shadow-sm active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -243,6 +244,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <div
               key={s.id}
               onClick={() => onEditStation(s)}
+              data-tutorial={s.distanceFt === 0 ? 'station-card-0' : s.distanceFt === 5 ? 'station-card-5' : undefined}
               className={`p-3 transition-all cursor-pointer rounded-xl ${
                 isSelected
                   ? 'bg-amber-500/10 dark:bg-amber-500/15 ring-1 ring-inset ring-amber-500/50'
@@ -257,6 +259,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 <div className="flex items-center gap-2 flex-wrap min-w-0">
                   <button
                     type="button"
+                    data-tutorial={s.distanceFt === 0 ? 'station-complete-0' : s.distanceFt === 5 ? 'station-complete-5' : undefined}
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleComplete(s.id);
@@ -354,7 +357,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               </div>
 
               {/* Middle Row: Readings & Target/Elevation */}
-              <div className="grid grid-cols-2 gap-2 py-1.5 px-2.5 bg-zinc-100/60 dark:bg-zinc-900/60 rounded-xl mb-2 text-xs">
+              <div
+                data-tutorial={s.distanceFt === 0 ? 'station-reading-0' : s.distanceFt === 5 ? 'station-reading-5' : undefined}
+                className="grid grid-cols-2 gap-2 py-1.5 px-2.5 bg-zinc-100/60 dark:bg-zinc-900/60 rounded-xl mb-2 text-xs"
+              >
                 <div>
                   <span className="text-[10px] text-zinc-600 dark:text-zinc-400 block uppercase font-bold">
                     {s.isTurningPoint ? 'Last Reading (TP)' : 'Last Reading'}
@@ -447,7 +453,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               </div>
 
               {/* Bottom Row: Full-width Track Action Banner */}
-              <div>
+              <div data-tutorial={s.distanceFt === 5 ? 'station-action-5' : undefined}>
                 {isCompleted ? (
                   <div className="w-full py-1.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 bg-zinc-200/50 dark:bg-zinc-800/50 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -541,6 +547,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               return (
                 <tr
                   key={s.id}
+                  data-tutorial={s.distanceFt === 0 ? 'station-row-0' : s.distanceFt === 5 ? 'station-row-5' : undefined}
                   className={`transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-amber-500/10 dark:bg-amber-500/15 font-medium'
@@ -560,6 +567,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   >
                     <button
                       type="button"
+                      data-tutorial={s.distanceFt === 0 ? 'station-complete-0' : s.distanceFt === 5 ? 'station-complete-5' : undefined}
                       className="w-10 h-10 -m-2 flex items-center justify-center rounded-xl text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 active:scale-90 transition mx-auto"
                       title={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
                       aria-label={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
@@ -600,7 +608,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   </td>
 
                   {/* Laser Reading */}
-                  <td className="py-3 px-3 font-mono">
+                  <td
+                    className="py-3 px-3 font-mono"
+                    data-tutorial={s.distanceFt === 0 ? 'station-reading-0' : s.distanceFt === 5 ? 'station-reading-5' : undefined}
+                  >
                     {s.isTurningPoint ? (
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-1.5">
@@ -672,7 +683,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   )}
 
                   {/* Track Action Badge */}
-                  <td className="py-3 px-3 text-center">
+                  <td
+                    className="py-3 px-3 text-center"
+                    data-tutorial={s.distanceFt === 5 ? 'station-action-5' : undefined}
+                  >
                     {isCompleted ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-zinc-200/50 dark:bg-zinc-800/60 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 whitespace-nowrap shrink-0">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />

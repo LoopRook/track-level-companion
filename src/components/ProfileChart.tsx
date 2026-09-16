@@ -466,7 +466,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors">
+    <div
+      data-tutorial="profile-chart"
+      className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors"
+    >
       {/* Header Toolbar */}
       <div className="px-3.5 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-950">
         {/* Title and Shot Counter */}

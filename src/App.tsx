@@ -12,6 +12,8 @@ import { IncomingShareModal } from './components/IncomingShareModal';
 import { PrintReport } from './components/PrintReport';
 import { UpdatePrompt } from './components/UpdatePrompt';
 import { parseTrackFromUrl } from './core/sharing';
+import { InteractiveTutorial } from './components/InteractiveTutorial';
+import { FirstTimeWelcomeModal } from './components/FirstTimeWelcomeModal';
 
 // Lazy-load heavy secondary modals to optimize initial bundle parse time
 const DataManagementModal = React.lazy(() =>
@@ -58,6 +60,28 @@ const DEFAULT_PROJECT: TrackProject = {
   gradeMode: 'end_to_end',
   targetGradePercent: 0.0,
   stations: INITIAL_STATIONS,
+};
+
+export const TUTORIAL_PROJECT: TrackProject = {
+  id: 'tutorial-project-v1',
+  name: 'Practice Run (25ft Section)',
+  date: new Date().toISOString().split('T')[0],
+  gauge: '7 1/4"',
+  unitFormat: 'decimal_inches',
+  fractionResolution: 16,
+  toleranceInches: 0.05,
+  stationIntervalFt: 5,
+  laserDatumMode: 'relative_to_first',
+  gradeMode: 'target_grade',
+  targetGradePercent: 0.0,
+  stations: [
+    { id: 'tut-0', distanceFt: 0, readingInches: null },
+    { id: 'tut-5', distanceFt: 5, readingInches: null },
+    { id: 'tut-10', distanceFt: 10, readingInches: 5.25 },
+    { id: 'tut-15', distanceFt: 15, readingInches: 5.25 },
+    { id: 'tut-20', distanceFt: 20, readingInches: 5.25 },
+    { id: 'tut-25', distanceFt: 25, readingInches: 5.25 },
+  ],
 };
 
 export const App: React.FC = () => {
@@ -113,6 +137,22 @@ export const App: React.FC = () => {
     }
   });
 
+  // Interactive Tutorial Walkthrough State
+  const [isTutorialActive, setIsTutorialActive] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
+  const [stashedProject, setStashedProject] = useState<TrackProject | null>(null);
+
+  // First-time Welcome Modal
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState<boolean>(() => {
+    try {
+      const dismissed = localStorage.getItem('tlc_onboarding_dismissed');
+      const betaDismissed = localStorage.getItem('tlc_beta_notice_dismissed');
+      return !dismissed && Boolean(betaDismissed);
+    } catch {
+      return false;
+    }
+  });
+
   // Mobile layout mode: 'tabbed' (default) vs 'stacked'
   const [mobileLayout, setMobileLayout] = useState<'tabbed' | 'stacked'>(() => {
     try {
@@ -135,6 +175,16 @@ export const App: React.FC = () => {
     }
   };
 
+  // Automatically switch mobile tab during tutorial to bring relevant element into view
+  useEffect(() => {
+    if (!isTutorialActive) return;
+    if (tutorialStep === 2) {
+      setMobileTab('graph');
+    } else if (tutorialStep === 0 || tutorialStep === 1 || tutorialStep === 3 || tutorialStep === 4) {
+      setMobileTab('checklist');
+    }
+  }, [isTutorialActive, tutorialStep]);
+
   // Haptic feedback preference (default: enabled)
   const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(() => {
     return getHapticPreference();
@@ -152,6 +202,7 @@ export const App: React.FC = () => {
     isNewTrackModalOpen ||
     isSettingsOpen ||
     isBetaNoticeOpen ||
+    isWelcomeModalOpen ||
     Boolean(incomingSharedProject)
   );
 
@@ -207,14 +258,15 @@ export const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
-  // Persist project changes
+  // Persist project changes (do not overwrite active survey with practice tutorial data)
   useEffect(() => {
+    if (isTutorialActive) return;
     try {
       localStorage.setItem('track_level_companion_active', JSON.stringify(project));
     } catch (e) {
       console.error(e);
     }
-  }, [project]);
+  }, [project, isTutorialActive]);
 
   // Calculate live track profile
   const calculatedStations = useMemo(() => {
@@ -290,6 +342,15 @@ export const App: React.FC = () => {
         s.id === activeEditingStation.id ? { ...s, readingInches: valInches } : s
       )
     }));
+
+    if (isTutorialActive) {
+      if (activeEditingStation.distanceFt === 0 && tutorialStep === 0) {
+        setTutorialStep(1);
+      } else if (activeEditingStation.distanceFt === 5 && tutorialStep === 1) {
+        setTutorialStep(2);
+      }
+    }
+
     setIsKeypadOpen(false);
     setActiveEditingStation(null);
   };
@@ -326,6 +387,14 @@ export const App: React.FC = () => {
       ...prev,
       stations: updatedStations,
     }));
+
+    if (isTutorialActive) {
+      if (activeEditingStation.distanceFt === 0 && tutorialStep === 0) {
+        setTutorialStep(1);
+      } else if (activeEditingStation.distanceFt === 5 && tutorialStep === 1) {
+        setTutorialStep(2);
+      }
+    }
 
     // Find calculated state for the next station
     const nextCalc = calculateTrackProfile({ ...project, stations: updatedStations }).find(
@@ -549,6 +618,13 @@ export const App: React.FC = () => {
         s.id === stationId ? { ...s, completed: !s.completed } : s
       )
     }));
+
+    if (isTutorialActive) {
+      const toggled = project.stations.find(s => s.id === stationId);
+      if (toggled && toggled.distanceFt === 5 && tutorialStep === 4) {
+        setTutorialStep(5);
+      }
+    }
   };
 
   // Toggle station locked control point (e.g. over tree root or fixed structure)
@@ -669,6 +745,74 @@ export const App: React.FC = () => {
     });
   };
 
+  // Tutorial Handlers
+  const handleStartTutorial = () => {
+    if (!isTutorialActive) {
+      setStashedProject(project);
+    }
+    setProject(TUTORIAL_PROJECT);
+    setIsTutorialActive(true);
+    setTutorialStep(0);
+    setIsWelcomeModalOpen(false);
+    setIsGuideOpen(false);
+    setIsSettingsOpen(false);
+    setIsDataModalOpen(false);
+    setIsNewTrackModalOpen(false);
+    setMobileTab('checklist');
+  };
+
+  const handleExitTutorial = () => {
+    setIsTutorialActive(false);
+    setTutorialStep(0);
+    if (stashedProject) {
+      setProject(stashedProject);
+      setStashedProject(null);
+    }
+  };
+
+  const handleCompleteTutorial = () => {
+    setIsTutorialActive(false);
+    setTutorialStep(0);
+    try {
+      localStorage.setItem('tlc_onboarding_dismissed', 'true');
+    } catch (err) {
+      console.error(err);
+    }
+    if (stashedProject) {
+      setProject(stashedProject);
+      setStashedProject(null);
+    }
+  };
+
+  const handleAutoFillTutorialStep = (stepIdx: number) => {
+    if (!isTutorialActive) return;
+    if (stepIdx === 0) {
+      // Benchmark: If Station 0 reading is null, fill 5.25
+      setProject(prev => ({
+        ...prev,
+        stations: prev.stations.map(s =>
+          s.distanceFt === 0 && s.readingInches === null ? { ...s, readingInches: 5.25 } : s
+        ),
+      }));
+    } else if (stepIdx === 1) {
+      // Dipped Station 5: If Station 5 reading is null, fill 5.625
+      setProject(prev => ({
+        ...prev,
+        stations: prev.stations.map(s =>
+          s.distanceFt === 5 && s.readingInches === null ? { ...s, readingInches: 5.625 } : s
+        ),
+      }));
+    } else if (stepIdx === 4) {
+      // Leveling checkoff: mark Station 5 completed
+      setProject(prev => ({
+        ...prev,
+        stations: prev.stations.map(s =>
+          s.distanceFt === 5 ? { ...s, completed: true } : s
+        ),
+      }));
+    }
+  };
+
   return (
     <>
       <div className="app-interactive-screen min-h-screen bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2.5 sm:p-4 max-w-5xl lg:max-w-7xl xl:max-w-[1600px] mx-auto space-y-3">
@@ -682,6 +826,7 @@ export const App: React.FC = () => {
           onOpenGuideModal={() => setIsGuideOpen(true)}
           onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
           onOpenSettingsModal={() => setIsSettingsOpen(true)}
+          onStartTutorial={handleStartTutorial}
           onInstallApp={handleInstallApp}
           canInstall={!!installPrompt}
           summary={summary}
@@ -859,6 +1004,7 @@ export const App: React.FC = () => {
           onChangeMobileLayout={handleSetMobileLayout}
           hapticsEnabled={hapticsEnabled}
           onChangeHapticsEnabled={handleSetHapticsEnabled}
+          onStartTutorial={handleStartTutorial}
         />
 
         {/* Field Guide & Animated Tutorial Modal */}
@@ -867,6 +1013,7 @@ export const App: React.FC = () => {
             <UserGuideModal
               isOpen={isGuideOpen}
               onClose={() => setIsGuideOpen(false)}
+              onStartTutorial={handleStartTutorial}
             />
           )}
         </React.Suspense>
@@ -874,7 +1021,45 @@ export const App: React.FC = () => {
         {/* First Launch Beta Notice Modal */}
         <BetaNoticeModal
           isOpen={isBetaNoticeOpen}
-          onClose={() => setIsBetaNoticeOpen(false)}
+          onClose={() => {
+            setIsBetaNoticeOpen(false);
+            try {
+              if (!localStorage.getItem('tlc_onboarding_dismissed')) {
+                setIsWelcomeModalOpen(true);
+              }
+            } catch {
+              // ignore
+            }
+          }}
+        />
+
+        {/* First-Time Welcome Modal */}
+        <FirstTimeWelcomeModal
+          isOpen={isWelcomeModalOpen}
+          onClose={() => setIsWelcomeModalOpen(false)}
+          onStartTutorial={() => {
+            setIsWelcomeModalOpen(false);
+            handleStartTutorial();
+          }}
+          onExploreDemo={() => {
+            setIsWelcomeModalOpen(false);
+            handleLoadDemoTrack();
+          }}
+          onStartBlankTrack={() => {
+            setIsWelcomeModalOpen(false);
+            setIsNewTrackModalOpen(true);
+          }}
+        />
+
+        {/* Interactive Practice Run Tutorial Overlay */}
+        <InteractiveTutorial
+          isActive={isTutorialActive}
+          currentStep={tutorialStep}
+          onNextStep={() => setTutorialStep(prev => prev + 1)}
+          onPrevStep={() => setTutorialStep(prev => Math.max(0, prev - 1))}
+          onExitTutorial={handleExitTutorial}
+          onCompleteTutorial={handleCompleteTutorial}
+          onAutoFillStep={handleAutoFillTutorialStep}
         />
 
         {/* Incoming Shared Track Survey Modal */}

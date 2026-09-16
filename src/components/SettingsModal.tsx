@@ -15,6 +15,7 @@ export interface SettingsModalProps {
   onChangeMobileLayout?: (layout: 'tabbed' | 'stacked') => void;
   hapticsEnabled?: boolean;
   onChangeHapticsEnabled?: (enabled: boolean) => void;
+  onStartTutorial?: () => void;
 }
 
 const TOLERANCE_PRESETS = [
@@ -35,6 +36,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onChangeMobileLayout,
   hapticsEnabled,
   onChangeHapticsEnabled,
+  onStartTutorial,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -358,6 +360,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               Adheres to Apple HIG and Material Design keypad guidelines. Supported on Android (Chrome, Edge, Firefox). Apple iOS Safari does not support web vibration.
             </p>
           </div>
+
+          {/* Section: Hands-On Practice Tutorial */}
+          {onStartTutorial && (
+            <div className="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl flex items-center justify-between gap-3">
+              <div>
+                <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">
+                  Hands-On Practice Tutorial
+                </h4>
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5">
+                  Replay the 90-second guided run to practice benchmarks, sags, and jacking.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTutorial();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs hover:bg-amber-400 transition shadow-xs whitespace-nowrap active:scale-95 shrink-0"
+              >
+                Replay Tutorial
+              </button>
+            </div>
+          )}
 
           <hr className="border-zinc-200 dark:border-zinc-800" />
 

@@ -27,9 +27,10 @@ import { useBodyScrollLock } from '../core/useBodyScrollLock';
 interface UserGuideModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onStartTutorial?: () => void;
 }
 
-export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose }) => {
+export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, onStartTutorial }) => {
   useBodyScrollLock(isOpen);
   const [currentStep, setCurrentStep] = useState<number>(0);
   // Interactive state for Animation 1: Rod & Laser
@@ -147,6 +148,28 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose 
         {/* Step Content Body */}
         <div className="p-4 sm:p-5 modal-scroll-container flex-1 min-h-0 space-y-4 text-sm">
           
+          {/* Hands-On Practice Run Banner */}
+          {onStartTutorial && (
+            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2">
+                <Play className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
+                <span className="text-zinc-800 dark:text-zinc-200">
+                  Prefer learning by doing? Take the <strong>90-second hands-on practice run</strong>.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTutorial();
+                }}
+                className="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-bold text-xs hover:bg-amber-400 transition whitespace-nowrap shadow-xs active:scale-95 shrink-0"
+              >
+                Start Practice Run
+              </button>
+            </div>
+          )}
+
           {/* ================= STEP 0: LASER RULE & INTERACTIVE ROD ================= */}
           {currentStep === 0 && (
             <div className="space-y-4">
