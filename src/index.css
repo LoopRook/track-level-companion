@@ -128,6 +128,16 @@ input, textarea {
   touch-action: pan-y;
 }
 
+/* Dashboard viewport containment: Lock viewport to 100vh with zero outer overflow ONLY when the screen is both wide enough (>= 768px) AND tall enough (>= 600px).
+   This preserves zero-scroll layout on Desktop and Tablets, while allowing natural vertical scrolling on phones in landscape (height < 600px). */
+@media (min-width: 768px) and (min-height: 600px) {
+  .dashboard-viewport-lock {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+}
+
 /* Page setup for Print / PDF export: declared at root level so browser print dialog defaults to landscape */
 @page {
   size: landscape;

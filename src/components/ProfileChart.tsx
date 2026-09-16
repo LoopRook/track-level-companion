@@ -151,8 +151,36 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   const hoveredStation = stations.find(s => s.id === hoveredStationId) || null;
   const currentInspectStation = !activeSubsetGrade ? (hoveredStation || startStation || null) : null;
 
+  // Mobile viewport detection for responsive coordinate system
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    return typeof window !== 'undefined' ? window.innerWidth < 640 : false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Responsive Base Width & Height:
+  // On mobile portrait (< 640px), a tighter viewBox (600px width) and taller height (200px-300px)
+  // yields an aspect ratio of ~2.5:1 instead of 6.67:1. This makes the SVG curve and dots >2.6x taller
+  // and dramatically more readable and touch-friendly on phones.
+  const baseWidth = isMobile ? 600 : 1200;
+
   // Chart Height adapts to give more physical headroom as zoom increases
   const chartHeight = useMemo(() => {
+    if (isMobile) {
+      switch (zoomScale) {
+        case '1x': return 190;
+        case '3x': return 230;
+        case '8x': return 260;
+        case '15x': return 300;
+        default: return 230;
+      }
+    }
     switch (zoomScale) {
       case '1x': return 160;
       case '3x': return 180;
@@ -160,13 +188,17 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       case '15x': return 250;
       default: return 180;
     }
-  }, [zoomScale]);
+  }, [zoomScale, isMobile]);
 
-  const baseWidth = 1200;
-  const padding = { top: 25, right: 35, bottom: 34, left: 60 };
+  const padding = useMemo(() => {
+    if (isMobile) {
+      return { top: 20, right: 22, bottom: 28, left: 46 };
+    }
+    return { top: 25, right: 35, bottom: 34, left: 60 };
+  }, [isMobile]);
 
   // Width
-  const effectiveWidth = isScrollable ? Math.max(baseWidth, stations.length * 60) : baseWidth;
+  const effectiveWidth = isScrollable ? Math.max(baseWidth, stations.length * (isMobile ? 55 : 60)) : baseWidth;
   const innerWidth = effectiveWidth - padding.left - padding.right;
   const innerHeight = chartHeight - padding.top - padding.bottom;
 
@@ -940,11 +972,12 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           })}
 
           {/* Vertical Station Grid lines (X-Ticks) */}
-          {stations.map(s => {
+          {stations.map((s, idx) => {
             const x = getX(s.distanceFt);
             const isStart = selectedStartId === s.id;
             const isEnd = selectedEndId === s.id;
             const isHovered = hoveredStationId === s.id;
+            const isSelected = isStart || isEnd;
             const isInRange = activeSubsetGrade &&
               s.distanceFt >= activeSubsetGrade.startStation.distanceFt &&
               s.distanceFt <= activeSubsetGrade.endStation.distanceFt;
@@ -969,6 +1002,9 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               lineClass = isRangeLocked ? 'stroke-sky-300/40 dark:stroke-sky-700/40 stroke-1' : 'stroke-zinc-300 dark:stroke-zinc-700/60 stroke-1';
             }
 
+            // In mobile fit mode, skip crowded intermediate labels if stations > 18 to avoid overlaps
+            const showLabel = !isMobile || isScrollable || stations.length <= 18 || idx % Math.ceil(stations.length / 16) === 0 || isSelected || idx === stations.length - 1;
+
             return (
               <g key={s.id}>
                 <line
@@ -979,14 +1015,16 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   className={lineClass}
                   strokeDasharray={strokeDash}
                 />
-                <text
-                  x={x}
-                  y={padding.top + innerHeight + 18}
-                  textAnchor="middle"
-                  className={`font-mono text-[11px] ${textClass}`}
-                >
-                  {s.distanceFt}'
-                </text>
+                {showLabel && (
+                  <text
+                    x={x}
+                    y={padding.top + innerHeight + (isMobile ? 16 : 18)}
+                    textAnchor="middle"
+                    className={`font-mono ${isMobile ? 'text-[10px]' : 'text-[11px]'} ${textClass}`}
+                  >
+                    {s.distanceFt}'
+                  </text>
+                )}
               </g>
             );
           })}
@@ -1162,7 +1200,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={14}
+                    r={isMobile ? 16 : 14}
                     fill={dotFill}
                     fillOpacity={0.22}
                     stroke={dotFill}
@@ -1176,7 +1214,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={11}
+                    r={isMobile ? 13 : 11}
                     fill="#f59e0b"
                     fillOpacity={0.25}
                     stroke="#f59e0b"
@@ -1190,7 +1228,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={11}
+                    r={isMobile ? 13 : 11}
                     fill="#38bdf8"
                     fillOpacity={0.25}
                     stroke="#38bdf8"
@@ -1204,7 +1242,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={10}
+                    r={isMobile ? 12 : 10}
                     fill="none"
                     stroke="#a855f7"
                     strokeWidth="2"
@@ -1217,7 +1255,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={10}
+                    r={isMobile ? 12 : 10}
                     fill="none"
                     stroke="#f59e0b"
                     strokeWidth="2"
@@ -1229,7 +1267,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   <circle
                     cx={x}
                     cy={y}
-                    r={10.5}
+                    r={isMobile ? 12.5 : 10.5}
                     fill="none"
                     stroke="#10b981"
                     strokeWidth="2"
@@ -1240,7 +1278,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 <circle
                   cx={x}
                   cy={y}
-                  r={isMeasured ? (isSelected || isHovered ? 8 : 6.5) : (isHovered ? 5.5 : 4.5)}
+                  r={isMeasured ? (isSelected || isHovered ? (isMobile ? 9.5 : 8) : (isMobile ? 7.5 : 6.5)) : (isHovered ? (isMobile ? 6.5 : 5.5) : (isMobile ? 5.5 : 4.5))}
                   fill={s.completed ? '#10b981' : dotFill}
                   stroke={isStart ? '#f59e0b' : isEnd ? '#38bdf8' : '#000000'}
                   strokeWidth={isSelected ? '2' : '1.5'}
@@ -1256,7 +1294,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             x={effectiveWidth / 2}
             y={chartHeight - 6}
             textAnchor="middle"
-            className="text-[9px] font-bold uppercase tracking-wider fill-zinc-500"
+            className="text-[9px] font-bold uppercase tracking-wider fill-zinc-500 hidden sm:block"
           >
             Track Distance (Feet)
           </text>

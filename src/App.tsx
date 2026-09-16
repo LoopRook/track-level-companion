@@ -936,7 +936,7 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <div className="app-interactive-screen min-h-screen md:h-screen md:overflow-hidden bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2 sm:p-2.5 md:p-3 lg:p-4 max-w-5xl md:max-w-full lg:max-w-7xl xl:max-w-[1600px] mx-auto flex flex-col gap-2 sm:gap-2.5 md:gap-3">
+      <div className="app-interactive-screen min-h-screen dashboard-viewport-lock bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2 sm:p-2.5 md:p-3 lg:p-4 max-w-5xl md:max-w-full lg:max-w-7xl xl:max-w-[1600px] mx-auto flex flex-col gap-2 sm:gap-2.5 md:gap-3">
         {/* Mobile Header (visible only on < md phone screens) */}
         <div className="md:hidden shrink-0">
           <StationConfigHeader
