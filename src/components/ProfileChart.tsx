@@ -12,6 +12,8 @@ interface ProfileChartProps {
   selectedStationId?: string | null;
   onApplyTargetGrade?: (gradePercent: number) => void;
   trackName?: string;
+  onToggleMeasureMode?: (isActive: boolean) => void;
+  onSubsetSpanChange?: () => void;
 }
 
 type ZoomScale = '1x' | '3x' | '8x' | '15x';
@@ -82,6 +84,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   selectedStationId,
   onApplyTargetGrade,
   trackName,
+  onToggleMeasureMode,
+  onSubsetSpanChange,
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -109,6 +113,13 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       setSelectedStartId(null);
     }
   }, [selectedStationId, isMeasureModeActive]);
+
+  // Reset measure mode when switching tracks or tutorials
+  useEffect(() => {
+    setIsMeasureModeActive(false);
+    setSelectedStartId(null);
+    setSelectedEndId(null);
+  }, [trackName]);
 
   // Filter measured stations
   const measuredStations = useMemo(() => {
@@ -512,6 +523,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   setSelectedEndId(measuredStations[measuredStations.length - 1].id);
                 }
               }
+              onToggleMeasureMode?.(nextState);
             }}
             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition active:scale-95 ${
               isMeasureModeActive || isRangeLocked
@@ -632,7 +644,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               <span className="text-zinc-500 font-sans text-[11px]">From:</span>
               <select
                 value={selectedStartId || ''}
-                onChange={(e) => setSelectedStartId(e.target.value || null)}
+                onChange={(e) => {
+                  setSelectedStartId(e.target.value || null);
+                  onSubsetSpanChange?.();
+                }}
                 className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 font-semibold shadow-xs"
               >
                 <option value="">Select Start...</option>
@@ -647,7 +662,10 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               <span className="text-zinc-500 font-sans text-[11px]">To:</span>
               <select
                 value={selectedEndId || ''}
-                onChange={(e) => setSelectedEndId(e.target.value || null)}
+                onChange={(e) => {
+                  setSelectedEndId(e.target.value || null);
+                  onSubsetSpanChange?.();
+                }}
                 className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 font-semibold shadow-xs"
               >
                 <option value="">Select End...</option>

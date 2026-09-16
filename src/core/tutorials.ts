@@ -211,7 +211,7 @@ export const TUTORIAL_LOCKED_POINTS: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-row-20"]',
       content:
         'Station 20 sits atop an immovable tree root or fixed bridge abutment. Notice the amber LOWER badge (LOWER -0.80"): standard end-to-end leveling asks you to lower the rail, which is physically impossible through solid bridge concrete or heavy roots!',
-      actionHint: 'Notice Station 20 requires lowering. We need to lock this station so the grade line lifts over it.',
+      actionHint: 'Notice Station 20 requires lowering. Click the Padlock icon on Station 20, or tap Next Step.',
       proTip:
         'In live steam and grand-scale railroading, you almost never dig down into settled roadbed; you raise the surrounding track up to clear high spots.',
     },
@@ -356,7 +356,7 @@ export const TUTORIAL_EVALUATE_GRADE: TutorialDefinition = {
       targetSelector: '[data-tutorial="evaluate-grade-apply"]',
       content:
         'If you want your entire track realignment target to adopt this measured slope, click "Apply as Target". This instantly sets your project\'s target slope without manual arithmetic!',
-      actionHint: 'Tap Finish Tutorial to complete.',
+      actionHint: 'Click "Apply as Target" to adopt this grade, or tap Finish Tutorial to complete.',
       proTip:
         'Applying a measured grade sets your target slope to match existing terrain, minimizing the amount of ballast needed.',
     },

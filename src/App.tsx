@@ -186,7 +186,7 @@ export const App: React.FC = () => {
       setMobileTab('graph');
     } else if (activeTutorialId === 'locked-points' && tutorialStep === 2) {
       setMobileTab('graph');
-    } else if (activeTutorialId === 'evaluate-grade' && (tutorialStep === 0 || tutorialStep === 1 || tutorialStep === 2)) {
+    } else if (activeTutorialId === 'evaluate-grade') {
       setMobileTab('graph');
     } else {
       setMobileTab('checklist');
@@ -701,7 +701,7 @@ export const App: React.FC = () => {
 
     if (isTutorialActive) {
       const toggled = project.stations.find(s => s.id === stationId);
-      if (toggled && toggled.distanceFt === 5 && tutorialStep === 5) {
+      if (toggled && toggled.distanceFt === 5 && (tutorialStep === 4 || tutorialStep === 5)) {
         setTutorialStep(6);
       }
     }
@@ -716,7 +716,7 @@ export const App: React.FC = () => {
       )
     }));
 
-    if (isTutorialActive && activeTutorialId === 'locked-points' && tutorialStep === 1) {
+    if (isTutorialActive && activeTutorialId === 'locked-points' && (tutorialStep === 0 || tutorialStep === 1)) {
       const toggled = project.stations.find(s => s.id === stationId);
       if (toggled && toggled.distanceFt === 20) {
         setTutorialStep(2);
@@ -1022,11 +1022,24 @@ export const App: React.FC = () => {
               trackName={project.name}
               onSelectStation={handleSelectStation}
               selectedStationId={activeEditingStation?.id}
+              onToggleMeasureMode={(isActive) => {
+                if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 0 && isActive) {
+                  setTutorialStep(1);
+                }
+              }}
+              onSubsetSpanChange={() => {
+                if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 1) {
+                  setTutorialStep(2);
+                }
+              }}
               onApplyTargetGrade={(grade) => {
                 handleUpdateProject({
                   gradeMode: 'target_grade',
                   targetGradePercent: Number(grade.toFixed(2)),
                 });
+                if (isTutorialActive && activeTutorialId === 'evaluate-grade') {
+                  handleCompleteTutorial();
+                }
               }}
             />
           </div>
@@ -1066,7 +1079,7 @@ export const App: React.FC = () => {
               onSetTurningPoint={handleSetTurningPoint}
               onResetDatum={handleResetDatum}
               onOpenMoveLaser={() => {
-                if (isTutorialActive && activeTutorialId === 'laser-relocation' && tutorialStep === 1) {
+                if (isTutorialActive && activeTutorialId === 'laser-relocation' && (tutorialStep === 0 || tutorialStep === 1)) {
                   setTutorialStep(2);
                 }
               }}
