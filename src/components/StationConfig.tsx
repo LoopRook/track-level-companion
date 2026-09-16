@@ -228,7 +228,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
         {/* Theme Toggle on desktop */}
         <button
           onClick={onToggleDarkMode}
-          className="hidden sm:flex p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0"
+          className="hidden sm:flex h-9 sm:h-8 w-9 sm:w-8 items-center justify-center rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0"
           title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
           aria-label="Toggle Sunlight Mode"
         >
@@ -259,8 +259,8 @@ const getToleranceLabel = (tol?: number, unit?: UnitFormat) => {
 export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, summary }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
-        <div className="flex items-center justify-between gap-1">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex flex-col justify-between min-h-[76px] sm:min-h-[80px]">
+        <div className="min-h-[26px] sm:min-h-[28px] flex items-start justify-between gap-1">
           <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider block">
             Track Length
           </span>
@@ -273,7 +273,7 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
             </span>
           )}
         </div>
-        <div className="text-lg font-mono font-bold text-zinc-900 dark:text-zinc-100 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+        <div className="text-lg font-mono font-bold text-zinc-900 dark:text-zinc-100 mt-auto pt-0.5 flex items-baseline flex-wrap gap-x-1.5">
           <span>{summary.lengthFt} ft</span>
           <span className="text-[11px] text-zinc-500 font-normal whitespace-nowrap">
             ({summary.measuredCount}/{summary.totalStations} shot)
@@ -281,11 +281,13 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
         </div>
       </div>
 
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
-        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
-          On Grade (Within {getToleranceLabel(project.toleranceInches, project.unitFormat)})
-        </span>
-        <div className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex flex-col justify-between min-h-[76px] sm:min-h-[80px]">
+        <div className="min-h-[26px] sm:min-h-[28px] flex items-start justify-between gap-1">
+          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
+            On Grade ({getToleranceLabel(project.toleranceInches, project.unitFormat)})
+          </span>
+        </div>
+        <div className="text-lg font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-auto pt-0.5 flex items-baseline flex-wrap gap-x-1.5">
           <span>
             {summary.measuredCount >= 2
               ? `${Math.round((summary.onGradeCount / summary.measuredCount) * 100)}%`
@@ -297,11 +299,13 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
         </div>
       </div>
 
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
-        <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider block">
-          Needs Lift (Low spots)
-        </span>
-        <div className="text-lg font-mono font-bold text-sky-700 dark:text-sky-400 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex flex-col justify-between min-h-[76px] sm:min-h-[80px]">
+        <div className="min-h-[26px] sm:min-h-[28px] flex items-start justify-between gap-1">
+          <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider block">
+            Needs Lift (Low spots)
+          </span>
+        </div>
+        <div className="text-lg font-mono font-bold text-sky-700 dark:text-sky-400 mt-auto pt-0.5 flex items-baseline flex-wrap gap-x-1.5">
           <span>{summary.measuredCount >= 2 ? `${summary.liftCount} pts` : '—'}</span>
           {summary.measuredCount >= 2 && summary.maxLift > 0 && (
             <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
@@ -322,11 +326,13 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
         </div>
       </div>
 
-      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl">
-        <span className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">
-          Needs Lower (High spots)
-        </span>
-        <div className="text-lg font-mono font-bold text-amber-800 dark:text-amber-400 mt-0.5 flex items-baseline flex-wrap gap-x-1.5">
+      <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl flex flex-col justify-between min-h-[76px] sm:min-h-[80px]">
+        <div className="min-h-[26px] sm:min-h-[28px] flex items-start justify-between gap-1">
+          <span className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block">
+            Needs Lower (High spots)
+          </span>
+        </div>
+        <div className="text-lg font-mono font-bold text-amber-800 dark:text-amber-400 mt-auto pt-0.5 flex items-baseline flex-wrap gap-x-1.5">
           <span>{summary.measuredCount >= 2 ? `${summary.lowerCount} pts` : '—'}</span>
           {summary.measuredCount >= 2 && summary.maxLower > 0 && (
             <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap">
@@ -367,10 +373,10 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
     >
       {/* Grade Mode Selection */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider text-[10px]">
+        <span className="font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider text-[10px] shrink-0">
           Target:
         </span>
-        <div className="flex rounded-lg bg-zinc-100 dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-800 h-8 items-center">
+        <div className="flex rounded-lg bg-zinc-100 dark:bg-zinc-900 p-0.5 border border-zinc-200 dark:border-zinc-800 h-8 items-center shrink-0">
           <button
             type="button"
             onClick={() => onChangeProject({ gradeMode: 'target_grade' })}
@@ -399,7 +405,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
 
         {/* If Grade % is selected, show grade input */}
         {project.gradeMode === 'target_grade' && (
-          <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 h-8">
+          <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 h-8 shrink-0">
             <span className="text-zinc-500 font-medium text-xs">Grade:</span>
             <div className="flex items-center">
               <input
@@ -432,7 +438,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
 
         {/* If End-to-End is selected, show resulting grade readout */}
         {project.gradeMode === 'end_to_end' && (
-          <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 min-h-[32px] py-1 text-xs flex-wrap">
+          <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 px-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 h-8 text-xs shrink-0">
             {!gradeInfo ? (
               <div className="flex items-center gap-1 text-zinc-500 font-medium whitespace-nowrap shrink-0">
                 <TrendingUp className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
@@ -494,11 +500,13 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
       {/* Station Interval & Units */}
       <div className="flex items-center gap-2.5 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="text-zinc-500 font-medium">Interval:</span>
+          <span className="font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider text-[10px] shrink-0">
+            Interval:
+          </span>
           <select
             value={project.stationIntervalFt}
             onChange={(e) => onChangeProject({ stationIntervalFt: parseInt(e.target.value, 10) })}
-            className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 font-bold text-zinc-900 dark:text-zinc-100 outline-none"
+            className="h-8 px-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-bold text-xs text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer"
           >
             <option value="1">1 ft (fine)</option>
             <option value="2">2 ft</option>
@@ -508,11 +516,13 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span className="text-zinc-500 font-medium">Units:</span>
+          <span className="font-bold text-zinc-400 dark:text-zinc-300 uppercase tracking-wider text-[10px] shrink-0">
+            Units:
+          </span>
           <select
             value={project.unitFormat}
             onChange={(e) => onChangeProject({ unitFormat: e.target.value as UnitFormat })}
-            className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 font-bold text-zinc-900 dark:text-zinc-100 outline-none"
+            className="h-8 px-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 font-bold text-xs text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer"
           >
             <option value="feet_inches_fraction">Ft, In & 1/16"</option>
             <option value="inches_fraction">Inches & 1/16"</option>

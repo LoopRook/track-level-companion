@@ -525,7 +525,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               }
               onToggleMeasureMode?.(nextState);
             }}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition active:scale-95 ${
+            className={`h-7.5 sm:h-7 flex items-center gap-1.5 px-2.5 rounded-lg text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0 ${
               isMeasureModeActive || isRangeLocked
                 ? 'bg-sky-500 text-black shadow-sm'
                 : 'bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-800'
@@ -543,7 +543,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </button>
 
           {/* Vertical Zoom Sensitivity Buttons */}
-          <div className="flex items-center bg-zinc-200/80 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-300 dark:border-zinc-800">
+          <div className="h-7.5 sm:h-7 flex items-center bg-zinc-200/80 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-300 dark:border-zinc-800 shrink-0">
             <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold px-1.5 hidden md:inline">
               Vert:
             </span>
@@ -551,7 +551,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               <button
                 key={scale}
                 onClick={() => setZoomScale(scale)}
-                className={`px-2 py-1 rounded font-mono text-xs font-bold transition active:scale-95 ${
+                className={`h-full px-2 rounded font-mono text-xs font-bold transition active:scale-95 flex items-center justify-center ${
                   zoomScale === scale
                     ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 shadow-sm ring-1 ring-amber-400/50'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -574,7 +574,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {/* Expand / Fit Width Toggle */}
           <button
             onClick={() => setIsScrollable(!isScrollable)}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition"
+            className="h-7.5 sm:h-7 flex items-center gap-1 px-2.5 rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition whitespace-nowrap shrink-0"
             title={isScrollable ? 'Fit entire track to screen' : 'Expand track for wide horizontal scrolling'}
           >
             {isScrollable ? (
@@ -591,11 +591,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </button>
 
           {/* Export / Print Dropdown Menu */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               type="button"
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition active:scale-95 shadow-xs"
+              className="h-7.5 sm:h-7 flex items-center gap-1 px-2.5 rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition active:scale-95 shadow-xs whitespace-nowrap"
               title="Export PNG or print track profile chart"
             >
               <Download className="w-3.5 h-3.5 stroke-[2.2] text-amber-500" />

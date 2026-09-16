@@ -997,7 +997,7 @@ export const App: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-4 items-start">
           {/* LEFT COLUMN: Field Stats Summary + Alignment Controls + Gentle Profile Graph */}
           <div
-            className={`space-y-3 lg:sticky lg:top-3 lg:col-span-7 ${
+            className={`space-y-3 lg:sticky lg:top-3 lg:col-span-6 xl:col-span-6 ${
               mobileLayout === 'tabbed' && mobileTab !== 'graph'
                 ? 'hidden lg:block'
                 : 'block'
@@ -1046,7 +1046,7 @@ export const App: React.FC = () => {
 
           {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
           <div
-            className={`space-y-3 lg:sticky lg:top-3 lg:col-span-5 ${
+            className={`space-y-3 lg:sticky lg:top-3 lg:col-span-6 xl:col-span-6 ${
               mobileLayout === 'tabbed' && mobileTab !== 'checklist'
                 ? 'hidden lg:block'
                 : 'block'
