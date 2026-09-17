@@ -213,5 +213,358 @@ input, textarea {
   }
 }
 
+/* ==========================================================================
+   UI Prototype Lab - Curated Style Systems
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Style 1: Liquid Glass (Spatial Translucency & Specular Refraction) [Original Preserved]
+   -------------------------------------------------------------------------- */
+html.style-glass.dark,
+html.style-glass.dark body {
+  background-color: #05060a !important;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+    radial-gradient(at 85% 85%, rgba(236, 72, 153, 0.1) 0px, transparent 50%) !important;
+  color: #f8fafc !important;
+}
+
+html.style-glass.light,
+html.style-glass.light body {
+  background-color: #f5f7fc !important;
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(59, 130, 246, 0.08) 0px, transparent 40%),
+    radial-gradient(at 90% 90%, rgba(168, 85, 247, 0.06) 0px, transparent 40%) !important;
+  color: #0f172a !important;
+}
+
+/* Glass Cards */
+.style-glass.dark .proto-card {
+  background: rgba(18, 20, 30, 0.45) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  border-radius: 1.25rem !important;
+}
+
+.style-glass.light .proto-card {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 12px 32px rgba(31, 38, 135, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  border-radius: 1.25rem !important;
+}
+
+/* --------------------------------------------------------------------------
+   Style 2: Swiss International Typographic Style (Redux / Fresh Take)
+   Rooted in Die Neue Graphik, Josef Müller-Brockmann, Armin Hofmann, Max Bill
+   Zero fluff, strict modular grid, massive typographic contrast, SBB vermilion accents
+   -------------------------------------------------------------------------- */
+html.style-swiss,
+html.style-swiss body {
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Arial", sans-serif !important;
+  letter-spacing: -0.015em;
+}
+
+html.style-swiss.dark,
+html.style-swiss.dark body {
+  background-color: #09090b !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+html.style-swiss.light,
+html.style-swiss.light body {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+
+/* Swiss Typographic Cards: Crisp 0px borders, architectural structural rules, zero drop-shadow fluff */
+.style-swiss.dark .proto-card {
+  background-color: #121215 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #27272a !important;
+  border-top: 4px solid #ffffff !important;
+  box-shadow: none !important;
+  border-radius: 0px !important;
+}
+
+.style-swiss.light .proto-card {
+  background-color: #fafafc !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #000000 !important;
+  border-top: 4px solid #000000 !important;
+  box-shadow: none !important;
+  border-radius: 0px !important;
+}
+
+/* Swiss Sharp Buttons */
+.style-swiss.dark button,
+.style-swiss.dark input,
+.style-swiss.dark select {
+  border-radius: 0px !important;
+}
+
+.style-swiss.light button,
+.style-swiss.light input,
+.style-swiss.light select {
+  border-radius: 0px !important;
+}
+
+/* Swiss Vermilion Information Anchors */
+.style-swiss .swiss-accent-badge {
+  background-color: #eb0000 !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  border-radius: 0px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --------------------------------------------------------------------------
+   Style 3: Nothing Design System (Official Design Skill Specification)
+   Rooted in Swiss typography, Teenage Engineering, and Nothing OS 3.0
+   Fonts: Doto (display), Space Grotesk (body/UI), Space Mono (data/labels)
+   Strictly flat surfaces, border separation, zero drop-shadow, 14px radius
+   -------------------------------------------------------------------------- */
+html.style-nothing {
+  --nd-black: #000000;
+  --nd-surface: #111111;
+  --nd-surface-raised: #1A1A1A;
+  --nd-border: #222222;
+  --nd-border-visible: #333333;
+  --nd-text-disabled: #666666;
+  --nd-text-secondary: #999999;
+  --nd-text-primary: #E8E8E8;
+  --nd-text-display: #FFFFFF;
+  --nd-accent: #D71921;
+  --nd-accent-subtle: rgba(215, 25, 33, 0.15);
+  --nd-success: #4A9E5C;
+  --nd-warning: #D4A843;
+  --nd-interactive: #5B9BF6;
+}
+
+html.style-nothing.light {
+  --nd-black: #F5F5F5;
+  --nd-surface: #FFFFFF;
+  --nd-surface-raised: #F0F0F0;
+  --nd-border: #E8E8E8;
+  --nd-border-visible: #CCCCCC;
+  --nd-text-disabled: #999999;
+  --nd-text-secondary: #666666;
+  --nd-text-primary: #1A1A1A;
+  --nd-text-display: #000000;
+  --nd-accent: #D71921;
+  --nd-accent-subtle: rgba(215, 25, 33, 0.1);
+  --nd-success: #4A9E5C;
+  --nd-warning: #D4A843;
+  --nd-interactive: #007AFF;
+}
+
+html.style-nothing,
+html.style-nothing body {
+  font-family: 'Space Grotesk', system-ui, sans-serif !important;
+  letter-spacing: -0.01em;
+}
+
+/* Nothing Canvas: OLED black in Dark, warm off-white paper #F5F5F5 in Light */
+html.style-nothing.dark,
+html.style-nothing.dark body {
+  background-color: #000000 !important;
+  background-image: radial-gradient(circle, #2a2a2a 1px, transparent 1px) !important;
+  background-size: 16px 16px !important;
+  color: #E8E8E8 !important;
+}
+
+html.style-nothing.light,
+html.style-nothing.light body {
+  background-color: #F5F5F5 !important;
+  background-image: radial-gradient(circle, #b8b8b8 1px, transparent 1px) !important;
+  background-size: 16px 16px !important;
+  color: #1A1A1A !important;
+}
+
+/* Nothing Cards / Surfaces:
+   Per skill craft rules: NO shadows! NO blur! Flat surfaces, 1px border separation. Radius 14px. */
+.style-nothing.dark .proto-card {
+  background-color: #111111 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #333333 !important;
+  box-shadow: none !important;
+  border-radius: 14px !important;
+  position: relative;
+}
+
+.style-nothing.light .proto-card {
+  background-color: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #CCCCCC !important;
+  box-shadow: none !important;
+  border-radius: 14px !important;
+  position: relative;
+}
+
+/* Nothing Labels: Space Mono, ALL CAPS, 11-12px, letter-spacing 0.08em */
+.style-nothing .nothing-label {
+  font-family: 'Space Mono', monospace !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 11px !important;
+  color: var(--nd-text-secondary) !important;
+}
+
+/* Nothing Hero Displays / Numbers: Doto or Space Mono */
+.style-nothing .nothing-display {
+  font-family: 'Doto', 'Space Mono', monospace !important;
+  font-weight: 700 !important;
+}
+
+.style-nothing .nothing-mono {
+  font-family: 'Space Mono', monospace !important;
+}
+
+/* Nothing Buttons: Pill (9999px), Space Mono, ALL CAPS, 12-13px */
+.style-nothing.dark button:not(.proto-ignore) {
+  font-family: 'Space Mono', monospace !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+}
+
+.style-nothing.light button:not(.proto-ignore) {
+  font-family: 'Space Mono', monospace !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  border-radius: 9999px !important;
+  box-shadow: none !important;
+}
+
+.style-nothing.dark select,
+.style-nothing.dark input[type="text"],
+.style-nothing.dark input[type="number"] {
+  font-family: 'Space Mono', monospace !important;
+  border-radius: 9999px !important;
+}
+
+.style-nothing.light select,
+.style-nothing.light input[type="text"],
+.style-nothing.light input[type="number"] {
+  font-family: 'Space Mono', monospace !important;
+  border-radius: 9999px !important;
+}
+
+/* Nothing Accent Signal Light (Red #D71921) */
+.style-nothing .nothing-signal-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #D71921 !important;
+  border-radius: 9999px;
+  display: inline-block;
+}
+
+/* --------------------------------------------------------------------------
+   Style 4: Tactile Claymorphism (3D Puffy Volumetric Clay & Pillows)
+   3D puffy plasticine/clay tablets, inner rim lighting, friendly squircle radius
+   -------------------------------------------------------------------------- */
+html.style-claymorphism.dark,
+html.style-claymorphism.dark body {
+  background-color: #11141a !important;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.06) 0%, transparent 40%) !important;
+  color: #f1f5f9 !important;
+}
+
+html.style-claymorphism.light,
+html.style-claymorphism.light body {
+  background-color: #f1f4f9 !important;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(244, 114, 182, 0.05) 0%, transparent 40%) !important;
+  color: #0f172a !important;
+}
+
+/* Claymorphic Puffy Tablets */
+.style-claymorphism.dark .proto-card {
+  background: #1b1f29 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 
+    0 24px 48px -12px rgba(0, 0, 0, 0.7),
+    0 8px 16px -4px rgba(0, 0, 0, 0.5),
+    inset 3px 3px 6px rgba(255, 255, 255, 0.12),
+    inset -4px -4px 10px rgba(0, 0, 0, 0.45) !important;
+  border-radius: 1.75rem !important;
+}
+
+.style-claymorphism.light .proto-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 
+    0 20px 40px -8px rgba(30, 41, 59, 0.12),
+    0 6px 14px -3px rgba(30, 41, 59, 0.06),
+    inset 3px 3px 6px rgba(255, 255, 255, 0.95),
+    inset -4px -4px 8px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 1.75rem !important;
+}
+
+/* --------------------------------------------------------------------------
+   Style 5: Tactile Cockpit (MOW Heavy Equipment Telemetry & Physical Bevels) [Preserved]
+   -------------------------------------------------------------------------- */
+html.style-cockpit.dark,
+html.style-cockpit.dark body {
+  background-color: #090a0d !important;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0) !important;
+  background-size: 16px 16px !important;
+  color: #ffb320 !important;
+}
+
+html.style-cockpit.light,
+html.style-cockpit.light body {
+  background-color: #dce0e6 !important;
+  color: #1e293b !important;
+}
+
+/* Cockpit Cards - Physical Bevel & Sunken Wells */
+.style-cockpit.dark .proto-card {
+  background: linear-gradient(180deg, #161820 0%, #101117 100%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-bottom: 2px solid #000000 !important;
+  border-left: 1px solid #1a1c24 !important;
+  border-right: 1px solid #0a0b0e !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.625rem !important;
+}
+
+.style-cockpit.light .proto-card {
+  background: linear-gradient(180deg, #edf0f5 0%, #e2e6ed 100%) !important;
+  border-top: 1px solid #ffffff !important;
+  border-bottom: 2px solid #9ca3af !important;
+  border-left: 1px solid #d1d5db !important;
+  border-right: 1px solid #d1d5db !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  border-radius: 0.625rem !important;
+}
+
+/* Phosphor Glow for Cockpit Readouts */
+.style-cockpit.dark .cockpit-glow-amber {
+  color: #ffb020 !important;
+  text-shadow: 0 0 10px rgba(255, 176, 32, 0.5) !important;
+}
+
+.style-cockpit.dark .cockpit-glow-green {
+  color: #00ff66 !important;
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.5) !important;
+}
+
+
+
 
 

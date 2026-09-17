@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { TrackProject, UnitFormat } from '../core/types';
+import { TrackProject, UnitFormat, PrototypeStyle } from '../core/types';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 import { APP_VERSION_LABEL } from '../core/version';
-import { Settings, X, Check, RefreshCw, Sliders, Hash, ShieldCheck, Smartphone, Vibrate } from 'lucide-react';
+import { Settings, X, Check, RefreshCw, Sliders, Hash, ShieldCheck, Smartphone, Vibrate, Palette, Moon, Sun, FlaskConical } from 'lucide-react';
 import { triggerHaptic } from '../core/haptics';
+import { STYLES_META } from './PrototypeLabBar';
 
 export interface SettingsModalProps {
   isOpen: boolean;
@@ -16,6 +17,12 @@ export interface SettingsModalProps {
   hapticsEnabled?: boolean;
   onChangeHapticsEnabled?: (enabled: boolean) => void;
   onStartTutorial?: () => void;
+  prototypeStyle?: PrototypeStyle;
+  onChangePrototypeStyle?: (style: PrototypeStyle) => void;
+  showPrototypeBar?: boolean;
+  onChangeShowPrototypeBar?: (show: boolean) => void;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
 }
 
 const TOLERANCE_PRESETS = [
@@ -37,6 +44,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   hapticsEnabled,
   onChangeHapticsEnabled,
   onStartTutorial,
+  prototypeStyle = 'nothing',
+  onChangePrototypeStyle,
+  showPrototypeBar = false,
+  onChangeShowPrototypeBar,
+  isDarkMode,
+  onToggleDarkMode,
 }) => {
   useBodyScrollLock(isOpen);
 
@@ -95,6 +108,86 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-4 sm:p-5 space-y-6 overflow-y-auto modal-scroll-container text-xs">
+          
+          {/* Section: Appearance & Design System */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
+                <Palette className="w-4 h-4 text-amber-500" />
+                <span>Appearance & Design System</span>
+              </div>
+              {onToggleDarkMode && (
+                <button
+                  type="button"
+                  onClick={onToggleDarkMode}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-[11px] font-bold transition hover:border-zinc-400 dark:hover:border-zinc-600 active:scale-95 cursor-pointer"
+                >
+                  {isDarkMode ? (
+                    <>
+                      <Moon className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Dark Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Light Mode</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Select your interface aesthetic. <strong>Nothing OS</strong> provides the official hardware-inspired dark/light system with dot-matrix typography and high-contrast telemetry.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {STYLES_META.map((style) => {
+                const isSelected = prototypeStyle === style.id;
+                const IconComponent = style.icon;
+                return (
+                  <button
+                    key={style.id}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('selection', true);
+                      onChangePrototypeStyle?.(style.id);
+                    }}
+                    className={`p-2.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                      isSelected
+                        ? 'border-amber-500 bg-amber-500/10 text-zinc-900 dark:text-white ring-1 ring-amber-500/50'
+                        : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <IconComponent className={`w-4 h-4 ${isSelected ? 'text-amber-500' : 'text-zinc-500'}`} />
+                        <span className="font-extrabold text-xs">{style.label}</span>
+                        {style.id === 'nothing' && (
+                          <span className="text-[9px] bg-red-500/20 text-red-500 font-bold px-1.5 py-0.2 rounded-full border border-red-500/30">
+                            NEW
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-0.5">
+                          <span className="w-2 h-2 rounded-full border border-zinc-700 inline-block" style={{ backgroundColor: style.palette.dark }} />
+                          <span className="w-2 h-2 rounded-full border border-zinc-300 inline-block" style={{ backgroundColor: style.palette.light }} />
+                          <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: style.palette.accent }} />
+                        </div>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-amber-500 stroke-[3]" />}
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+                      {style.inspiration}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <hr className="border-zinc-200 dark:border-zinc-800" />
           
           {/* Section 1: Grade Margin / On-Grade Tolerance */}
           <div className="space-y-2.5">
@@ -384,6 +477,44 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </button>
             </div>
           )}
+
+          <hr className="border-zinc-200 dark:border-zinc-800" />
+
+          {/* Section: Developer & Experimental Tools */}
+          <div className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FlaskConical className="w-4 h-4 text-purple-500" />
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">
+                  Developer & Experimental Tools
+                </span>
+              </div>
+            </div>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Show the top Prototype Lab toolbar for instant theme comparison. Keep disabled for a clean, full-height production viewport.
+            </p>
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                Show Prototype Lab Bar (Top Banner)
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHaptic('selection', true);
+                  onChangeShowPrototypeBar?.(!showPrototypeBar);
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                  showPrototypeBar ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-xs ${
+                    showPrototypeBar ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
 
           <hr className="border-zinc-200 dark:border-zinc-800" />
 

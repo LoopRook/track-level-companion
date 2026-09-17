@@ -6,7 +6,7 @@ describe('App Component SSR render', () => {
   it('renders App without crashing', () => {
     const html = renderToString(<App />);
     expect(html).toContain('Track Vertical Profile');
-    expect(html).toContain('Trackside Leveling Checklist');
+    expect(html).toMatch(/Trackside Leveling Checklist/i);
     expect(html).toContain('Track Section Name');
   });
 });

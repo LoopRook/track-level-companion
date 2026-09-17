@@ -2,6 +2,15 @@ export type UnitFormat = 'feet_inches_fraction' | 'inches_fraction' | 'decimal_i
 
 export type GradeMode = 'target_grade' | 'end_to_end' | 'best_fit' | 'smooth_curve';
 
+export type PrototypeStyle = 
+  | 'original' 
+  | 'glass' 
+  | 'swiss' 
+  | 'claymorphism' 
+  | 'nothing' 
+  | 'cockpit';
+export type StyleColorMode = 'dark' | 'light';
+
 export interface StationPoint {
   id: string;
   distanceFt: number;        // Chainage along track (e.g. 0, 5, 10, 15)

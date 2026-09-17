@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { CalculatedStation, GradeMode } from '../core/types';
+import { CalculatedStation, GradeMode, PrototypeStyle } from '../core/types';
 import { formatFeetInches, formatMeasurement } from '../core/units';
 import { calculateGradeInfo, calculateSubsetGrade, SubsetGradeInfo } from '../core/calculations';
 import { Maximize2, Minimize2, Ruler, Download, Image as ImageIcon, Printer } from 'lucide-react';
@@ -14,6 +14,8 @@ interface ProfileChartProps {
   trackName?: string;
   onToggleMeasureMode?: (isActive: boolean) => void;
   onSubsetSpanChange?: () => void;
+  prototypeStyle?: PrototypeStyle;
+  isDarkMode?: boolean;
 }
 
 type ZoomScale = '1x' | '3x' | '8x' | '15x';
@@ -86,7 +88,15 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   trackName,
   onToggleMeasureMode,
   onSubsetSpanChange,
+  prototypeStyle = 'original',
+  isDarkMode,
 }) => {
+  const isDark = typeof isDarkMode === 'boolean'
+    ? isDarkMode
+    : typeof document !== 'undefined'
+    ? document.documentElement.classList.contains('dark')
+    : true;
+
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -291,6 +301,20 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
     return getSmoothSplinePath(pts);
   }, [measuredStations, minY, maxY, minX, maxX, innerWidth]);
+
+  // Generate SVG area fill for liquid glass style
+  const actualAreaPath = useMemo(() => {
+    if (measuredStations.length < 2) return '';
+    const pts = measuredStations.map(s => ({
+      x: getX(s.distanceFt),
+      y: getY(s.elevationInches!),
+    }));
+    const spline = getSmoothSplinePath(pts);
+    const first = pts[0];
+    const last = pts[pts.length - 1];
+    const bottomY = padding.top + innerHeight;
+    return `${spline} L ${last.x} ${bottomY} L ${first.x} ${bottomY} Z`;
+  }, [measuredStations, minY, maxY, minX, maxX, innerWidth, padding.top, innerHeight]);
 
   // Generate SVG path for target grade
   const targetPath = useMemo(() => {
@@ -511,32 +535,47 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   return (
     <div
       data-tutorial="profile-chart"
-      className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors"
+      className="proto-card bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors"
     >
       {/* Header Toolbar */}
       <div className="px-3.5 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-950">
         {/* Title and Shot Counter */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-          <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm whitespace-nowrap">
-            <span className="sm:hidden">Track Profile</span>
-            <span className="hidden sm:inline">Track Vertical Profile</span>
+          {prototypeStyle === 'nothing' ? (
+            <div className="w-2 h-2 rounded-full bg-[#D71921] shrink-0" />
+          ) : (
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+          )}
+          <h3 className={`font-bold text-zinc-900 dark:text-zinc-100 text-sm whitespace-nowrap ${
+            prototypeStyle === 'nothing' ? "font-['Space_Mono'] uppercase tracking-[0.08em] text-xs" : ''
+          }`}>
+            <span className="sm:hidden">{prototypeStyle === 'nothing' ? '[ PROFILE ]' : 'Track Profile'}</span>
+            <span className="hidden sm:inline">{prototypeStyle === 'nothing' ? '[ TRACK VERTICAL PROFILE ]' : 'Track Vertical Profile'}</span>
           </h3>
-          <span className="text-[11px] bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 font-mono px-2 py-0.5 rounded-md whitespace-nowrap shrink-0">
+          <span className={`text-[11px] ${
+            prototypeStyle === 'nothing'
+              ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-["Space_Mono"] uppercase tracking-wider px-2 py-0.5 rounded-full'
+              : 'bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 font-mono px-2 py-0.5 rounded-md'
+          } whitespace-nowrap shrink-0`}>
             {measuredStations.length}/{stations.length} Shot
           </span>
           {gradeInfo && (
             <span
-              className="text-[11px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md border border-emerald-500/25 whitespace-nowrap shrink-0"
+              className={`text-[11px] ${
+                prototypeStyle === 'nothing'
+                  ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white font-["Space_Mono"] uppercase tracking-wider px-2 py-0.5 rounded-full'
+                  : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md border border-emerald-500/25'
+              } whitespace-nowrap shrink-0`}
               title={
                 gradeMode === 'end_to_end'
                   ? `End-to-End net slope: ${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}% (${gradeInfo.segments.length} chords)`
                   : `Target Slope: ${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%`
               }
             >
-              {gradeMode === 'end_to_end' ? 'End-to-End: ' : 'Grade: '}
-              {gradeInfo.overallGradePercent >= 0 ? '+' : ''}{gradeInfo.overallGradePercent.toFixed(2)}%
-              {gradeInfo.hasLockedPoints && <span className="hidden sm:inline"> ({gradeInfo.segments.length} chords)</span>}
+              {prototypeStyle === 'nothing'
+                ? `[ ${gradeMode === 'end_to_end' ? 'NET' : 'GRADE'}: ${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}% ]`
+                : `${gradeMode === 'end_to_end' ? 'End-to-End: ' : 'Grade: '}${gradeInfo.overallGradePercent >= 0 ? '+' : ''}${gradeInfo.overallGradePercent.toFixed(2)}%`}
+              {gradeInfo.hasLockedPoints && prototypeStyle !== 'nothing' && <span className="hidden sm:inline"> ({gradeInfo.segments.length} chords)</span>}
             </span>
           )}
         </div>
@@ -557,10 +596,14 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               }
               onToggleMeasureMode?.(nextState);
             }}
-            className={`h-7.5 sm:h-7 flex items-center gap-1.5 px-2.5 rounded-lg text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0 ${
-              isMeasureModeActive || isRangeLocked
-                ? 'bg-sky-500 text-black shadow-sm'
-                : 'bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-800'
+            className={`h-7.5 sm:h-7 flex items-center gap-1.5 px-2.5 text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0 ${
+              prototypeStyle === 'nothing'
+                ? isMeasureModeActive || isRangeLocked
+                  ? 'bg-black text-white dark:bg-white dark:text-black font-["Space_Mono"] uppercase tracking-wider rounded-full shadow-none'
+                  : 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider rounded-full shadow-none'
+                : isMeasureModeActive || isRangeLocked
+                ? 'bg-sky-500 text-black shadow-sm rounded-lg'
+                : 'bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-800 rounded-lg'
             }`}
             title="Evaluate grade, rise, and slope between any subset of stations"
           >
@@ -568,25 +611,37 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             <span className="hidden sm:inline">Evaluate Grade</span>
             <span className="sm:hidden">Grade</span>
             {isRangeLocked && activeSubsetGrade && (
-              <span className="bg-black/20 text-black px-1.5 py-0.2 rounded text-[10px] font-mono font-extrabold">
+              <span className={`${
+                prototypeStyle === 'nothing'
+                  ? 'bg-black/10 dark:bg-white/20 text-current px-1.5 py-0.2 rounded-full text-[10px] font-mono'
+                  : 'bg-black/20 text-black px-1.5 py-0.2 rounded text-[10px] font-mono font-extrabold'
+              }`}>
                 {activeSubsetGrade.distanceFt}'
               </span>
             )}
           </button>
 
           {/* Vertical Zoom Sensitivity Buttons */}
-          <div className="h-7.5 sm:h-7 flex items-center bg-zinc-200/80 dark:bg-zinc-900 p-0.5 rounded-lg border border-zinc-300 dark:border-zinc-800 shrink-0">
-            <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold px-1.5 hidden md:inline">
+          <div className={`h-7.5 sm:h-7 flex items-center p-0.5 shrink-0 ${
+            prototypeStyle === 'nothing'
+              ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 rounded-full'
+              : 'bg-zinc-200/80 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-lg'
+          }`}>
+            <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold px-1.5 hidden md:inline font-mono">
               Vert:
             </span>
             {(['1x', '3x', '8x', '15x'] as ZoomScale[]).map(scale => (
               <button
                 key={scale}
                 onClick={() => setZoomScale(scale)}
-                className={`h-full px-2 rounded font-mono text-xs font-bold transition active:scale-95 flex items-center justify-center ${
-                  zoomScale === scale
-                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 shadow-sm ring-1 ring-amber-400/50'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                className={`h-full px-2 font-mono text-xs transition active:scale-95 flex items-center justify-center ${
+                  prototypeStyle === 'nothing'
+                    ? zoomScale === scale
+                      ? 'bg-black text-white dark:bg-white dark:text-black font-bold rounded-full shadow-none'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white rounded-full'
+                    : zoomScale === scale
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 shadow-sm ring-1 ring-amber-400/50 rounded'
+                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 rounded'
                 }`}
                 title={
                   scale === '1x'
@@ -606,7 +661,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {/* Expand / Fit Width Toggle */}
           <button
             onClick={() => setIsScrollable(!isScrollable)}
-            className="h-7.5 sm:h-7 flex items-center gap-1 px-2.5 rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition whitespace-nowrap shrink-0"
+            className={`h-7.5 sm:h-7 flex items-center gap-1 px-2.5 text-xs font-semibold transition whitespace-nowrap shrink-0 ${
+              prototypeStyle === 'nothing'
+                ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider shadow-none'
+                : 'rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-800'
+            }`}
             title={isScrollable ? 'Fit entire track to screen' : 'Expand track for wide horizontal scrolling'}
           >
             {isScrollable ? (
@@ -627,10 +686,14 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             <button
               type="button"
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="h-7.5 sm:h-7 flex items-center gap-1 px-2.5 rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 text-xs font-semibold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition active:scale-95 shadow-xs whitespace-nowrap"
+              className={`h-7.5 sm:h-7 flex items-center gap-1 px-2.5 text-xs font-semibold transition active:scale-95 whitespace-nowrap ${
+                prototypeStyle === 'nothing'
+                  ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider shadow-none'
+                  : 'rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-800 shadow-xs'
+              }`}
               title="Export PNG or print track profile chart"
             >
-              <Download className="w-3.5 h-3.5 stroke-[2.2] text-amber-500" />
+              <Download className={`w-3.5 h-3.5 stroke-[2.2] ${prototypeStyle === 'nothing' ? 'text-[#D71921]' : 'text-amber-500'}`} />
               <span className="text-[11px] hidden sm:inline">Export</span>
             </button>
 
@@ -873,34 +936,58 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
               <div className="flex items-center gap-2 font-sans font-bold self-end sm:self-auto shrink-0">
                 {currentInspectStation.completed && (
-                  <span className="text-emerald-700 dark:text-emerald-400 text-xs px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 flex items-center gap-1 font-sans whitespace-nowrap shrink-0">
+                  <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap shrink-0 ${
+                    prototypeStyle === 'nothing'
+                      ? 'text-[#4A9E5C] border border-[#4A9E5C] font-["Space_Mono"]'
+                      : 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30'
+                  }`}>
                     ✓ LEVELED
                   </span>
                 )}
                 {currentInspectStation.isLocked ? (
-                  <span className="text-amber-800 dark:text-amber-400 text-xs flex items-center gap-1 font-sans whitespace-nowrap shrink-0">
+                  <span className={`text-xs flex items-center gap-1 whitespace-nowrap shrink-0 ${
+                    prototypeStyle === 'nothing'
+                      ? 'text-zinc-900 dark:text-white font-["Space_Mono"]'
+                      : 'text-amber-800 dark:text-amber-400'
+                  }`}>
                     🔒 LOCKED
                   </span>
                 ) : (
                   <>
                     {currentInspectStation.action === 'ok' && (
-                      <span className="text-emerald-700 dark:text-emerald-400 text-xs font-sans whitespace-nowrap shrink-0">
+                      <span className={`text-xs whitespace-nowrap shrink-0 ${
+                        prototypeStyle === 'nothing'
+                          ? 'text-[#4A9E5C] font-["Space_Mono"]'
+                          : 'text-emerald-700 dark:text-emerald-400 font-sans'
+                      }`}>
                         {currentInspectStation.actionText === 'DATUM (REF)' ? 'DATUM (REF)' : '✓ ON GRADE'}
                       </span>
                     )}
                     {currentInspectStation.action === 'lift' && (
-                      <span className="text-sky-700 dark:text-sky-400 text-xs font-sans whitespace-nowrap shrink-0">▲ {currentInspectStation.actionText}</span>
+                      <span className={`text-xs whitespace-nowrap shrink-0 ${
+                        prototypeStyle === 'nothing'
+                          ? 'text-[#5B9BF6] font-["Space_Mono"]'
+                          : 'text-sky-700 dark:text-sky-400 font-sans'
+                      }`}>▲ {currentInspectStation.actionText}</span>
                     )}
                     {currentInspectStation.action === 'lower' && (
-                      <span className="text-amber-800 dark:text-amber-400 text-xs font-sans whitespace-nowrap shrink-0">▼ {currentInspectStation.actionText}</span>
+                      <span className={`text-xs whitespace-nowrap shrink-0 ${
+                        prototypeStyle === 'nothing'
+                          ? 'text-[#D4A843] font-["Space_Mono"]'
+                          : 'text-amber-800 dark:text-amber-400 font-sans'
+                      }`}>▼ {currentInspectStation.actionText}</span>
                     )}
                   </>
                 )}
                 <button
                   onClick={() => onSelectStation(currentInspectStation)}
-                  className="px-3 py-1 rounded-lg bg-amber-500 text-black text-xs font-bold shadow-sm hover:bg-amber-400 transition active:scale-95 flex items-center gap-1 whitespace-nowrap shrink-0"
+                  className={`px-3 py-1 text-xs font-bold transition active:scale-95 flex items-center gap-1 whitespace-nowrap shrink-0 ${
+                    prototypeStyle === 'nothing'
+                      ? 'bg-black text-white dark:bg-white dark:text-black font-["Space_Mono"] uppercase tracking-wider rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200'
+                      : 'bg-amber-500 text-black rounded-lg shadow-sm hover:bg-amber-400'
+                  }`}
                 >
-                  ✏️ Edit
+                  {prototypeStyle === 'nothing' ? '[ EDIT ]' : '✏️ Edit'}
                 </button>
               </div>
             </>
@@ -915,7 +1002,9 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
       {/* Unified SVG Canvas Container */}
       <div
-        className={`w-full ${isScrollable ? 'overflow-x-auto scrollbar-thin' : ''} bg-zinc-50/50 dark:bg-black select-none`}
+        className={`w-full ${isScrollable ? 'overflow-x-auto scrollbar-thin' : ''} ${
+          prototypeStyle === 'nothing' ? 'bg-[#FFFFFF] dark:bg-[#000000]' : 'bg-zinc-50/50 dark:bg-black'
+        } select-none`}
         style={{ WebkitOverflowScrolling: 'touch', touchAction: isScrollable ? 'pan-x pan-y' : 'pan-y' }}
       >
         <svg
@@ -930,6 +1019,87 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           onMouseLeave={handleSvgMouseLeave}
           onClick={handleSvgClick}
         >
+          <defs>
+            {/* Phosphor HUD Glow for Cockpit */}
+            <filter id="cockpitGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            {/* Translucent Prismatic Area Gradient for Liquid Glass (Original) */}
+            <linearGradient id="glassAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.35" />
+              <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.0" />
+            </linearGradient>
+
+            {/* Puffy Clay Soft Pastel Area Gradient for Claymorphism */}
+            <linearGradient id="clayAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
+              <stop offset="60%" stopColor="#a855f7" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+            </linearGradient>
+
+            {/* Clay Drop Shadow for Volumetric Line */}
+            <filter id="claymorphismDropShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="4" stdDeviation="3" floodOpacity="0.35" floodColor="#4338ca" />
+            </filter>
+
+            {/* Dot Matrix Grid Backdrop for Nothing OS (16px pitch, matching index.css) */}
+            <pattern id="nothingDotGrid" width="16" height="16" patternUnits="userSpaceOnUse">
+              <circle cx="8" cy="8" r="0.9" fill={isDark ? '#2a2a2a' : '#b8b8b8'} />
+            </pattern>
+
+            {/* Nothing OS "Smoked Glass" (Translucent Polycarbonate) Monochromatic Gradient */}
+            <linearGradient id="nothingSmokedGlassGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.16 : 0.07} />
+              <stop offset="35%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity={isDark ? 0.06 : 0.02} />
+              <stop offset="100%" stopColor={isDark ? '#FFFFFF' : '#000000'} stopOpacity="0.0" />
+            </linearGradient>
+          </defs>
+
+          {/* Nothing OS Dot Matrix Grid Backdrop */}
+          {prototypeStyle === 'nothing' && (
+            <rect
+              x={padding.left}
+              y={padding.top}
+              width={innerWidth}
+              height={innerHeight}
+              fill="url(#nothingDotGrid)"
+              className="pointer-events-none"
+            />
+          )}
+
+          {/* Nothing OS Smoked Glass Area Fill (Exposes dot matrix through translucent acrylic) */}
+          {prototypeStyle === 'nothing' && actualAreaPath && (
+            <path
+              d={actualAreaPath}
+              fill="url(#nothingSmokedGlassGrad)"
+              className="pointer-events-none transition-all duration-300"
+            />
+          )}
+
+          {/* Liquid Glass (Original) Area Gradient Fill */}
+          {prototypeStyle === 'glass' && actualAreaPath && (
+            <path
+              d={actualAreaPath}
+              fill="url(#glassAreaGrad)"
+              className="pointer-events-none transition-all duration-300"
+            />
+          )}
+
+          {/* Claymorphism Area Gradient Fill */}
+          {prototypeStyle === 'claymorphism' && actualAreaPath && (
+            <path
+              d={actualAreaPath}
+              fill="url(#clayAreaGrad)"
+              className="pointer-events-none transition-all duration-300"
+            />
+          )}
+
           {/* Shaded Range Region for Subset Grade Evaluation */}
           {activeSubsetGrade && (
             <rect
@@ -945,6 +1115,33 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {yTicks.map(t => {
             const y = getY(t.val);
             const isZero = Math.abs(t.val) < 0.001;
+
+            if (prototypeStyle === 'nothing') {
+              // In Nothing OS: Only draw zero datum reference line. Do NOT draw dashed lines over dots.
+              return (
+                <g key={t.val}>
+                  {isZero && (
+                    <line
+                      x1={padding.left}
+                      y1={y}
+                      x2={effectiveWidth - padding.right}
+                      y2={y}
+                      stroke={isDark ? '#333333' : '#cccccc'}
+                      strokeWidth="1"
+                    />
+                  )}
+                  <text
+                    x={padding.left - 8}
+                    y={y + 3.5}
+                    textAnchor="end"
+                    className="font-mono text-[10px] fill-zinc-500 font-semibold"
+                  >
+                    {t.label}
+                  </text>
+                </g>
+              );
+            }
+
             return (
               <g key={t.val}>
                 <line
@@ -982,6 +1179,68 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               s.distanceFt >= activeSubsetGrade.startStation.distanceFt &&
               s.distanceFt <= activeSubsetGrade.endStation.distanceFt;
 
+            // In mobile fit mode, skip crowded intermediate labels if stations > 18 to avoid overlaps
+            const showLabel = !isMobile || isScrollable || stations.length <= 18 || idx % Math.ceil(stations.length / 16) === 0 || isSelected || idx === stations.length - 1;
+
+            if (prototypeStyle === 'nothing') {
+              // In Nothing OS: Pure clean coordinate space.
+              // No vertical dashed lines across the whole canvas!
+              // Ticks at bottom axis line + Space Mono labels.
+              // Selected station gets a razor-sharp Nothing signal red (#D71921) vertical cursor line.
+              return (
+                <g key={s.id}>
+                  {/* Axis tick mark */}
+                  <line
+                    x1={x}
+                    y1={padding.top + innerHeight}
+                    x2={x}
+                    y2={padding.top + innerHeight + 4}
+                    stroke={isDark ? '#333333' : '#cccccc'}
+                    strokeWidth="1"
+                  />
+                  {isSelected && (
+                    <line
+                      x1={x}
+                      y1={padding.top}
+                      x2={x}
+                      y2={padding.top + innerHeight}
+                      stroke={isMeasureModeActive ? (isDark ? '#5B9BF6' : '#1D4ED8') : '#D71921'}
+                      strokeWidth="1.5"
+                    />
+                  )}
+                  {isHovered && !isSelected && (
+                    <line
+                      x1={x}
+                      y1={padding.top}
+                      x2={x}
+                      y2={padding.top + innerHeight}
+                      stroke={isDark ? '#555555' : '#aaaaaa'}
+                      strokeWidth="1"
+                      strokeDasharray="2,2"
+                    />
+                  )}
+                  {showLabel && (
+                    <text
+                      x={x}
+                      y={padding.top + innerHeight + (isMobile ? 16 : 18)}
+                      textAnchor="middle"
+                      className={`font-mono ${isMobile ? 'text-[10px]' : 'text-[11px]'} ${
+                        isSelected
+                          ? isMeasureModeActive
+                            ? isDark ? 'fill-[#5B9BF6] font-bold' : 'fill-[#1D4ED8] font-bold'
+                            : 'fill-[#D71921] font-bold'
+                          : isHovered
+                          ? isDark ? 'fill-zinc-300 font-bold' : 'fill-zinc-800 font-bold'
+                          : isDark ? 'fill-zinc-500 font-normal' : 'fill-zinc-600 font-normal'
+                      }`}
+                    >
+                      {s.distanceFt}'
+                    </text>
+                  )}
+                </g>
+              );
+            }
+
             let lineClass = 'stroke-zinc-200 dark:stroke-zinc-800/60 stroke-1';
             let strokeDash: string | undefined = '2,2';
             let textClass = 'fill-zinc-600 dark:fill-zinc-400 font-bold';
@@ -1001,9 +1260,6 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             } else if (isInRange) {
               lineClass = isRangeLocked ? 'stroke-sky-300/40 dark:stroke-sky-700/40 stroke-1' : 'stroke-zinc-300 dark:stroke-zinc-700/60 stroke-1';
             }
-
-            // In mobile fit mode, skip crowded intermediate labels if stations > 18 to avoid overlaps
-            const showLabel = !isMobile || isScrollable || stations.length <= 18 || idx % Math.ceil(stations.length / 16) === 0 || isSelected || idx === stations.length - 1;
 
             return (
               <g key={s.id}>
@@ -1034,122 +1290,262 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             <path
               d={targetPath}
               fill="none"
-              className="stroke-emerald-500 dark:stroke-emerald-400 stroke-2"
-              strokeDasharray="6,4"
+              className={
+                prototypeStyle === 'cockpit'
+                  ? 'stroke-emerald-400 stroke-2'
+                  : prototypeStyle === 'glass'
+                  ? 'stroke-cyan-400 stroke-2'
+                  : prototypeStyle === 'swiss'
+                  ? 'stroke-black dark:stroke-white stroke-[1.5]'
+                  : prototypeStyle === 'claymorphism'
+                  ? 'stroke-emerald-500 stroke-2'
+                  : prototypeStyle === 'nothing'
+                  ? 'stroke-[#4A9E5C] stroke-2'
+                  : 'stroke-emerald-500 dark:stroke-emerald-400 stroke-2'
+              }
+              strokeDasharray={prototypeStyle === 'swiss' ? '3,3' : '6,4'}
             />
           )}
 
-          {/* Actual Rail Line (Crisp clean white in dark mode, dark charcoal in light mode) */}
+          {/* Actual Rail Line */}
           {actualPath && (
             <path
               d={actualPath}
               fill="none"
-              className="stroke-zinc-900 dark:stroke-white stroke-[3.5]"
+              className={
+                prototypeStyle === 'cockpit'
+                  ? 'stroke-amber-400 stroke-[3.5]'
+                  : prototypeStyle === 'glass'
+                  ? 'stroke-purple-400 dark:stroke-purple-300 stroke-[3.5]'
+                  : prototypeStyle === 'swiss'
+                  ? 'stroke-[#eb0000] stroke-[3.5]'
+                  : prototypeStyle === 'claymorphism'
+                  ? 'stroke-[#6366f1] dark:stroke-[#818cf8] stroke-[4]'
+                  : prototypeStyle === 'nothing'
+                  ? 'stroke-black dark:stroke-white stroke-[2.2]'
+                  : 'stroke-zinc-900 dark:stroke-white stroke-[3.5]'
+              }
+              filter={
+                prototypeStyle === 'cockpit'
+                  ? 'url(#cockpitGlow)'
+                  : prototypeStyle === 'claymorphism'
+                  ? 'url(#claymorphismDropShadow)'
+                  : undefined
+              }
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           )}
 
-          {/* Reference Chord between Subset Stations */}
+          {/* Reference Chord Line between Subset Stations */}
           {activeSubsetGrade && activeSubsetGrade.startStation.elevationInches !== null && activeSubsetGrade.endStation.elevationInches !== null && (
-            <g className="pointer-events-none select-none">
-              <line
-                x1={getX(activeSubsetGrade.startStation.distanceFt)}
-                y1={getY(activeSubsetGrade.startStation.elevationInches)}
-                x2={getX(activeSubsetGrade.endStation.distanceFt)}
-                y2={getY(activeSubsetGrade.endStation.elevationInches)}
-                stroke={isRangeLocked ? "#38bdf8" : "#f59e0b"}
-                strokeWidth="2.5"
-                strokeDasharray={isRangeLocked ? "5,3" : "3,3"}
-              />
-              {(() => {
-                const x1 = getX(activeSubsetGrade.startStation.distanceFt);
-                const y1 = getY(activeSubsetGrade.startStation.elevationInches);
-                const x2 = getX(activeSubsetGrade.endStation.distanceFt);
-                const y2 = getY(activeSubsetGrade.endStation.elevationInches);
-                const midX = (x1 + x2) / 2;
-                const midY = (y1 + y2) / 2;
-                const sign = activeSubsetGrade.netGradePercent > 0.001 ? '+' : '';
-                const arrow = activeSubsetGrade.direction === 'uphill' ? '↗' : activeSubsetGrade.direction === 'downhill' ? '↘' : '→';
-                const text = `${sign}${activeSubsetGrade.netGradePercent.toFixed(2)}% (${activeSubsetGrade.distanceFt}') ${arrow}`;
-                const badgeWidth = text.length * 6.8 + 14;
-                const badgeHeight = 18;
-                const badgeY = Math.max(padding.top + 4, Math.min(padding.top + innerHeight - 22, midY - 14));
+            <line
+              x1={getX(activeSubsetGrade.startStation.distanceFt)}
+              y1={getY(activeSubsetGrade.startStation.elevationInches)}
+              x2={getX(activeSubsetGrade.endStation.distanceFt)}
+              y2={getY(activeSubsetGrade.endStation.elevationInches)}
+              stroke={
+                prototypeStyle === 'nothing'
+                  ? isDark ? '#5B9BF6' : '#1D4ED8'
+                  : isRangeLocked ? "#38bdf8" : "#f59e0b"
+              }
+              strokeWidth={prototypeStyle === 'nothing' ? '2' : '2.5'}
+              strokeDasharray={isRangeLocked ? "5,3" : "3,3"}
+              className="pointer-events-none select-none"
+            />
+          )}
 
-                return (
-                  <g>
+          {/* Intelligent Collision-Free Badges for Target Grade & Subset Chord */}
+          {(() => {
+            // 1. Gather Subset Chord Badge Data
+            let chordBadge: {
+              x: number;
+              y: number;
+              midX: number;
+              midY: number;
+              width: number;
+              height: number;
+              text: string;
+            } | null = null;
+
+            if (
+              activeSubsetGrade &&
+              activeSubsetGrade.startStation.elevationInches !== null &&
+              activeSubsetGrade.endStation.elevationInches !== null
+            ) {
+              const cx1 = getX(activeSubsetGrade.startStation.distanceFt);
+              const cy1 = getY(activeSubsetGrade.startStation.elevationInches);
+              const cx2 = getX(activeSubsetGrade.endStation.distanceFt);
+              const cy2 = getY(activeSubsetGrade.endStation.elevationInches);
+              const cmidX = (cx1 + cx2) / 2;
+              const cmidY = (cy1 + cy2) / 2;
+              const sign = activeSubsetGrade.netGradePercent > 0.001 ? '+' : '';
+              const arrow = activeSubsetGrade.direction === 'uphill' ? '↗' : activeSubsetGrade.direction === 'downhill' ? '↘' : '→';
+              const text = `${sign}${activeSubsetGrade.netGradePercent.toFixed(2)}% (${activeSubsetGrade.distanceFt}') ${arrow}`;
+              const width = text.length * 6.8 + 14;
+              const height = 18;
+              const defaultY = Math.max(padding.top + 4, Math.min(padding.top + innerHeight - 22, cmidY - 14));
+
+              chordBadge = {
+                x: cmidX,
+                y: defaultY,
+                midX: cmidX,
+                midY: cmidY,
+                width,
+                height,
+                text,
+              };
+            }
+
+            // 2. Gather Target Grade Segment Badges & Check Collisions
+            const targetBadgesList: {
+              key: string;
+              text: string;
+              x: number;
+              y: number;
+              width: number;
+              height: number;
+            }[] = [];
+
+            if (gradeInfo) {
+              gradeInfo.segments.forEach((seg, idx) => {
+                const x1 = getX(seg.startDistanceFt);
+                const x2 = getX(seg.endDistanceFt);
+                const y1 = getY(seg.startElevInches);
+                const y2 = getY(seg.endElevInches);
+                if (x2 - x1 < 35) return;
+
+                const sign = seg.gradePercent > 0.001 ? '+' : '';
+                const arrow = seg.gradePercent > 0.05 ? '↗' : seg.gradePercent < -0.05 ? '↘' : '→';
+                const labelText = gradeMode === 'end_to_end' && gradeInfo.hasLockedPoints
+                  ? `${sign}${seg.gradePercent.toFixed(2)}% ${arrow}`
+                  : `${sign}${seg.gradePercent.toFixed(2)}% Grade ${arrow}`;
+
+                const width = labelText.length * 6.8 + 12;
+                const height = 17;
+                let targetX = (x1 + x2) / 2;
+                const targetMidY = (y1 + y2) / 2;
+                let targetY = Math.max(padding.top + 4, Math.min(padding.top + innerHeight - 20, targetMidY - 18));
+
+                // Collision Detection with Chord Badge
+                if (chordBadge) {
+                  const isXOverlap = Math.abs(chordBadge.midX - targetX) < (chordBadge.width + width) / 2 + 10;
+                  if (isXOverlap) {
+                    // Tier 1: Vertical Polarity Separation
+                    // Whichever line is physically higher on screen (smaller SVG Y) gets its badge placed ABOVE.
+                    // The other line gets its badge placed BELOW.
+                    if (targetMidY <= chordBadge.midY) {
+                      // Target line is higher (or equal):
+                      targetY = Math.max(padding.top + 4, targetMidY - height - 4);
+                      chordBadge.y = Math.min(padding.top + innerHeight - chordBadge.height - 4, chordBadge.midY + 7);
+                    } else {
+                      // Chord line is higher:
+                      chordBadge.y = Math.max(padding.top + 4, chordBadge.midY - chordBadge.height - 4);
+                      targetY = Math.min(padding.top + innerHeight - height - 4, targetMidY + 7);
+                    }
+
+                    // Tier 2: Horizontal Fallback Repulsion
+                    // If vertical distance between badges is still too close:
+                    const isStillYOverlap = Math.abs(targetY - chordBadge.y) < height + 4;
+                    if (isStillYOverlap) {
+                      // Nudge target grade badge horizontally along its segment away from chord badge
+                      if (chordBadge.midX >= (x1 + x2) / 2) {
+                        targetX = x1 + (x2 - x1) * 0.25;
+                      } else {
+                        targetX = x1 + (x2 - x1) * 0.75;
+                      }
+                      const t = (targetX - x1) / (x2 - x1);
+                      const newTargetMidY = y1 + t * (y2 - y1);
+                      targetY = Math.max(padding.top + 4, Math.min(padding.top + innerHeight - 20, newTargetMidY - 18));
+                    }
+                  }
+                }
+
+                targetBadgesList.push({
+                  key: `grade-seg-${idx}`,
+                  text: labelText,
+                  x: targetX,
+                  y: targetY,
+                  width,
+                  height,
+                });
+              });
+            }
+
+            return (
+              <g className="pointer-events-none select-none">
+                {/* Target Grade Badges */}
+                {targetBadgesList.map(tb => (
+                  <g key={tb.key}>
                     <rect
-                      x={midX - badgeWidth / 2}
-                      y={badgeY}
-                      width={badgeWidth}
-                      height={badgeHeight}
-                      rx={5}
+                      x={tb.x - tb.width / 2}
+                      y={tb.y}
+                      width={tb.width}
+                      height={tb.height}
+                      rx={prototypeStyle === 'nothing' ? 3 : 4.5}
                       className={
-                        isRangeLocked
-                          ? "fill-sky-950/95 stroke-sky-400 stroke-[1.5]"
-                          : "fill-amber-950/95 stroke-amber-400 stroke-[1.5]"
+                        prototypeStyle === 'nothing'
+                          ? isDark
+                            ? 'fill-black stroke-[#4A9E5C] stroke-[1.2]'
+                            : 'fill-white stroke-[#4A9E5C] stroke-[1.2]'
+                          : 'fill-white/95 dark:fill-zinc-900/95 stroke-emerald-500/70 dark:stroke-emerald-400/80 stroke-[1.2]'
                       }
                     />
                     <text
-                      x={midX}
-                      y={badgeY + 12.5}
+                      x={tb.x}
+                      y={tb.y + 11.5}
                       textAnchor="middle"
                       className={
-                        isRangeLocked
-                          ? "font-mono text-[10px] font-extrabold fill-sky-300"
-                          : "font-mono text-[10px] font-extrabold fill-amber-300"
+                        prototypeStyle === 'nothing'
+                          ? 'font-mono text-[9.5px] font-bold fill-[#4A9E5C]'
+                          : 'font-mono text-[9.5px] font-extrabold fill-emerald-700 dark:fill-emerald-300'
                       }
                     >
-                      {text}
+                      {tb.text}
                     </text>
                   </g>
-                );
-              })()}
-            </g>
-          )}
+                ))}
 
-          {/* Grade Slope Labels on Target Line Chords */}
-          {gradeInfo && gradeInfo.segments.map((seg, idx) => {
-            const x1 = getX(seg.startDistanceFt);
-            const x2 = getX(seg.endDistanceFt);
-            const y1 = getY(seg.startElevInches);
-            const y2 = getY(seg.endElevInches);
-            const midX = (x1 + x2) / 2;
-            const midY = (y1 + y2) / 2;
-
-            if (x2 - x1 < 35) return null;
-
-            const sign = seg.gradePercent > 0.001 ? '+' : '';
-            const arrow = seg.gradePercent > 0.05 ? '↗' : seg.gradePercent < -0.05 ? '↘' : '→';
-            const labelText = gradeMode === 'end_to_end' && gradeInfo.hasLockedPoints
-              ? `${sign}${seg.gradePercent.toFixed(2)}% ${arrow}`
-              : `${sign}${seg.gradePercent.toFixed(2)}% Grade ${arrow}`;
-
-            const badgeWidth = labelText.length * 6.8 + 12;
-            const badgeHeight = 17;
-            const badgeY = Math.max(padding.top + 4, Math.min(padding.top + innerHeight - 20, midY - 18));
-
-            return (
-              <g key={`grade-seg-${idx}`} className="pointer-events-none select-none">
-                <rect
-                  x={midX - badgeWidth / 2}
-                  y={badgeY}
-                  width={badgeWidth}
-                  height={badgeHeight}
-                  rx={4.5}
-                  className="fill-white/95 dark:fill-zinc-900/95 stroke-emerald-500/70 dark:stroke-emerald-400/80 stroke-[1.2]"
-                />
-                <text
-                  x={midX}
-                  y={badgeY + 11.5}
-                  textAnchor="middle"
-                  className="font-mono text-[9.5px] font-extrabold fill-emerald-700 dark:fill-emerald-300"
-                >
-                  {labelText}
-                </text>
+                {/* Subset Chord Badge */}
+                {chordBadge && (
+                  <g>
+                    <rect
+                      x={chordBadge.x - chordBadge.width / 2}
+                      y={chordBadge.y}
+                      width={chordBadge.width}
+                      height={chordBadge.height}
+                      rx={prototypeStyle === 'nothing' ? 3 : 5}
+                      className={
+                        prototypeStyle === 'nothing'
+                          ? isDark
+                            ? 'fill-black stroke-[#5B9BF6] stroke-[1.2]'
+                            : 'fill-white stroke-[#1D4ED8] stroke-[1.2]'
+                          : isRangeLocked
+                          ? 'fill-sky-950/95 stroke-sky-400 stroke-[1.5]'
+                          : 'fill-amber-950/95 stroke-amber-400 stroke-[1.5]'
+                      }
+                    />
+                    <text
+                      x={chordBadge.x}
+                      y={chordBadge.y + 12.5}
+                      textAnchor="middle"
+                      className={
+                        prototypeStyle === 'nothing'
+                          ? isDark
+                            ? 'font-mono text-[9.5px] font-bold fill-[#5B9BF6]'
+                            : 'font-mono text-[9.5px] font-bold fill-[#1D4ED8]'
+                          : isRangeLocked
+                          ? 'font-mono text-[10px] font-extrabold fill-sky-300'
+                          : 'font-mono text-[10px] font-extrabold fill-amber-300'
+                      }
+                    >
+                      {chordBadge.text}
+                    </text>
+                  </g>
+                )}
               </g>
             );
-          })}
+          })()}
 
           {/* Full-Height Column Hit Targets (Guarantees 100% reliable tap/click coverage from top to bottom on mobile & desktop) */}
           {stationColumns.map(col => (
@@ -1188,6 +1584,151 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               if (s.action === 'ok') dotFill = '#10b981'; // green
               else if (s.action === 'lift') dotFill = '#38bdf8'; // sky blue
               else if (s.action === 'lower') dotFill = '#f59e0b'; // amber
+            }
+
+            if (prototypeStyle === 'nothing') {
+              const nothingPipFill = !isMeasured
+                ? 'none'
+                : s.action === 'ok'
+                ? '#4A9E5C'
+                : s.action === 'lift'
+                ? (isDark ? '#5B9BF6' : '#007AFF')
+                : s.action === 'lower'
+                ? '#D4A843'
+                : (isDark ? '#FFFFFF' : '#000000');
+
+              return (
+                <g key={s.id} className="pointer-events-none select-none">
+                  {/* Turning Point (Survey Benchmark Diamond) */}
+                  {s.isTurningPoint && (
+                    <polygon
+                      points={`${x},${y - 7} ${x + 7},${y} ${x},${y + 7} ${x - 7},${y}`}
+                      fill="none"
+                      stroke="#D71921"
+                      strokeWidth="1.4"
+                    />
+                  )}
+
+                  {/* Locked Tie (Precision Mechanical Square) */}
+                  {s.isLocked && (
+                    <rect
+                      x={x - 6}
+                      y={y - 6}
+                      width={12}
+                      height={12}
+                      fill="none"
+                      stroke={isDark ? '#FFFFFF' : '#000000'}
+                      strokeWidth="1.4"
+                    />
+                  )}
+
+                  {/* Completed / Leveled Concentric Ring */}
+                  {s.completed && (
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={7}
+                      fill="none"
+                      stroke="#4A9E5C"
+                      strokeWidth="1.2"
+                    />
+                  )}
+
+                  {/* Hover Hairline Reticle */}
+                  {isHovered && !isSelected && (
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={8}
+                      fill="none"
+                      stroke={isDark ? '#888888' : '#555555'}
+                      strokeWidth="1"
+                      strokeDasharray="2,2"
+                    />
+                  )}
+
+                  {/* Selected Hairline Reticle */}
+                  {isSelected && (
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={9}
+                      fill="none"
+                      stroke={isMeasureModeActive ? (isDark ? '#5B9BF6' : '#1D4ED8') : '#D71921'}
+                      strokeWidth="1.4"
+                    />
+                  )}
+
+                  {/* Pip Core */}
+                  {!isMeasured ? (
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={3}
+                      fill="none"
+                      stroke={isDark ? '#555555' : '#888888'}
+                      strokeWidth="1.2"
+                    />
+                  ) : (
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={isSelected ? 5 : isHovered ? 4.5 : 3.5}
+                      fill={isSelected ? (isMeasureModeActive ? (isDark ? '#5B9BF6' : '#1D4ED8') : '#D71921') : nothingPipFill}
+                      stroke={isSelected ? (isDark ? '#000000' : '#FFFFFF') : (isDark ? '#000000' : '#FFFFFF')}
+                      strokeWidth={1}
+                    />
+                  )}
+
+                  {/* Measure Mode Badges [ A ] and [ B ] */}
+                  {isMeasureModeActive && isStart && (
+                    <g transform={`translate(${x}, ${y - 15})`}>
+                      <rect
+                        x={-9}
+                        y={-8}
+                        width={18}
+                        height={14}
+                        fill={isDark ? '#FFFFFF' : '#000000'}
+                        rx={2}
+                      />
+                      <text
+                        x={0}
+                        y={2.5}
+                        textAnchor="middle"
+                        fill={isDark ? '#000000' : '#FFFFFF'}
+                        fontSize="9"
+                        fontFamily="Space Mono, monospace"
+                        fontWeight="bold"
+                      >
+                        A
+                      </text>
+                    </g>
+                  )}
+                  {isMeasureModeActive && isEnd && (
+                    <g transform={`translate(${x}, ${y - 15})`}>
+                      <rect
+                        x={-9}
+                        y={-8}
+                        width={18}
+                        height={14}
+                        fill={isDark ? '#5B9BF6' : '#007AFF'}
+                        rx={2}
+                      />
+                      <text
+                        x={0}
+                        y={2.5}
+                        textAnchor="middle"
+                        fill={isDark ? '#000000' : '#FFFFFF'}
+                        fontSize="9"
+                        fontFamily="Space Mono, monospace"
+                        fontWeight="bold"
+                      >
+                        B
+                      </text>
+                    </g>
+                  )}
+                </g>
+              );
             }
 
             return (
@@ -1302,36 +1843,72 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
       </div>
 
       {/* Legend Footer */}
-      <div className="px-3.5 py-1.5 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-[11px] text-zinc-600 dark:text-zinc-400 gap-2">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-0.5 bg-zinc-900 dark:bg-white rounded"></span>
-            <span>Rail Head (Actual)</span>
+      {prototypeStyle === 'nothing' ? (
+        <div className="px-3.5 py-1.5 bg-[#FFFFFF] dark:bg-[#000000] border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-[10px] text-zinc-600 dark:text-zinc-400 gap-2 font-['Space_Mono'] uppercase tracking-wider">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-0.5 bg-black dark:bg-white"></span>
+              <span>Rail Head</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-0.5 border-t-2 border-dashed border-[#4A9E5C]"></span>
+              <span className="text-[#4A9E5C]">Target Grade</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-0.5 border-t border-dashed border-[#5B9BF6]"></span>
+              <span>Subset Chord</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-0.5 border-t border-dashed border-emerald-500"></span>
-            <span>Target Plane</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="w-2.5 h-0.5 border-t border-dashed border-sky-400"></span>
-            <span>Subset Chord</span>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="flex items-center gap-1.5 text-[#5B9BF6] whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full bg-[#5B9BF6] shrink-0"></span> LIFT (LOW)
+            </span>
+            <span className="flex items-center gap-1.5 text-[#D4A843] whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full bg-[#D4A843] shrink-0"></span> LOWER (HIGH)
+            </span>
+            <span className="flex items-center gap-1.5 text-[#4A9E5C] whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full bg-[#4A9E5C] shrink-0"></span> ON GRADE
+            </span>
+            <span className="flex items-center gap-1.5 text-[#4A9E5C] whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full border border-[#4A9E5C] shrink-0"></span> LEVELED
+            </span>
+            <span className="flex items-center gap-1.5 text-[#D71921] whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full bg-[#D71921] shrink-0"></span> SELECTED STATION
+            </span>
           </div>
         </div>
-        <div className="flex items-center gap-3 font-semibold flex-wrap">
-          <span className="flex items-center gap-1 text-sky-700 dark:text-sky-400 whitespace-nowrap shrink-0">
-            <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0"></span> Lift (Low)
-          </span>
-          <span className="flex items-center gap-1 text-amber-800 dark:text-amber-400 whitespace-nowrap shrink-0">
-            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span> Lower (High)
-          </span>
-          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 whitespace-nowrap shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span> On Grade
-          </span>
-          <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 whitespace-nowrap shrink-0">
-            <span className="w-2 h-2 rounded-full border border-emerald-500 bg-emerald-500/30 shrink-0"></span> Leveled ✓
-          </span>
+      ) : (
+        <div className="px-3.5 py-1.5 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between text-[11px] text-zinc-600 dark:text-zinc-400 gap-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <span className="w-2.5 h-0.5 bg-zinc-900 dark:bg-white rounded"></span>
+              <span>Rail Head (Actual)</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="w-2.5 h-0.5 border-t border-dashed border-emerald-500"></span>
+              <span>Target Plane</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="w-2.5 h-0.5 border-t border-dashed border-sky-400"></span>
+              <span>Subset Chord</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 font-semibold flex-wrap">
+            <span className="flex items-center gap-1 text-sky-700 dark:text-sky-400 whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0"></span> Lift (Low)
+            </span>
+            <span className="flex items-center gap-1 text-amber-800 dark:text-amber-400 whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span> Lower (High)
+            </span>
+            <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span> On Grade
+            </span>
+            <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 whitespace-nowrap shrink-0">
+              <span className="w-2 h-2 rounded-full border border-emerald-500 bg-emerald-500/30 shrink-0"></span> Leveled ✓
+            </span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

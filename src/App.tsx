@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { TrackProject, StationPoint, CalculatedStation } from './core/types';
+import { TrackProject, StationPoint, CalculatedStation, PrototypeStyle, StyleColorMode } from './core/types';
 import { calculateTrackProfile, getTrackSummary } from './core/calculations';
 import { StationConfigHeader, StationSummaryBar, StationAlignmentBar } from './components/StationConfig';
 import { ProfileChart } from './components/ProfileChart';
@@ -7,6 +7,7 @@ import { ActionTable } from './components/ActionTable';
 import { FractionKeypad } from './components/FractionKeypad';
 import { NewTrackModal } from './components/NewTrackModal';
 import { SettingsModal } from './components/SettingsModal';
+import { PrototypeLabBar } from './components/PrototypeLabBar';
 import { BetaNoticeModal } from './components/BetaNoticeModal';
 import { IncomingShareModal } from './components/IncomingShareModal';
 import { PrintReport } from './components/PrintReport';
@@ -122,6 +123,54 @@ export const App: React.FC = () => {
       return true;
     }
   });
+
+  // Prototype Lab State (Curated)
+  const [prototypeStyle, setPrototypeStyle] = useState<PrototypeStyle>(() => {
+    try {
+      const saved = localStorage.getItem('track_level_prototype_style') as PrototypeStyle;
+      if ([
+        'glass',
+        'swiss',
+        'claymorphism',
+        'nothing',
+        'cockpit',
+        'original'
+      ].includes(saved)) {
+        return saved;
+      }
+    } catch {
+      // fallback
+    }
+    return 'nothing'; // Default to Nothing OS UI to immediately showcase it
+  });
+
+  const [styleColorMode, setStyleColorMode] = useState<StyleColorMode>(() => {
+    try {
+      const saved = localStorage.getItem('track_level_style_color_mode') as StyleColorMode;
+      if (saved === 'dark' || saved === 'light') return saved;
+      return 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
+
+  // Developer mode: Prototype Lab Header Bar toggle (persisted, default false for clean production layout)
+  const [showPrototypeBar, setShowPrototypeBar] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('track_level_show_prototype_bar') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleShowPrototypeBar = (show: boolean) => {
+    setShowPrototypeBar(show);
+    try {
+      localStorage.setItem('track_level_show_prototype_bar', show ? 'true' : 'false');
+    } catch {
+      // ignore
+    }
+  };
 
   // Active Keypad State
   const [activeEditingStation, setActiveEditingStation] = useState<CalculatedStation | null>(null);
@@ -252,20 +301,53 @@ export const App: React.FC = () => {
     }
   };
 
-  // Sync dark mode class
+  // Sync prototype style and color mode classes
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+    const root = document.documentElement;
+    root.classList.remove(
+      'style-linear',
+      'style-blueprint',
+      'style-cockpit',
+      'style-glass',
+      'style-glass-refined',
+      'style-swiss',
+      'style-streamline',
+      'style-din',
+      'style-rams',
+      'style-claymorphism',
+      'style-neumorphism',
+      'style-nothing'
+    );
+
+    if (prototypeStyle !== 'original') {
+      root.classList.add(`style-${prototypeStyle}`);
+      if (styleColorMode === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+        setIsDarkMode(true);
+      } else {
+        root.classList.remove('dark');
+        root.classList.add('light');
+        setIsDarkMode(false);
+      }
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('light');
+      if (isDarkMode) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
     }
+
     try {
+      localStorage.setItem('track_level_prototype_style', prototypeStyle);
+      localStorage.setItem('track_level_style_color_mode', styleColorMode);
       localStorage.setItem('track_level_theme_mode', isDarkMode ? 'dark' : 'light');
       localStorage.setItem('track_level_dark_mode', isDarkMode ? 'true' : 'false');
     } catch (e) {
       console.error(e);
     }
-  }, [isDarkMode]);
+  }, [prototypeStyle, styleColorMode, isDarkMode]);
 
   // Persist project changes (do not overwrite active survey with practice tutorial data)
   useEffect(() => {
@@ -937,6 +1019,16 @@ export const App: React.FC = () => {
   return (
     <>
       <div className="app-interactive-screen min-h-screen dashboard-viewport-lock bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2 sm:p-2.5 md:p-3 lg:p-4 max-w-5xl md:max-w-full lg:max-w-7xl xl:max-w-[1600px] mx-auto flex flex-col gap-2 sm:gap-2.5 md:gap-3">
+        {/* 2026 UI Design Trends Prototype Lab Bar (Enabled via Settings -> Developer Options) */}
+        {showPrototypeBar && (
+          <PrototypeLabBar
+            activeStyle={prototypeStyle}
+            onChangeStyle={setPrototypeStyle}
+            colorMode={styleColorMode}
+            onChangeColorMode={setStyleColorMode}
+          />
+        )}
+
         {/* Mobile Header (visible only on < md phone screens) */}
         <div className="md:hidden shrink-0">
           <StationConfigHeader
@@ -952,6 +1044,7 @@ export const App: React.FC = () => {
             onInstallApp={handleInstallApp}
             canInstall={!!installPrompt}
             summary={summary}
+            prototypeStyle={prototypeStyle}
           />
         </div>
 
@@ -1027,6 +1120,8 @@ export const App: React.FC = () => {
                 handleCompleteTutorial();
               }
             }}
+            prototypeStyle={prototypeStyle}
+            isDarkMode={isDarkMode}
           />
         </div>
 
@@ -1055,18 +1150,21 @@ export const App: React.FC = () => {
                 onInstallApp={handleInstallApp}
                 canInstall={!!installPrompt}
                 summary={summary}
+                prototypeStyle={prototypeStyle}
               />
             </div>
 
             <StationSummaryBar
               project={project}
               summary={summary}
+              prototypeStyle={prototypeStyle}
             />
 
             <StationAlignmentBar
               project={project}
               onChangeProject={handleUpdateProject}
               calculatedStations={calculatedStations}
+              prototypeStyle={prototypeStyle}
             />
           </div>
 
@@ -1110,6 +1208,7 @@ export const App: React.FC = () => {
                 }
               }}
               selectedStationId={activeEditingStation?.id}
+              prototypeStyle={prototypeStyle}
             />
           </div>
         </div>
@@ -1193,6 +1292,12 @@ export const App: React.FC = () => {
             setIsSettingsOpen(false);
             setIsTutorialsModalOpen(true);
           }}
+          prototypeStyle={prototypeStyle}
+          onChangePrototypeStyle={setPrototypeStyle}
+          showPrototypeBar={showPrototypeBar}
+          onChangeShowPrototypeBar={handleToggleShowPrototypeBar}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
         />
 
         {/* Field Guide & Animated Tutorial Modal */}
