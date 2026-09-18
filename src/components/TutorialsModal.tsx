@@ -5,6 +5,7 @@ import {
   Clock,
   Compass,
   CheckCircle2,
+  BookOpen,
 } from 'lucide-react';
 import { ALL_TUTORIALS, TutorialDefinition } from '../core/tutorials';
 
@@ -12,12 +13,14 @@ interface TutorialsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectTutorial: (tutorialId: string) => void;
+  onOpenGuide?: () => void;
 }
 
 export const TutorialsModal: React.FC<TutorialsModalProps> = ({
   isOpen,
   onClose,
   onSelectTutorial,
+  onOpenGuide,
 }) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -66,15 +69,33 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition shrink-0"
-            title="Close Tutorials"
-            aria-label="Close Tutorials"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {onOpenGuide && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenGuide();
+                }}
+                className="h-8 px-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:text-black dark:hover:text-white flex items-center gap-1.5 transition cursor-pointer"
+                title="Switch to Field Guide & Handbook"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Field Handbook</span>
+                <span className="sm:hidden">Guide</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition shrink-0 cursor-pointer"
+              title="Close Tutorials"
+              aria-label="Close Tutorials"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Scrollable Tutorial Cards List */}

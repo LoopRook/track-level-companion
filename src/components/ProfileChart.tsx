@@ -1204,8 +1204,9 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                       y1={padding.top}
                       x2={x}
                       y2={padding.top + innerHeight}
-                      stroke={isMeasureModeActive ? (isDark ? '#5B9BF6' : '#1D4ED8') : '#D71921'}
-                      strokeWidth="1.5"
+                      stroke={isMeasureModeActive ? (isDark ? '#5B9BF6' : '#1D4ED8') : (isDark ? '#FFFFFF' : '#000000')}
+                      strokeWidth="1.2"
+                      strokeDasharray={isMeasureModeActive ? undefined : '2,2'}
                     />
                   )}
                   {isHovered && !isSelected && (
@@ -1654,8 +1655,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                       cy={y}
                       r={9}
                       fill="none"
-                      stroke={isMeasureModeActive ? (isDark ? '#5B9BF6' : '#1D4ED8') : '#D71921'}
-                      strokeWidth="1.4"
+                      stroke={isMeasureModeActive ? (isDark ? '#5B9BF6' : '#1D4ED8') : (isDark ? '#FFFFFF' : '#000000')}
+                      strokeWidth="1.2"
                     />
                   )}
 
@@ -1673,8 +1674,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                     <circle
                       cx={x}
                       cy={y}
-                      r={isSelected ? 5 : isHovered ? 4.5 : 3.5}
-                      fill={isSelected ? (isMeasureModeActive ? (isDark ? '#5B9BF6' : '#1D4ED8') : '#D71921') : nothingPipFill}
+                      r={isSelected ? 4.5 : isHovered ? 4 : 3.5}
+                      fill={isMeasureModeActive && isSelected ? (isDark ? '#5B9BF6' : '#1D4ED8') : nothingPipFill}
                       stroke={isSelected ? (isDark ? '#000000' : '#FFFFFF') : (isDark ? '#000000' : '#FFFFFF')}
                       strokeWidth={1}
                     />
@@ -1871,9 +1872,6 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             </span>
             <span className="flex items-center gap-1.5 text-[#4A9E5C] whitespace-nowrap shrink-0">
               <span className="w-2 h-2 rounded-full border border-[#4A9E5C] shrink-0"></span> LEVELED
-            </span>
-            <span className="flex items-center gap-1.5 text-[#D71921] whitespace-nowrap shrink-0">
-              <span className="w-2 h-2 rounded-full bg-[#D71921] shrink-0"></span> SELECTED STATION
             </span>
           </div>
         </div>

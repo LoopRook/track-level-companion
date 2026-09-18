@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CalculatedStation, UnitFormat, PrototypeStyle } from '../core/types';
 import { formatMeasurement, parseMeasurement } from '../core/units';
 import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock, X } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
-interface ActionTableProps {
+export interface ActionTableProps {
   stations: CalculatedStation[];
   unitFormat: UnitFormat;
   fractionResolution: 16 | 8 | 32;
@@ -20,6 +20,13 @@ interface ActionTableProps {
   onOpenMoveLaser?: () => void;
   selectedStationId?: string | null;
   prototypeStyle?: PrototypeStyle;
+  mobileLayout?: 'bottom_nav' | 'tabbed' | 'stacked';
+  displayMode?: TableDisplayMode;
+  onChangeDisplayMode?: (mode: TableDisplayMode) => void;
+  isExternalExtendOpen?: boolean;
+  onCloseExternalExtend?: () => void;
+  isExternalMoveLaserOpen?: boolean;
+  onCloseExternalMoveLaser?: () => void;
 }
 
 export type TableDisplayMode = 'target_reading' | 'relative_elev' | 'both';
@@ -40,12 +47,19 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   onOpenMoveLaser,
   selectedStationId,
   prototypeStyle = 'original',
+  mobileLayout = 'bottom_nav',
+  displayMode: propDisplayMode,
+  onChangeDisplayMode,
+  isExternalExtendOpen = false,
+  onCloseExternalExtend,
+  isExternalMoveLaserOpen = false,
+  onCloseExternalMoveLaser,
 }) => {
-  const [displayMode, setDisplayMode] = useState<TableDisplayMode>(() => {
+  const [localDisplayMode, setLocalDisplayMode] = useState<TableDisplayMode>(() => {
     try {
       const saved = localStorage.getItem('track_level_table_display_mode');
       if (saved === 'target_reading' || saved === 'relative_elev' || saved === 'both') {
-        return saved;
+        return saved as TableDisplayMode;
       }
       return 'target_reading';
     } catch {
@@ -53,8 +67,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
     }
   });
 
+  const displayMode = propDisplayMode !== undefined ? propDisplayMode : localDisplayMode;
+
   const handleSetDisplayMode = (mode: TableDisplayMode) => {
-    setDisplayMode(mode);
+    setLocalDisplayMode(mode);
+    onChangeDisplayMode?.(mode);
     try {
       localStorage.setItem('track_level_table_display_mode', mode);
     } catch {
@@ -68,7 +85,8 @@ export const ActionTable: React.FC<ActionTableProps> = ({
     handleSetDisplayMode(next);
   };
 
-  const [isExtendModalOpen, setIsExtendModalOpen] = useState(false);
+  const [localExtendModalOpen, setLocalExtendModalOpen] = useState(false);
+  const isExtendModalOpen = isExternalExtendOpen || localExtendModalOpen;
   const [extendLength, setExtendLength] = useState(50);
   const [extendInterval, setExtendInterval] = useState(5);
   const [extendDirection, setExtendDirection] = useState<'forward' | 'backward'>('forward');
@@ -76,6 +94,29 @@ export const ActionTable: React.FC<ActionTableProps> = ({
   const [turningPointStation, setTurningPointStation] = useState<CalculatedStation | null>(null);
   const [tpNewReadingStr, setTpNewReadingStr] = useState('');
   const [tpError, setTpError] = useState<string | null>(null);
+
+  const handleCloseExtendModal = () => {
+    setLocalExtendModalOpen(false);
+    onCloseExternalExtend?.();
+  };
+
+  const handleCloseTurningPoint = () => {
+    setTurningPointStation(null);
+    onCloseExternalMoveLaser?.();
+  };
+
+  useEffect(() => {
+    if (isExternalMoveLaserOpen) {
+      const measured = stations.filter(s => s.readingInches !== null);
+      const target = (measured.length > 0 ? measured[measured.length - 1] : stations[0]) || null;
+      if (target) {
+        setTurningPointStation(target);
+        setTpNewReadingStr(target.readingInches !== null ? formatMeasurement(target.readingInches, unitFormat, fractionResolution) : '');
+        setTpError(null);
+        onOpenMoveLaser?.();
+      }
+    }
+  }, [isExternalMoveLaserOpen, stations, unitFormat, fractionResolution, onOpenMoveLaser]);
 
   useBodyScrollLock(isExtendModalOpen || !!turningPointStation);
 
@@ -95,13 +136,17 @@ export const ActionTable: React.FC<ActionTableProps> = ({
     }
     setTpError(null);
     onSetTurningPoint(turningPointStation.id, parsed);
-    setTurningPointStation(null);
+    handleCloseTurningPoint();
   };
 
   return (
-    <div className="proto-card bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors h-full min-h-0">
-      {/* Header Toolbar */}
-      <div className="px-3 sm:px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-zinc-50 dark:bg-zinc-950 shrink-0">
+    <div className={`proto-card bg-white dark:bg-black md:border border-zinc-200 dark:border-zinc-800 md:rounded-2xl md:shadow-sm overflow-hidden flex flex-col transition-colors h-full min-h-0 ${
+      mobileLayout === 'bottom_nav' ? 'mobile-edge-to-edge' : ''
+    }`}>
+      {/* Header Toolbar (Hidden on mobile phones when bottom_nav is active; controls live in the Nothing OS bottom console) */}
+      <div className={`px-3 sm:px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-zinc-50 dark:bg-zinc-950 shrink-0 ${
+        mobileLayout === 'bottom_nav' ? 'hidden md:flex' : 'flex'
+      }`}>
         <div>
           <h3 className={`font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap ${
             prototypeStyle === 'nothing' ? "font-['Space_Mono'] uppercase tracking-[0.08em] text-xs font-bold" : "text-sm sm:text-base"
@@ -130,7 +175,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           </button>
           {onExtendTrack && (
             <button
-              onClick={() => setIsExtendModalOpen(true)}
+              onClick={() => setLocalExtendModalOpen(true)}
               className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center gap-1 whitespace-nowrap ${
                 prototypeStyle === 'nothing'
                   ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider text-xs shadow-none'
@@ -179,8 +224,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
         </div>
       </div>
 
-      {/* View Mode & Column Selector Toolbar */}
+      {/* View Mode & Column Selector Toolbar (Hidden on mobile phones when bottom_nav is active) */}
       <div className={`px-3 sm:px-4 py-2 border-b flex items-center justify-between gap-2 flex-wrap text-xs shrink-0 ${
+        mobileLayout === 'bottom_nav' ? 'hidden md:flex' : 'flex'
+      } ${
         prototypeStyle === 'nothing'
           ? 'bg-transparent border-zinc-200 dark:border-zinc-800'
           : 'bg-zinc-100/70 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800'
@@ -288,8 +335,12 @@ export const ActionTable: React.FC<ActionTableProps> = ({
         </div>
       )}
 
-      {/* MOBILE LIST VIEW (md:hidden): ZERO horizontal scrolling, stacked field-friendly cards */}
-      <div className={`divide-y md:hidden ${prototypeStyle === 'nothing' ? 'divide-zinc-800/60' : 'divide-zinc-200 dark:divide-zinc-800/80'}`}>
+      {/* MOBILE LIST VIEW (md:hidden): ZERO horizontal scrolling, stacked field-friendly cards with contained scroll */}
+      <div className={`divide-y md:hidden ${
+        mobileLayout === 'stacked'
+          ? 'pb-16'
+          : 'flex-1 overflow-y-auto min-h-0 pb-36'
+      } ${prototypeStyle === 'nothing' ? 'divide-zinc-200 dark:divide-zinc-800/80' : 'divide-zinc-200 dark:divide-zinc-800/80'}`}>
         {stations.map((s) => {
           const isSelected = selectedStationId === s.id;
           const isCompleted = !!s.completed;
@@ -300,18 +351,18 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               key={s.id}
               onClick={() => onEditStation(s)}
               data-tutorial={s.distanceFt === 0 ? 'station-card-0' : s.distanceFt === 5 ? 'station-card-5' : s.distanceFt === 10 ? 'station-card-10' : undefined}
-              className={`p-3 transition-all cursor-pointer rounded-xl ${
+              className={`p-3 transition-all cursor-pointer border-l-2 ${
                 prototypeStyle === 'nothing'
                   ? isSelected
-                    ? 'bg-zinc-100 dark:bg-zinc-900 border-l-2 border-l-[#D71921] rounded-l-none'
+                    ? 'bg-zinc-100/90 dark:bg-zinc-900/60 border-l-[#D71921]'
                     : isCompleted
-                    ? 'bg-transparent opacity-40 grayscale-[0.2] border border-zinc-200 dark:border-zinc-800'
-                    : 'hover:bg-zinc-100/70 dark:hover:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80'
+                    ? 'bg-transparent opacity-40 grayscale-[0.2] border-l-transparent'
+                    : 'hover:bg-zinc-100/70 dark:hover:bg-zinc-900/40 bg-transparent border-l-transparent'
                   : isSelected
-                  ? 'bg-amber-500/10 dark:bg-amber-500/15 ring-1 ring-inset ring-amber-500/50'
+                  ? 'bg-amber-500/10 dark:bg-amber-500/15 border-l-amber-500'
                   : isCompleted
-                  ? 'bg-zinc-100/50 dark:bg-zinc-950/70 opacity-40 grayscale-[0.2]'
-                  : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60'
+                  ? 'bg-zinc-100/50 dark:bg-zinc-950/70 opacity-40 grayscale-[0.2] border-l-transparent'
+                  : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/60 border-l-transparent'
               }`}
             >
               {/* Top Header Row: Completed Check, Station Distance & Badges, Quick Action Buttons */}
@@ -1040,11 +1091,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
       {/* Extend Track Batch Modal */}
       {isExtendModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overscroll-none touch-none"
-          onClick={() => setIsExtendModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto pt-3 sm:pt-4 overscroll-contain"
+          onClick={handleCloseExtendModal}
         >
           <div
-            className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl max-h-[90vh] modal-scroll-container overscroll-contain touch-auto"
+            className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 max-w-sm w-full space-y-3 sm:space-y-4 shadow-2xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto modal-scroll-container overscroll-contain touch-auto my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
@@ -1164,7 +1215,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             </div>
             <div className="flex gap-2 justify-end pt-2">
               <button
-                onClick={() => setIsExtendModalOpen(false)}
+                onClick={handleCloseExtendModal}
                 className="px-3 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
               >
                 Cancel
@@ -1174,7 +1225,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 onClick={() => {
                   if (!extendLength || extendLength <= 0) return;
                   onExtendTrack?.(extendLength, extendInterval, extendDirection);
-                  setIsExtendModalOpen(false);
+                  handleCloseExtendModal();
                 }}
                 className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-extrabold text-xs rounded-xl shadow-sm transition"
               >
@@ -1188,27 +1239,27 @@ export const ActionTable: React.FC<ActionTableProps> = ({
       {/* Relocate Laser / Turning Point Modal */}
       {turningPointStation && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overscroll-none touch-none"
-          onClick={() => setTurningPointStation(null)}
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto pt-3 sm:pt-4 overscroll-contain"
+          onClick={handleCloseTurningPoint}
         >
           <div
-            className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl max-h-[90vh] modal-scroll-container overscroll-contain touch-auto"
+            className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 max-w-sm w-full space-y-3 sm:space-y-4 shadow-2xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto modal-scroll-container overscroll-contain touch-auto my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                  <Flag className="w-4 h-4 text-purple-500 shrink-0" />
+                  <Flag className="w-4 h-4 text-[#D71921] shrink-0" />
                   <span>Relocate Laser (Datum Shift)</span>
                 </h4>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed mt-1">
-                  When moving the rotary laser tripod forward or continuing next weekend, take one reading on this benchmark tie with your{' '}
-                  <strong>new laser setup</strong>.
+                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 leading-tight sm:leading-relaxed mt-0.5 sm:mt-1">
+                  When moving the rotary laser forward, take one reading on this benchmark tie with your{' '}
+                  <strong className="text-zinc-900 dark:text-zinc-100">new laser setup</strong>.
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setTurningPointStation(null)}
+                onClick={handleCloseTurningPoint}
                 className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shrink-0"
                 aria-label="Close"
               >
@@ -1263,11 +1314,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   <input
                     data-tutorial="tp-new-reading-input"
                     type="text"
+                    inputMode="decimal"
                     value={tpNewReadingStr}
                     onChange={(e) => setTpNewReadingStr(e.target.value)}
                     placeholder="e.g. 7.50, 7 1/2, or 1' 4 3/8"
                     className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none font-mono focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition shadow-inner"
-                    autoFocus
                   />
                   {tpError && <p className="text-red-500 text-[11px] font-sans font-medium">{tpError}</p>}
                 </div>
@@ -1311,7 +1362,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <div className="flex gap-2 justify-end pt-1">
               <button
                 type="button"
-                onClick={() => setTurningPointStation(null)}
+                onClick={handleCloseTurningPoint}
                 className="px-3 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
               >
                 Cancel
@@ -1321,7 +1372,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 data-tutorial="tp-apply-btn"
                 disabled={turningPointStation.readingInches === null}
                 onClick={handleApplyTurningPoint}
-                className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-extrabold text-xs rounded-xl shadow-sm transition active:scale-95"
+                className={`px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-xs transition active:scale-95 ${
+                  prototypeStyle === 'nothing'
+                    ? 'rounded-lg bg-[#D71921] hover:bg-[#b01319] text-white font-["Space_Mono"] uppercase tracking-wider'
+                    : 'rounded-xl bg-purple-600 hover:bg-purple-500 text-white shadow-sm'
+                }`}
               >
                 Apply Laser Relocation
               </button>

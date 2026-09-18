@@ -12,8 +12,8 @@ export interface SettingsModalProps {
   onClose: () => void;
   project: TrackProject;
   onChangeProject: (updated: Partial<TrackProject>) => void;
-  mobileLayout?: 'tabbed' | 'stacked';
-  onChangeMobileLayout?: (layout: 'tabbed' | 'stacked') => void;
+  mobileLayout?: 'bottom_nav' | 'tabbed' | 'stacked';
+  onChangeMobileLayout?: (layout: 'bottom_nav' | 'tabbed' | 'stacked') => void;
   hapticsEnabled?: boolean;
   onChangeHapticsEnabled?: (enabled: boolean) => void;
   onStartTutorial?: () => void;
@@ -23,6 +23,7 @@ export interface SettingsModalProps {
   onChangeShowPrototypeBar?: (show: boolean) => void;
   isDarkMode?: boolean;
   onToggleDarkMode?: () => void;
+  onToggleMobilePreview?: () => void;
 }
 
 const TOLERANCE_PRESETS = [
@@ -50,10 +51,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onChangeShowPrototypeBar,
   isDarkMode,
   onToggleDarkMode,
+  onToggleMobilePreview,
 }) => {
   useBodyScrollLock(isOpen);
 
-  const activeMobileLayout = mobileLayout ?? 'tabbed';
+  const activeMobileLayout = mobileLayout ?? 'bottom_nav';
   const isHapticOn = hapticsEnabled ?? true;
 
   const [testPulseMsg, setTestPulseMsg] = useState<string | null>(null);
@@ -343,43 +345,86 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               Choose how the checklist and profile graph are arranged on phones and small screens (screens under 1024px width).
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => onChangeMobileLayout?.('bottom_nav')}
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                  activeMobileLayout === 'bottom_nav'
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
+                    : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-xs sm:text-sm">Bottom Dock (Thumb Zone)</span>
+                  {activeMobileLayout === 'bottom_nav' && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
+                </div>
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+                  Docked bottom navigation with contained station scrolling. UI never scrolls off-screen. (Recommended)
+                </span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => onChangeMobileLayout?.('tabbed')}
-                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
                   activeMobileLayout === 'tabbed'
                     ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
                     : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-sm">Tabbed View (Recommended)</span>
+                  <span className="font-extrabold text-xs sm:text-sm">Top Tabs</span>
                   {activeMobileLayout === 'tabbed' && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
                 </div>
-                <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                  Separate tabs for Checklist and Profile Graph. Eliminates scrolling past the graph when taking rod shots.
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+                  Sticky top tabs for switching between Checklist and Profile Graph.
                 </span>
               </button>
 
               <button
                 type="button"
                 onClick={() => onChangeMobileLayout?.('stacked')}
-                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
                   activeMobileLayout === 'stacked'
                     ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
                     : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-sm">Stacked View</span>
+                  <span className="font-extrabold text-xs sm:text-sm">Stacked View</span>
                   {activeMobileLayout === 'stacked' && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
                 </div>
-                <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                  Single continuous column. Graph, alignment controls, and checklist table all on one scrollable page.
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+                  Continuous scroll column. Graph and checklist table all on one page.
                 </span>
               </button>
             </div>
+
+            {/* Desktop Mobile Simulator Launch Box */}
+            {onToggleMobilePreview && (
+              <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 mt-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+                    <Smartphone className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-xs text-zinc-900 dark:text-zinc-100">Test in Mobile Phone Simulator</div>
+                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">Preview phone bottom dock & touch gestures without DevTools</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onToggleMobilePreview();
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition cursor-pointer shrink-0"
+                >
+                  Launch Simulator
+                </button>
+              </div>
+            )}
           </div>
 
           <hr className="border-zinc-200 dark:border-zinc-800" />

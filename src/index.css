@@ -564,6 +564,30 @@ html.style-cockpit.light body {
   text-shadow: 0 0 10px rgba(0, 255, 102, 0.5) !important;
 }
 
+/* --------------------------------------------------------------------------
+   Mobile Phone Edge-to-Edge List Containment (< 768px):
+   Completely strips card borders, corner fillets, and outer card backgrounds
+   from the mobile station list so it flows cleanly edge-to-edge.
+   -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  html body .mobile-edge-to-edge,
+  html.style-nothing.dark body .mobile-edge-to-edge,
+  html.style-nothing.light body .mobile-edge-to-edge,
+  html.style-swiss.dark body .mobile-edge-to-edge,
+  html.style-swiss.light body .mobile-edge-to-edge,
+  html.style-glass.dark body .mobile-edge-to-edge,
+  html.style-glass.light body .mobile-edge-to-edge,
+  html.style-claymorphism.dark body .mobile-edge-to-edge,
+  html.style-claymorphism.light body .mobile-edge-to-edge,
+  html.style-cockpit.dark body .mobile-edge-to-edge,
+  html.style-cockpit.light body .mobile-edge-to-edge {
+    border: none !important;
+    border-radius: 0px !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
 
 
 

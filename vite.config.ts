@@ -51,6 +51,9 @@ export default defineConfig({
     }),
   ],
   base: '/track-level-companion/',
+  server: {
+    allowedHosts: true,
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,

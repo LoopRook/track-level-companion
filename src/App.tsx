@@ -3,7 +3,7 @@ import { TrackProject, StationPoint, CalculatedStation, PrototypeStyle, StyleCol
 import { calculateTrackProfile, getTrackSummary } from './core/calculations';
 import { StationConfigHeader, StationSummaryBar, StationAlignmentBar } from './components/StationConfig';
 import { ProfileChart } from './components/ProfileChart';
-import { ActionTable } from './components/ActionTable';
+import { ActionTable, TableDisplayMode } from './components/ActionTable';
 import { FractionKeypad } from './components/FractionKeypad';
 import { NewTrackModal } from './components/NewTrackModal';
 import { SettingsModal } from './components/SettingsModal';
@@ -17,6 +17,12 @@ import { InteractiveTutorial } from './components/InteractiveTutorial';
 import { FirstTimeWelcomeModal } from './components/FirstTimeWelcomeModal';
 import { TutorialsModal } from './components/TutorialsModal';
 import { getTutorialById } from './core/tutorials';
+import { MobileSimulator } from './components/MobileSimulator';
+import { MobileToolsModal } from './components/MobileToolsModal';
+
+const isEmbedded = typeof window !== 'undefined' && (
+  window.location.search.includes('embedded_mobile') || window.self !== window.top
+);
 
 // Lazy-load heavy secondary modals to optimize initial bundle parse time
 const DataManagementModal = React.lazy(() =>
@@ -27,7 +33,7 @@ const UserGuideModal = React.lazy(() =>
 );
 import { useBodyScrollLock } from './core/useBodyScrollLock';
 import { getHapticPreference, setHapticPreference } from './core/haptics';
-import { ListTodo, TrendingUp } from 'lucide-react';
+import { ListTodo, TrendingUp, Plus, Sliders, Flag, Layers } from 'lucide-react';
 
 const INITIAL_STATIONS: StationPoint[] = [
   { id: 'st-0', distanceFt: 0, readingInches: 6.28 },
@@ -179,6 +185,7 @@ export const App: React.FC = () => {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isNewTrackModalOpen, setIsNewTrackModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
   const [incomingSharedProject, setIncomingSharedProject] = useState<TrackProject | null>(null);
   const [isBetaNoticeOpen, setIsBetaNoticeOpen] = useState<boolean>(() => {
     try {
@@ -206,20 +213,48 @@ export const App: React.FC = () => {
     }
   });
 
-  // Mobile layout mode: 'tabbed' (default) vs 'stacked'
-  const [mobileLayout, setMobileLayout] = useState<'tabbed' | 'stacked'>(() => {
+  // Mobile layout mode: 'bottom_nav' (default & recommended) vs 'tabbed' vs 'stacked'
+  const [mobileLayout, setMobileLayout] = useState<'bottom_nav' | 'tabbed' | 'stacked'>(() => {
     try {
       const saved = localStorage.getItem('tlc_mobile_layout');
-      if (saved === 'stacked' || saved === 'tabbed') return saved;
+      if (saved === 'bottom_nav' || saved === 'tabbed' || saved === 'stacked') return saved;
     } catch {
       // fallback
     }
-    return 'tabbed';
+    return 'bottom_nav';
   });
 
   const [mobileTab, setMobileTab] = useState<'checklist' | 'graph'>('checklist');
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
 
-  const handleSetMobileLayout = (layout: 'tabbed' | 'stacked') => {
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Mobile Field Console: Synchronized Display Mode & Actions
+  const [tableDisplayMode, setTableDisplayMode] = useState<TableDisplayMode>(() => {
+    try {
+      const saved = localStorage.getItem('track_level_table_display_mode');
+      if (saved === 'target_reading' || saved === 'relative_elev' || saved === 'both') {
+        return saved as TableDisplayMode;
+      }
+      return 'target_reading';
+    } catch {
+      return 'target_reading';
+    }
+  });
+
+  const [isMobileExtendOpen, setIsMobileExtendOpen] = useState(false);
+  const [isMobileMoveLaserOpen, setIsMobileMoveLaserOpen] = useState(false);
+
+  const handleSetMobileLayout = (layout: 'bottom_nav' | 'tabbed' | 'stacked') => {
     setMobileLayout(layout);
     try {
       localStorage.setItem('tlc_mobile_layout', layout);
@@ -252,15 +287,56 @@ export const App: React.FC = () => {
     setHapticPreference(enabled);
   };
 
+  // Desktop Mobile Simulator State (launch mobile phone frame without DevTools)
+  const [isMobileSimulatorOpen, setIsMobileSimulatorOpen] = useState<boolean>(() => {
+    try {
+      if (typeof window !== 'undefined' && window.location.search.includes('view=mobile') && !isEmbedded) {
+        return true;
+      }
+    } catch {
+      // fallback
+    }
+    return false;
+  });
+
+  // Handle cross-frame messages for real-time mobile simulation
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'SET_MOBILE_LAYOUT') {
+        handleSetMobileLayout(event.data.layout);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const handleCloseMobileSimulator = () => {
+    setIsMobileSimulatorOpen(false);
+    try {
+      const saved = localStorage.getItem('track_level_companion_active');
+      if (saved) {
+        setProject(JSON.parse(saved));
+      }
+      const savedLayout = localStorage.getItem('tlc_mobile_layout');
+      if (savedLayout === 'bottom_nav' || savedLayout === 'tabbed' || savedLayout === 'stacked') {
+        setMobileLayout(savedLayout);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
   useBodyScrollLock(
     isKeypadOpen ||
     isDataModalOpen ||
     isGuideOpen ||
     isNewTrackModalOpen ||
     isSettingsOpen ||
+    isMobileToolsOpen ||
     isBetaNoticeOpen ||
     isWelcomeModalOpen ||
     isTutorialsModalOpen ||
+    isMobileSimulatorOpen ||
     Boolean(incomingSharedProject)
   );
 
@@ -930,6 +1006,7 @@ export const App: React.FC = () => {
     setIsWelcomeModalOpen(false);
     setIsGuideOpen(false);
     setIsSettingsOpen(false);
+    setIsMobileToolsOpen(false);
     setIsDataModalOpen(false);
     setIsNewTrackModalOpen(false);
     setMobileTab('checklist');
@@ -1018,7 +1095,13 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <div className="app-interactive-screen min-h-screen dashboard-viewport-lock bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors p-2 sm:p-2.5 md:p-3 lg:p-4 max-w-5xl md:max-w-full lg:max-w-7xl xl:max-w-[1600px] mx-auto flex flex-col gap-2 sm:gap-2.5 md:gap-3">
+      <div className={`app-interactive-screen ${
+        mobileLayout === 'stacked'
+          ? 'min-h-screen'
+          : 'h-[100dvh] max-h-[100dvh] overflow-hidden'
+      } dashboard-viewport-lock bg-zinc-100 text-zinc-900 dark:bg-black dark:text-zinc-100 transition-colors ${
+        mobileLayout === 'bottom_nav' ? 'p-0 md:p-3 gap-0 md:gap-3' : 'p-2 sm:p-2.5 md:p-3 lg:p-4 gap-2 sm:gap-2.5 md:gap-3'
+      } max-w-5xl md:max-w-full lg:max-w-7xl xl:max-w-[1600px] mx-auto flex flex-col`}>
         {/* 2026 UI Design Trends Prototype Lab Bar (Enabled via Settings -> Developer Options) */}
         {showPrototypeBar && (
           <PrototypeLabBar
@@ -1029,24 +1112,101 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* Mobile Header (visible only on < md phone screens) */}
-        <div className="md:hidden shrink-0">
-          <StationConfigHeader
-            project={project}
-            onChangeProject={handleUpdateProject}
-            isDarkMode={isDarkMode}
-            onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-            onOpenDataModal={() => setIsDataModalOpen(true)}
-            onOpenGuideModal={() => setIsGuideOpen(true)}
-            onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
-            onOpenSettingsModal={() => setIsSettingsOpen(true)}
-            onStartTutorial={() => setIsTutorialsModalOpen(true)}
-            onInstallApp={handleInstallApp}
-            canInstall={!!installPrompt}
-            summary={summary}
-            prototypeStyle={prototypeStyle}
-          />
-        </div>
+        {/* Mobile Field Telemetry HUD Strip: Two-Row Technical Instrument Readout */}
+        {mobileLayout === 'bottom_nav' ? (
+          <div className={`md:hidden px-3 py-1.5 text-xs shrink-0 select-none border-b transition-colors ${
+            prototypeStyle === 'nothing'
+              ? isDarkMode
+                ? 'border-zinc-800/80 bg-black text-zinc-300 font-["Space_Mono"]'
+                : 'border-zinc-300/80 bg-[#F2F2F2] text-zinc-800 font-["Space_Mono"]'
+              : isDarkMode
+              ? 'border-zinc-800 bg-zinc-950 text-zinc-300 font-mono'
+              : 'border-zinc-200 bg-zinc-50 text-zinc-700 font-mono'
+          }`}>
+            {/* ROW 1: Track Section Identity & Connection Status */}
+            <div className="flex items-center justify-between gap-2 pb-1">
+              <button
+                type="button"
+                onClick={() => setIsSettingsOpen(true)}
+                className="flex items-center gap-1.5 min-w-0 text-left cursor-pointer group"
+                title="Tap to configure track details in Settings"
+              >
+                <span className="text-[9px] uppercase tracking-wider font-bold text-zinc-500 shrink-0">
+                  Track:
+                </span>
+                <span className={`text-[11px] font-bold truncate group-hover:underline ${
+                  prototypeStyle === 'nothing'
+                    ? isDarkMode ? 'text-white' : 'text-black'
+                    : isDarkMode ? 'text-zinc-200' : 'text-zinc-800'
+                }`}>
+                  {project.name}
+                </span>
+              </button>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[9px] text-zinc-500 uppercase tracking-wider">
+                  {isOnline ? 'Online' : 'Offline'}
+                </span>
+                <span
+                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${isOnline ? 'bg-[#4A9E5C]' : 'bg-[#D71921]'}`}
+                  title={isOnline ? 'Offline ready' : 'Offline'}
+                />
+              </div>
+            </div>
+
+            {/* ROW 2: Balanced Field Telemetry Gauges (Pure Metrics, Zero Squish) */}
+            <div className="flex items-center justify-between gap-2 pt-1 border-t border-zinc-800/30 dark:border-zinc-800/60 text-xs">
+              {/* Section Length & Total Ties */}
+              <div className="flex items-center gap-1 shrink-0">
+                <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                  {summary.lengthFt}'
+                </span>
+                <span className="text-zinc-500 text-[10px]">
+                  ({summary.totalStations} ties)
+                </span>
+              </div>
+
+              {/* Target Grade */}
+              <div className="flex items-center gap-1 shrink-0">
+                <span className="text-zinc-500 text-[10px] uppercase">Grade:</span>
+                <span className={`font-bold ${
+                  prototypeStyle === 'nothing'
+                    ? isDarkMode ? 'text-white' : 'text-black'
+                    : 'text-amber-500'
+                }`}>
+                  {project.gradeMode === 'end_to_end' ? 'End-to-End' : `${project.targetGradePercent >= 0 ? '+' : ''}${project.targetGradePercent.toFixed(2)}%`}
+                </span>
+              </div>
+
+              {/* On-Grade Progress */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className={`font-bold ${prototypeStyle === 'nothing' ? isDarkMode ? 'text-[#4A9E5C]' : 'text-[#2D7A3E]' : 'text-emerald-500'}`}>
+                  ✓ {summary.onGradeCount}/{summary.measuredCount} On Grade
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="md:hidden shrink-0">
+            <StationConfigHeader
+              project={project}
+              onChangeProject={handleUpdateProject}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+              onOpenDataModal={() => setIsDataModalOpen(true)}
+              onOpenGuideModal={() => setIsGuideOpen(true)}
+              onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
+              onOpenSettingsModal={() => setIsSettingsOpen(true)}
+              onStartTutorial={() => setIsTutorialsModalOpen(true)}
+              onInstallApp={handleInstallApp}
+              canInstall={!!installPrompt}
+              summary={summary}
+              prototypeStyle={prototypeStyle}
+              isEmbedded={isEmbedded}
+              onOpenToolsModal={() => setIsMobileToolsOpen(true)}
+            />
+          </div>
+        )}
 
         {/* Mobile Tab Navigation (visible only on < md phone screens when mobileLayout is 'tabbed') */}
         {mobileLayout === 'tabbed' && (
@@ -1091,7 +1251,7 @@ export const App: React.FC = () => {
         {/* TOP SECTION: Full-Width Panoramic Profile Graph (Prime position across top of page on tablet & desktop >= 768px) */}
         <div
           className={`w-full shrink-0 ${
-            mobileLayout === 'tabbed' && mobileTab !== 'graph' ? 'hidden md:block' : 'block'
+            (mobileLayout === 'tabbed' || mobileLayout === 'bottom_nav') && mobileTab !== 'graph' ? 'hidden md:block' : 'block'
           }`}
         >
           <ProfileChart
@@ -1126,14 +1286,16 @@ export const App: React.FC = () => {
         </div>
 
         {/* BOTTOM SECTION: Split View below the graph (Left: Field Control Center, Right: Checklist Table) */}
-        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-4 items-stretch">
+        <div className={`flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-4 items-stretch ${
+          (mobileLayout === 'bottom_nav' || mobileLayout === 'tabbed') ? 'overflow-hidden' : ''
+        }`}>
           {/* LEFT COLUMN: Field Control Center (Header Card + Summary Cards 2x2 + Alignment Controls) */}
           <div
-            className={`md:col-span-5 xl:col-span-4 flex flex-col gap-2.5 sm:gap-3 md:overflow-y-auto pr-0 md:pr-1 ${
-              mobileLayout === 'tabbed' && mobileTab !== 'graph'
+            className={`md:col-span-5 xl:col-span-4 flex flex-col gap-2.5 sm:gap-3 overflow-y-auto pr-0 md:pr-1 ${
+              (mobileLayout === 'tabbed' || mobileLayout === 'bottom_nav') && mobileTab !== 'graph'
                 ? 'hidden md:flex'
                 : 'flex'
-            }`}
+            } ${mobileLayout === 'bottom_nav' ? 'pb-28 md:pb-0' : ''}`}
           >
             {/* Desktop / Tablet Panel Header Card */}
             <div className="hidden md:block shrink-0">
@@ -1151,6 +1313,10 @@ export const App: React.FC = () => {
                 canInstall={!!installPrompt}
                 summary={summary}
                 prototypeStyle={prototypeStyle}
+                onToggleMobilePreview={() => setIsMobileSimulatorOpen(!isMobileSimulatorOpen)}
+                isMobilePreviewOpen={isMobileSimulatorOpen}
+                isEmbedded={isEmbedded}
+                onOpenToolsModal={() => setIsMobileToolsOpen(true)}
               />
             </div>
 
@@ -1171,19 +1337,23 @@ export const App: React.FC = () => {
           {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
           <div
             className={`md:col-span-7 xl:col-span-8 flex flex-col min-h-0 h-full ${
-              mobileLayout === 'tabbed' && mobileTab !== 'checklist'
+              (mobileLayout === 'tabbed' || mobileLayout === 'bottom_nav') && mobileTab !== 'checklist'
                 ? 'hidden md:flex'
                 : 'flex'
             }`}
           >
-            {/* Mobile micro-summary when in tabbed checklist view */}
+            {/* Mobile micro-summary when in tabbed layout mode */}
             {mobileLayout === 'tabbed' && (
-              <div className="md:hidden flex items-center justify-between px-3 py-1.5 bg-zinc-100 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-mono mb-2">
+              <div className={`md:hidden flex items-center justify-between px-3 py-1.5 rounded-xl border text-xs shrink-0 mb-1.5 ${
+                prototypeStyle === 'nothing'
+                  ? 'bg-transparent border-zinc-300 dark:border-zinc-800 font-["Space_Mono"] text-[10px]'
+                  : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 font-mono'
+              }`}>
                 <span className="text-zinc-600 dark:text-zinc-400 font-bold">{summary.lengthFt}' ({summary.totalStations} ties)</span>
-                <span className="font-bold text-amber-600 dark:text-amber-400">
+                <span className={`font-bold ${prototypeStyle === 'nothing' ? 'text-zinc-900 dark:text-white' : 'text-amber-600 dark:text-amber-400'}`}>
                   Grade: {project.gradeMode === 'end_to_end' ? 'End-to-End' : `${project.targetGradePercent >= 0 ? '+' : ''}${project.targetGradePercent.toFixed(2)}%`}
                 </span>
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold">
+                <span className={`font-bold ${prototypeStyle === 'nothing' ? 'text-[#4A9E5C]' : 'text-emerald-700 dark:text-emerald-400'}`}>
                   ✓ {summary.onGradeCount}/{summary.measuredCount} On Grade
                 </span>
               </div>
@@ -1209,6 +1379,13 @@ export const App: React.FC = () => {
               }}
               selectedStationId={activeEditingStation?.id}
               prototypeStyle={prototypeStyle}
+              mobileLayout={mobileLayout}
+              displayMode={tableDisplayMode}
+              onChangeDisplayMode={setTableDisplayMode}
+              isExternalExtendOpen={isMobileExtendOpen}
+              onCloseExternalExtend={() => setIsMobileExtendOpen(false)}
+              isExternalMoveLaserOpen={isMobileMoveLaserOpen}
+              onCloseExternalMoveLaser={() => setIsMobileMoveLaserOpen(false)}
             />
           </div>
         </div>
@@ -1298,6 +1475,7 @@ export const App: React.FC = () => {
           onChangeShowPrototypeBar={handleToggleShowPrototypeBar}
           isDarkMode={isDarkMode}
           onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+          onToggleMobilePreview={() => setIsMobileSimulatorOpen(true)}
         />
 
         {/* Field Guide & Animated Tutorial Modal */}
@@ -1319,6 +1497,7 @@ export const App: React.FC = () => {
           isOpen={isTutorialsModalOpen}
           onClose={() => setIsTutorialsModalOpen(false)}
           onSelectTutorial={handleStartTutorial}
+          onOpenGuide={() => setIsGuideOpen(true)}
         />
 
         {/* First Launch Beta Notice Modal */}
@@ -1381,9 +1560,315 @@ export const App: React.FC = () => {
           onConfirmLoad={handleConfirmLoadSharedProject}
         />
 
+        {/* Mobile Unified Tools & Navigation Sheet */}
+        <MobileToolsModal
+          isOpen={isMobileToolsOpen}
+          onClose={() => setIsMobileToolsOpen(false)}
+          onOpenNewTrack={() => setIsNewTrackModalOpen(true)}
+          onOpenDataModal={() => setIsDataModalOpen(true)}
+          onOpenTutorials={() => setIsTutorialsModalOpen(true)}
+          onOpenGuide={() => setIsGuideOpen(true)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
+        />
+
         {/* Opt-in PWA Update Notification Toast */}
         <UpdatePrompt />
+
+        {/* Mobile Bottom Thumb Console (Pinned 2-tier Nothing OS console for field ergonomics) */}
+        {mobileLayout === 'bottom_nav' && (
+          <nav
+            aria-label="Mobile Bottom Navigation"
+            className={`md:hidden fixed bottom-0 left-0 right-0 z-40 border-t transition-colors ${
+              prototypeStyle === 'nothing'
+                ? isDarkMode
+                  ? 'bg-black border-zinc-800 text-zinc-300'
+                  : 'bg-[#F2F2F2] border-zinc-300 text-zinc-800'
+                : isDarkMode
+                ? 'bg-zinc-950/95 border-zinc-800 text-zinc-300 backdrop-blur-lg shadow-2xl'
+                : 'bg-white/95 border-zinc-200 text-zinc-700 backdrop-blur-lg shadow-2xl'
+            }`}
+          >
+            {/* TIER 1: Field Action Strip (Display toggle & immediate field operations) */}
+            <div
+              className={`px-2.5 sm:px-3 py-1.5 border-b flex items-center justify-between gap-1.5 max-w-md mx-auto ${
+                prototypeStyle === 'nothing'
+                  ? isDarkMode ? 'border-zinc-800/80 bg-zinc-950/60' : 'border-zinc-300/80 bg-zinc-100/60'
+                  : isDarkMode ? 'border-zinc-800/60 bg-zinc-900/40' : 'border-zinc-200/60 bg-zinc-50/40'
+              }`}
+            >
+              {/* Left: Display Mode 3-Way Segmented Control */}
+              <div className="flex items-center gap-1 min-w-0">
+                <span
+                  className={`text-[9px] uppercase tracking-wider font-bold shrink-0 ${
+                    prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-zinc-500' : 'text-zinc-500 font-mono'
+                  }`}
+                >
+                  View:
+                </span>
+                <div
+                  className={`inline-flex rounded-lg p-0.5 border ${
+                    prototypeStyle === 'nothing'
+                      ? isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-200/70 border-zinc-300'
+                      : isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-200 border-zinc-300'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setTableDisplayMode('target_reading')}
+                    className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
+                      tableDisplayMode === 'target_reading'
+                        ? prototypeStyle === 'nothing'
+                          ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
+                          : 'bg-amber-500 text-black shadow-xs'
+                        : 'text-zinc-400 hover:text-zinc-200'
+                    }`}
+                    title="Display Target Rod column"
+                  >
+                    ROD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTableDisplayMode('relative_elev')}
+                    className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
+                      tableDisplayMode === 'relative_elev'
+                        ? prototypeStyle === 'nothing'
+                          ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
+                          : 'bg-amber-500 text-black shadow-xs'
+                        : 'text-zinc-400 hover:text-zinc-200'
+                    }`}
+                    title="Display Relative Elevation column"
+                  >
+                    ELEV
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTableDisplayMode('both')}
+                    className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
+                      tableDisplayMode === 'both'
+                        ? prototypeStyle === 'nothing'
+                          ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
+                          : 'bg-amber-500 text-black shadow-xs'
+                        : 'text-zinc-400 hover:text-zinc-200'
+                    }`}
+                    title="Display Both Rod and Elevation"
+                  >
+                    BOTH
+                  </button>
+                </div>
+              </div>
+
+              {/* Right: Secondary Action Triggers */}
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMoveLaserOpen(true)}
+                  className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? isDarkMode
+                        ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
+                        : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
+                      : 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
+                  }`}
+                  title="Relocate Rotary Laser (Turning Point)"
+                >
+                  <Flag className="w-3 h-3 text-[#D71921]" />
+                  <span>Laser</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsMobileExtendOpen(true)}
+                  className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? isDarkMode
+                        ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
+                        : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
+                      : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                  }`}
+                  title="Extend Track (Batch add ties)"
+                >
+                  <Layers className="w-3 h-3 text-amber-500" />
+                  <span>+ Ext</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleInsertCustomStation}
+                  className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-0.5 transition shrink-0 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? isDarkMode
+                        ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
+                        : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
+                      : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                  }`}
+                  title="Insert Custom Station Point"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Pt</span>
+                </button>
+              </div>
+            </div>
+
+            {/* TIER 2: Primary Transport & Hero Red Keypad Bar (Option A: Segmented Rail + Hardware Key) */}
+            <div className="flex items-center justify-between gap-1.5 sm:gap-2 max-w-md mx-auto px-2 sm:px-3 pt-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              {/* Unified 2-Position Segmented Rocker Rail (Checklist vs Profile) */}
+              <div
+                className={`flex-1 inline-flex p-0.5 rounded-xl border transition-colors ${
+                  prototypeStyle === 'nothing'
+                    ? isDarkMode
+                      ? 'bg-zinc-950 border-zinc-800'
+                      : 'bg-zinc-200/80 border-zinc-300'
+                    : isDarkMode
+                    ? 'bg-zinc-900 border-zinc-800'
+                    : 'bg-zinc-200 border-zinc-300'
+                }`}
+                role="tablist"
+                aria-label="View Mode"
+              >
+                {/* Tab: Checklist */}
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mobileTab === 'checklist'}
+                  onClick={() => setMobileTab('checklist')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg transition-all cursor-pointer min-h-[36px] ${
+                    mobileTab === 'checklist'
+                      ? prototypeStyle === 'nothing'
+                        ? isDarkMode
+                          ? 'bg-zinc-900 border border-zinc-700/80 text-white font-["Space_Mono"] shadow-xs'
+                          : 'bg-white border border-zinc-300 text-black font-["Space_Mono"] shadow-xs'
+                        : 'bg-amber-500 text-black font-bold shadow-xs'
+                      : prototypeStyle === 'nothing'
+                      ? isDarkMode
+                        ? 'border border-transparent text-zinc-500 hover:text-zinc-300 font-["Space_Mono"]'
+                        : 'border border-transparent text-zinc-600 hover:text-black font-["Space_Mono"]'
+                      : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
+                  }`}
+                >
+                  {prototypeStyle === 'nothing' ? (
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${
+                        mobileTab === 'checklist' ? 'bg-[#D71921]' : 'bg-zinc-700/60'
+                      }`}
+                    />
+                  ) : (
+                    <ListTodo className="w-3.5 h-3.5 shrink-0" />
+                  )}
+                  <span
+                    className={`text-xs ${
+                      prototypeStyle === 'nothing'
+                        ? 'font-["Space_Mono"] uppercase tracking-tight font-bold'
+                        : 'font-medium'
+                    }`}
+                  >
+                    Checklist
+                  </span>
+                </button>
+
+                {/* Tab: Profile */}
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={mobileTab === 'graph'}
+                  onClick={() => setMobileTab('graph')}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg transition-all cursor-pointer min-h-[36px] ${
+                    mobileTab === 'graph'
+                      ? prototypeStyle === 'nothing'
+                        ? isDarkMode
+                          ? 'bg-zinc-900 border border-zinc-700/80 text-white font-["Space_Mono"] shadow-xs'
+                          : 'bg-white border border-zinc-300 text-black font-["Space_Mono"] shadow-xs'
+                        : 'bg-amber-500 text-black font-bold shadow-xs'
+                      : prototypeStyle === 'nothing'
+                      ? isDarkMode
+                        ? 'border border-transparent text-zinc-500 hover:text-zinc-300 font-["Space_Mono"]'
+                        : 'border border-transparent text-zinc-600 hover:text-black font-["Space_Mono"]'
+                      : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
+                  }`}
+                >
+                  {prototypeStyle === 'nothing' ? (
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 transition-colors ${
+                        mobileTab === 'graph' ? 'bg-[#D71921]' : 'bg-zinc-700/60'
+                      }`}
+                    />
+                  ) : (
+                    <TrendingUp className="w-3.5 h-3.5 shrink-0" />
+                  )}
+                  <span
+                    className={`text-xs ${
+                      prototypeStyle === 'nothing'
+                        ? 'font-["Space_Mono"] uppercase tracking-tight font-bold'
+                        : 'font-medium'
+                    }`}
+                  >
+                    Profile
+                  </span>
+                </button>
+              </div>
+
+              {/* Hero Trigger: + Add Next (Tactile Nothing Red hardware trigger) */}
+              <button
+                type="button"
+                onClick={handleAddNextStation}
+                className={`flex items-center justify-center gap-1 py-1.5 px-3 sm:px-3.5 rounded-xl transition-all cursor-pointer active:scale-95 min-h-[38px] shrink-0 ${
+                  prototypeStyle === 'nothing'
+                    ? 'border border-[#D71921] bg-[#D71921]/15 text-[#D71921] hover:bg-[#D71921]/25 active:bg-[#D71921] active:text-white font-["Space_Mono"] font-bold text-xs uppercase tracking-tight'
+                    : 'border border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-400 hover:bg-amber-500/30 font-bold text-xs'
+                }`}
+                title="Add next station interval (+5 ft)"
+              >
+                <span className="whitespace-nowrap font-bold">+ Add Next</span>
+              </button>
+
+              {/* Action: Tools Menu (integrates New Track, Files & Export, Tutorials, Guide, Settings, Theme) */}
+              <button
+                type="button"
+                onClick={() => setIsMobileToolsOpen(true)}
+                className={`flex items-center justify-center gap-1 py-1.5 px-2.5 sm:px-3 rounded-xl border transition-all cursor-pointer active:scale-95 min-h-[38px] shrink-0 ${
+                  isMobileToolsOpen
+                    ? prototypeStyle === 'nothing'
+                      ? isDarkMode
+                        ? 'bg-zinc-900 border-zinc-600 text-white font-["Space_Mono"]'
+                        : 'bg-white border-zinc-400 text-black font-["Space_Mono"]'
+                      : 'bg-amber-500 text-black font-bold shadow-xs'
+                    : prototypeStyle === 'nothing'
+                    ? isDarkMode
+                      ? 'border-zinc-800 bg-zinc-950/80 text-zinc-300 hover:text-white hover:border-zinc-600 font-["Space_Mono"]'
+                      : 'border-zinc-300 bg-white/80 text-zinc-800 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
+                    : 'border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
+                }`}
+                title="Field Tools, Tutorials, Guide & Settings"
+              >
+                <Sliders className="w-3.5 h-3.5 shrink-0 text-zinc-400" />
+                <span
+                  className={`text-xs font-bold ${
+                    prototypeStyle === 'nothing'
+                      ? 'font-["Space_Mono"] uppercase tracking-tight'
+                      : ''
+                  }`}
+                >
+                  Tools
+                </span>
+              </button>
+            </div>
+          </nav>
+        )}
       </div>
+
+      {/* Mobile Device Simulator Modal (Desktop testing without DevTools) */}
+      {!isEmbedded && (
+        <MobileSimulator
+          isOpen={isMobileSimulatorOpen}
+          onClose={handleCloseMobileSimulator}
+          mobileLayout={mobileLayout}
+          onChangeMobileLayout={handleSetMobileLayout}
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
+        />
+      )}
 
       {/* Dedicated 8.5x11 Printable Report (Visible ONLY in Print / PDF dialog) */}
       <PrintReport

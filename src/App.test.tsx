@@ -9,4 +9,13 @@ describe('App Component SSR render', () => {
     expect(html).toMatch(/Trackside Leveling Checklist/i);
     expect(html).toContain('Track Section Name');
   });
+
+  it('renders mobile bottom dock navigation by default', () => {
+    const html = renderToString(<App />);
+    expect(html).toContain('Mobile Bottom Navigation');
+    expect(html).toContain('+ Add Next');
+    expect(html).toContain('Checklist');
+    expect(html).toContain('Profile');
+  });
 });
+

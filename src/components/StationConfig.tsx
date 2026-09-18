@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { UnitFormat, TrackProject, CalculatedStation, PrototypeStyle } from '../core/types';
 import { calculateGradeInfo } from '../core/calculations';
-import { Sliders, Sun, Moon, Compass, BookOpen, CheckCircle2, TrendingUp, Plus, Download, Settings, Play } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass, BookOpen, CheckCircle2, TrendingUp, Plus, Download, Settings, Smartphone } from 'lucide-react';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 
 export interface StationSummaryData {
@@ -30,6 +30,10 @@ export interface StationConfigHeaderProps {
   canInstall?: boolean;
   summary: StationSummaryData;
   prototypeStyle?: PrototypeStyle;
+  onToggleMobilePreview?: () => void;
+  isMobilePreviewOpen?: boolean;
+  isEmbedded?: boolean;
+  onOpenToolsModal?: () => void;
 }
 
 export interface StationSummaryBarProps {
@@ -59,6 +63,10 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
   canInstall,
   summary,
   prototypeStyle = 'original',
+  onToggleMobilePreview,
+  isMobilePreviewOpen = false,
+  isEmbedded = false,
+  onOpenToolsModal,
 }) => {
   const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
@@ -157,27 +165,69 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           </div>
         </div>
 
-        {/* Theme Toggle */}
-        <button
-          onClick={onToggleDarkMode}
-          className={`h-8 w-8 flex items-center justify-center transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0 ${
-            prototypeStyle === 'nothing'
-              ? 'rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-white'
-              : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800'
-          }`}
-          title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
-          aria-label="Toggle Sunlight Mode"
-        >
-          {isDarkMode ? (
-            <Sun className="w-4 h-4 text-amber-400" />
-          ) : (
-            <Moon className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+        {/* Right Header Buttons: Mobile View Toggle & Theme Toggle */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* Mobile Simulator Toggle Button (Desktop testing without DevTools) */}
+          {onToggleMobilePreview && !isEmbedded && (
+            <button
+              type="button"
+              onClick={onToggleMobilePreview}
+              className={`h-8 px-2 sm:px-2.5 flex items-center gap-1.5 transition active:scale-95 text-xs font-bold shrink-0 cursor-pointer ${
+                prototypeStyle === 'nothing'
+                  ? isMobilePreviewOpen
+                    ? 'rounded-full bg-white text-black font-["Space_Mono"] uppercase tracking-wider'
+                    : 'rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white font-["Space_Mono"] uppercase tracking-wider'
+                  : isMobilePreviewOpen
+                  ? 'rounded-xl bg-amber-500 text-black shadow-sm'
+                  : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300'
+              }`}
+              title="Toggle Mobile Simulator (Test phone bottom dock and touch layout directly on desktop without DevTools)"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden sm:inline">{isMobilePreviewOpen ? 'Desktop' : 'Mobile View'}</span>
+            </button>
           )}
-        </button>
+
+          {/* Mobile Tools Menu Launcher (hidden on desktop md+, visible on mobile phones) */}
+          {onOpenToolsModal && (
+            <button
+              type="button"
+              onClick={onOpenToolsModal}
+              className={`md:hidden h-8 px-2 sm:px-2.5 flex items-center gap-1.5 transition active:scale-95 text-xs font-bold shrink-0 cursor-pointer ${
+                prototypeStyle === 'nothing'
+                  ? 'rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-white font-["Space_Mono"] uppercase tracking-wider'
+                  : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300'
+              }`}
+              title="Open Field Tools & Settings Menu"
+              aria-label="Open Field Tools"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Tools</span>
+            </button>
+          )}
+
+          {/* Theme Toggle */}
+          <button
+            onClick={onToggleDarkMode}
+            className={`h-8 w-8 flex items-center justify-center transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0 ${
+              prototypeStyle === 'nothing'
+                ? 'rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-white'
+                : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800'
+            }`}
+            title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
+            aria-label="Toggle Sunlight Mode"
+          >
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* Action Controls */}
-      <div data-tutorial="header-actions" className="flex items-center gap-1.5 w-full flex-wrap">
+      {/* Action Controls (Hidden on mobile phones to save vertical space; accessible via bottom dock or Tools button) */}
+      <div data-tutorial="header-actions" className="hidden md:flex items-center gap-1.5 w-full flex-wrap">
         {/* Desktop / PWA Install Button */}
         {canInstall && onInstallApp && (
           <button
@@ -210,36 +260,19 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           <span>New</span>
         </button>
 
-        {/* Interactive Tutorials */}
-        {onStartTutorial && (
-          <button
-            type="button"
-            onClick={onStartTutorial}
-            className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap ${
-              prototypeStyle === 'nothing'
-                ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
-                : 'rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30'
-            }`}
-            title="Open Interactive Tutorials"
-          >
-            <Play className="w-3 h-3 fill-current shrink-0" />
-            <span>Tutorials</span>
-          </button>
-        )}
-
-        {/* Field Guide / Handbook */}
+        {/* Unified Interactive Tutorials & Field Handbook */}
         <button
           type="button"
-          onClick={onOpenGuideModal}
-          className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap ${
+          onClick={onStartTutorial || onOpenGuideModal}
+          className={`flex-1 h-8 flex items-center justify-center gap-1.5 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap ${
             prototypeStyle === 'nothing'
               ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
-              : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800'
+              : 'rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30'
           }`}
-          title="Open Field Guide & Feature Handbook"
+          title="Open Interactive Tutorials & Field Handbook"
         >
           <BookOpen className="w-3.5 h-3.5 shrink-0" />
-          <span>Guide</span>
+          <span>Tutorials & Guide</span>
         </button>
 
         {/* Data / Files */}
