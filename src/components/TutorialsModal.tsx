@@ -5,7 +5,6 @@ import {
   Clock,
   Compass,
   CheckCircle2,
-  BookOpen,
 } from 'lucide-react';
 import { ALL_TUTORIALS, TutorialDefinition } from '../core/tutorials';
 
@@ -97,32 +96,47 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
 
           <div className="flex items-center gap-2 shrink-0">
             {onOpenGuide && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenGuide();
-                }}
-                className={`h-8 px-2.5 border text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
-                  isNothing
-                    ? 'rounded-full border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 uppercase tracking-wider text-[11px]'
-                    : 'rounded-xl border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:text-black dark:hover:text-white'
-                }`}
-                title="Switch to Field Guide & Handbook"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Field Handbook</span>
-                <span className="sm:hidden">Guide</span>
-              </button>
+              <div className={`inline-flex p-0.5 rounded-lg border ${
+                isNothing
+                  ? isDarkMode ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-200 border-zinc-300'
+                  : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
+              }`}>
+                <button
+                  type="button"
+                  className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md ${
+                    isNothing
+                      ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase'
+                      : 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
+                  }`}
+                  disabled
+                >
+                  Tutorials
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenGuide();
+                  }}
+                  className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md cursor-pointer transition ${
+                    isNothing
+                      ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
+                      : 'text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white'
+                  }`}
+                  title="Switch to Field Guide & Handbook"
+                >
+                  Field Guide
+                </button>
+              </div>
             )}
 
             <button
               type="button"
               onClick={onClose}
-              className={`p-2 transition shrink-0 cursor-pointer ${
+              className={`proto-ignore p-1.5 transition shrink-0 cursor-pointer rounded-lg ${
                 isNothing
-                  ? 'rounded-full text-zinc-400 hover:text-white hover:bg-zinc-900'
-                  : 'rounded-xl text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                  ? 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+                  : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
               }`}
               title="Close Tutorials"
               aria-label="Close Tutorials"
@@ -133,11 +147,7 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
         </div>
 
         {/* Scrollable Tutorial Cards List */}
-        <div className={`p-4 sm:p-6 overflow-y-auto space-y-3.5 divide-y ${
-          isNothing
-            ? isDarkMode ? 'divide-zinc-800/60' : 'divide-zinc-200'
-            : 'divide-zinc-100 dark:divide-zinc-900'
-        }`}>
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-3.5">
           {ALL_TUTORIALS.map((tutorial: TutorialDefinition) => {
             const Icon = tutorial.icon;
             const isGettingStarted = tutorial.id === 'getting-started';
@@ -145,7 +155,7 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
             return (
               <div
                 key={tutorial.id}
-                className={`pt-3.5 first:pt-0 group p-3.5 sm:p-4 rounded-xl border transition-all duration-200 ${
+                className={`group p-3.5 sm:p-4 rounded-xl border transition-all duration-200 ${
                   isNothing
                     ? isDarkMode
                       ? isGettingStarted
@@ -161,13 +171,13 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-3">
                       <div
-                        className={`w-10 h-10 flex items-center justify-center shrink-0 font-bold ${
+                        className={`w-10 h-10 mt-0.5 flex items-center justify-center shrink-0 font-bold ${
                           isNothing
                             ? isGettingStarted
-                              ? 'rounded-full border border-zinc-700 bg-zinc-900 text-[#D71921]'
-                              : 'rounded-full border border-zinc-800 bg-zinc-900/50 text-zinc-300'
+                              ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-[#D71921]'
+                              : 'rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300'
                             : isGettingStarted
                             ? 'rounded-xl bg-amber-500 text-black shadow-sm'
                             : 'rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
@@ -184,10 +194,10 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                         </h3>
 
                         <div className="flex items-center gap-2 flex-wrap mt-1">
-                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          <span className={`text-xs font-bold px-2 py-0.5 ${
                             isNothing
-                              ? 'border border-zinc-700 bg-transparent text-zinc-400 font-["Space_Mono"] uppercase text-[10px]'
-                              : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                              ? 'proto-ignore rounded border border-zinc-700 bg-transparent text-zinc-400 font-["Space_Mono"] uppercase text-[10px]'
+                              : 'rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                           }`}>
                             {tutorial.category}
                           </span>
@@ -197,12 +207,12 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                           </span>
                           {tutorial.badge && (
                             <span
-                              className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                              className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 ${
                                 isNothing
-                                  ? 'border border-[#D71921] text-[#D71921] bg-transparent rounded-full font-["Space_Mono"] text-[9px]'
+                                  ? 'proto-ignore border border-[#D71921] text-[#D71921] bg-transparent rounded font-["Space_Mono"] text-[9px]'
                                   : isGettingStarted
-                                  ? 'bg-amber-500 text-black font-extrabold'
-                                  : 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30'
+                                  ? 'rounded bg-amber-500 text-black font-extrabold'
+                                  : 'rounded bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30'
                               }`}
                             >
                               {tutorial.badge}
@@ -223,9 +233,9 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                     type="button"
                     onClick={() => onSelectTutorial(tutorial.id)}
                     data-tutorial-launch={tutorial.id}
-                    className={`self-end sm:self-center px-4 py-2 text-xs font-black transition-all duration-150 flex items-center gap-1.5 shrink-0 active:scale-95 ${
+                    className={`proto-ignore self-end sm:self-start sm:mt-1 px-4 py-2 text-xs font-black transition-all duration-150 flex items-center gap-1.5 shrink-0 active:scale-95 cursor-pointer ${
                       isNothing
-                        ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-full font-["Space_Mono"] uppercase tracking-wider'
+                        ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-lg font-["Space_Mono"] uppercase tracking-wider'
                         : 'rounded-xl shadow-sm bg-amber-500 hover:bg-amber-400 text-black'
                     }`}
                   >
@@ -259,9 +269,9 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className={`px-3.5 py-1.5 text-xs font-bold transition shrink-0 ${
+            className={`proto-ignore px-3.5 py-1.5 text-xs font-bold transition shrink-0 cursor-pointer ${
               isNothing
-                ? 'border border-zinc-700 bg-transparent text-zinc-300 hover:text-white rounded-full font-["Space_Mono"] uppercase'
+                ? 'border border-zinc-700 bg-transparent text-zinc-300 hover:text-white rounded-lg font-["Space_Mono"] uppercase'
                 : 'rounded-xl text-zinc-700 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700'
             }`}
           >

@@ -318,13 +318,35 @@ export const App: React.FC = () => {
         setProject(JSON.parse(saved));
       }
       const savedLayout = localStorage.getItem('tlc_mobile_layout');
-      if (savedLayout === 'bottom_nav' || savedLayout === 'tabbed' || savedLayout === 'stacked') {
+      if (savedLayout && (savedLayout === 'bottom_nav' || savedLayout === 'tabbed' || savedLayout === 'stacked')) {
         setMobileLayout(savedLayout);
       }
     } catch {
       // ignore
     }
   };
+
+  // Global Keyboard Shortcut for Field Guide (? or F1)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput = target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable
+      );
+      if (isInput) return;
+
+      if (e.key === '?' || e.key === 'F1') {
+        e.preventDefault();
+        setIsGuideOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useBodyScrollLock(
     isKeypadOpen ||
@@ -1167,14 +1189,26 @@ export const App: React.FC = () => {
                 </span>
               </button>
 
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[9px] text-zinc-500 uppercase tracking-wider">
-                  {isOnline ? 'Online' : 'Offline'}
-                </span>
-                <span
-                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${isOnline ? 'bg-[#4A9E5C]' : 'bg-[#D71921]'}`}
-                  title={isOnline ? 'Offline ready' : 'Offline'}
-                />
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsGuideOpen(true)}
+                  className="proto-ignore text-[10px] font-bold text-[#D71921] hover:text-white px-1.5 py-0.5 rounded border border-zinc-800 hover:border-zinc-600 bg-zinc-900/60 font-mono transition cursor-pointer"
+                  title="Open Field Guide & Handbook (?)"
+                  aria-label="Open Field Guide"
+                >
+                  ?
+                </button>
+
+                <div className="flex items-center gap-1">
+                  <span className="text-[9px] text-zinc-500 uppercase tracking-wider">
+                    {isOnline ? 'Online' : 'Offline'}
+                  </span>
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${isOnline ? 'bg-[#4A9E5C]' : 'bg-[#D71921]'}`}
+                    title={isOnline ? 'Offline ready' : 'Offline'}
+                  />
+                </div>
               </div>
             </div>
 
@@ -1492,6 +1526,10 @@ export const App: React.FC = () => {
           onStartTutorial={() => {
             setIsSettingsOpen(false);
             setIsTutorialsModalOpen(true);
+          }}
+          onOpenGuideModal={() => {
+            setIsSettingsOpen(false);
+            setIsGuideOpen(true);
           }}
           prototypeStyle={prototypeStyle}
           onChangePrototypeStyle={setPrototypeStyle}

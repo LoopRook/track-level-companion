@@ -17,6 +17,7 @@ export interface SettingsModalProps {
   hapticsEnabled?: boolean;
   onChangeHapticsEnabled?: (enabled: boolean) => void;
   onStartTutorial?: () => void;
+  onOpenGuideModal?: () => void;
   prototypeStyle?: PrototypeStyle;
   onChangePrototypeStyle?: (style: PrototypeStyle) => void;
   showPrototypeBar?: boolean;
@@ -45,6 +46,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   hapticsEnabled,
   onChangeHapticsEnabled,
   onStartTutorial,
+  onOpenGuideModal,
   prototypeStyle = 'nothing',
   onChangePrototypeStyle,
   showPrototypeBar = false,
@@ -519,6 +521,38 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 className="px-3 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs hover:bg-amber-400 transition shadow-xs whitespace-nowrap active:scale-95 shrink-0"
               >
                 Start Tutorial
+              </button>
+            </div>
+          )}
+
+          {/* Section: Field Guide & Handbook */}
+          {onOpenGuideModal && (
+            <div className={`p-3.5 rounded-2xl flex items-center justify-between gap-3 border ${
+              prototypeStyle === 'nothing'
+                ? 'bg-zinc-950/40 border-zinc-800'
+                : 'bg-sky-500/10 border-sky-500/30'
+            }`}>
+              <div>
+                <h4 className={`font-bold text-xs ${prototypeStyle === 'nothing' ? 'text-zinc-100 font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                  Field Guide & Handbook
+                </h4>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  Complete reference manual for laser setup, math, slope modes, and leveling tolerances.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenGuideModal();
+                }}
+                className={`proto-ignore px-3 py-1.5 text-xs font-bold transition shadow-xs whitespace-nowrap active:scale-95 shrink-0 cursor-pointer ${
+                  prototypeStyle === 'nothing'
+                    ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-white hover:border-zinc-500 font-["Space_Mono"] uppercase'
+                    : 'rounded-xl bg-sky-500 text-white hover:bg-sky-400'
+                }`}
+              >
+                Open Guide
               </button>
             </div>
           )}

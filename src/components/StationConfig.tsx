@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { UnitFormat, TrackProject, CalculatedStation, PrototypeStyle } from '../core/types';
 import { calculateGradeInfo } from '../core/calculations';
-import { Sliders, Sun, Moon, Compass, BookOpen, CheckCircle2, TrendingUp, Plus, Download, Settings, Smartphone } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass, BookOpen, CheckCircle2, TrendingUp, Plus, Download, Settings, Smartphone, HelpCircle, Play } from 'lucide-react';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 
 export interface StationSummaryData {
@@ -206,10 +206,25 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
             </button>
           )}
 
+          {/* Help / Field Guide Button (Available on both desktop and mobile) */}
+          <button
+            type="button"
+            onClick={onOpenGuideModal}
+            className={`proto-ignore h-8 w-8 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer ${
+              prototypeStyle === 'nothing'
+                ? 'rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white font-["Space_Mono"]'
+                : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300'
+            }`}
+            title="Field Guide & Handbook (?)"
+            aria-label="Open Field Guide"
+          >
+            <HelpCircle className="w-4 h-4 text-[#D71921]" />
+          </button>
+
           {/* Theme Toggle */}
           <button
             onClick={onToggleDarkMode}
-            className={`h-8 w-8 flex items-center justify-center transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0 ${
+            className={`h-8 w-8 flex items-center justify-center transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0 cursor-pointer ${
               prototypeStyle === 'nothing'
                 ? 'rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-white'
                 : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800'
@@ -233,7 +248,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           <button
             type="button"
             onClick={onInstallApp}
-            className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-black transition active:scale-95 whitespace-nowrap ${
+            className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-black transition active:scale-95 whitespace-nowrap cursor-pointer ${
               prototypeStyle === 'nothing'
                 ? 'rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-["Space_Mono"] uppercase tracking-wider'
                 : 'rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black shadow-sm'
@@ -249,7 +264,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
         <button
           type="button"
           onClick={onOpenNewTrackModal}
-          className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-black transition active:scale-95 whitespace-nowrap ${
+          className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-black transition active:scale-95 whitespace-nowrap cursor-pointer ${
             prototypeStyle === 'nothing'
               ? 'rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-["Space_Mono"] uppercase tracking-wider'
               : 'rounded-xl bg-amber-500 hover:bg-amber-400 text-black shadow-sm'
@@ -260,19 +275,36 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           <span>New</span>
         </button>
 
-        {/* Unified Interactive Tutorials & Field Handbook */}
+        {/* Interactive Step-by-Step Tutorials */}
+        {onStartTutorial && (
+          <button
+            type="button"
+            onClick={onStartTutorial}
+            className={`flex-1 h-8 flex items-center justify-center gap-1.5 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap cursor-pointer ${
+              prototypeStyle === 'nothing'
+                ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
+                : 'rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30'
+            }`}
+            title="Open Interactive Step-by-Step Field Walkthroughs"
+          >
+            <Play className={`w-3.5 h-3.5 shrink-0 ${prototypeStyle === 'nothing' ? 'text-[#D71921] fill-[#D71921]' : 'text-amber-500 fill-amber-500'}`} />
+            <span>Tutorials</span>
+          </button>
+        )}
+
+        {/* Field Guide & Reference Handbook */}
         <button
           type="button"
-          onClick={onStartTutorial || onOpenGuideModal}
-          className={`flex-1 h-8 flex items-center justify-center gap-1.5 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap ${
+          onClick={onOpenGuideModal}
+          className={`flex-1 h-8 flex items-center justify-center gap-1.5 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap cursor-pointer ${
             prototypeStyle === 'nothing'
               ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
               : 'rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30'
           }`}
-          title="Open Interactive Tutorials & Field Handbook"
+          title="Open Field Guide, Laser Principles & Math Handbook"
         >
           <BookOpen className="w-3.5 h-3.5 shrink-0" />
-          <span>Tutorials & Guide</span>
+          <span>Guide</span>
         </button>
 
         {/* Data / Files */}
