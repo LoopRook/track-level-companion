@@ -160,61 +160,63 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`w-10 h-10 flex items-center justify-center shrink-0 font-bold ${
-                        isNothing
-                          ? isGettingStarted
-                            ? 'rounded-full border border-zinc-700 bg-zinc-900 text-[#D71921]'
-                            : 'rounded-full border border-zinc-800 bg-zinc-900/50 text-zinc-300'
-                          : isGettingStarted
-                          ? 'rounded-xl bg-amber-500 text-black shadow-sm'
-                          : 'rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5 stroke-[2.2]" />
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 flex items-center justify-center shrink-0 font-bold ${
                           isNothing
-                            ? 'border border-zinc-700 bg-transparent text-zinc-400 font-["Space_Mono"] uppercase text-[10px]'
-                            : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
-                        }`}>
-                          {tutorial.category}
-                        </span>
-                        <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {tutorial.duration}
-                        </span>
-                        {tutorial.badge && (
-                          <span
-                            className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                              isNothing
-                                ? 'border border-[#D71921] text-[#D71921] bg-transparent rounded-full font-["Space_Mono"] text-[9px]'
-                                : isGettingStarted
-                                ? 'bg-amber-500 text-black font-extrabold'
-                                : 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30'
-                            }`}
-                          >
-                            {tutorial.badge}
-                          </span>
-                        )}
+                            ? isGettingStarted
+                              ? 'rounded-full border border-zinc-700 bg-zinc-900 text-[#D71921]'
+                              : 'rounded-full border border-zinc-800 bg-zinc-900/50 text-zinc-300'
+                            : isGettingStarted
+                            ? 'rounded-xl bg-amber-500 text-black shadow-sm'
+                            : 'rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                        }`}
+                      >
+                        <Icon className="w-5 h-5 stroke-[2.2]" />
                       </div>
 
-                      <h3 className={`text-sm sm:text-base font-bold ${
-                        isNothing ? 'text-zinc-100 font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'
-                      }`}>
-                        {tutorial.title}
-                      </h3>
+                      <div className="min-w-0 flex-1">
+                        <h3 className={`text-sm sm:text-base font-bold leading-tight ${
+                          isNothing ? 'text-zinc-100 font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'
+                        }`}>
+                          {tutorial.title}
+                        </h3>
 
-                      <p className={`text-xs leading-relaxed font-normal ${
-                        isNothing ? 'text-zinc-400 font-["Space_Mono"]' : 'text-zinc-600 dark:text-zinc-400'
-                      }`}>
-                        {tutorial.description}
-                      </p>
+                        <div className="flex items-center gap-2 flex-wrap mt-1">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                            isNothing
+                              ? 'border border-zinc-700 bg-transparent text-zinc-400 font-["Space_Mono"] uppercase text-[10px]'
+                              : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                          }`}>
+                            {tutorial.category}
+                          </span>
+                          <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {tutorial.duration}
+                          </span>
+                          {tutorial.badge && (
+                            <span
+                              className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                                isNothing
+                                  ? 'border border-[#D71921] text-[#D71921] bg-transparent rounded-full font-["Space_Mono"] text-[9px]'
+                                  : isGettingStarted
+                                  ? 'bg-amber-500 text-black font-extrabold'
+                                  : 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30'
+                              }`}
+                            >
+                              {tutorial.badge}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
+
+                    <p className={`text-xs leading-relaxed font-normal mt-2.5 ${
+                      isNothing ? 'text-zinc-400 font-["Space_Mono"]' : 'text-zinc-600 dark:text-zinc-400'
+                    }`}>
+                      {tutorial.description}
+                    </p>
                   </div>
 
                   <button

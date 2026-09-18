@@ -26,11 +26,19 @@ import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
 interface UserGuideModalProps {
   isOpen: boolean;
+  prototypeStyle?: string;
+  isDarkMode?: boolean;
   onClose: () => void;
   onStartTutorial?: () => void;
 }
 
-export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, onStartTutorial }) => {
+export const UserGuideModal: React.FC<UserGuideModalProps> = ({
+  isOpen,
+  prototypeStyle = 'original',
+  isDarkMode = true,
+  onClose,
+  onStartTutorial,
+}) => {
   useBodyScrollLock(isOpen);
   const [currentStep, setCurrentStep] = useState<number>(0);
   // Interactive state for Animation 1: Rod & Laser
@@ -39,6 +47,8 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
   const [activeSlopeDemo, setActiveSlopeDemo] = useState<'grade_percent' | 'end_to_end'>('grade_percent');
 
   if (!isOpen) return null;
+
+  const isNothing = prototypeStyle === 'nothing';
 
   const steps = [
     {
@@ -79,28 +89,52 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] overscroll-contain touch-auto transition-colors"
+        className={`border w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] overscroll-contain touch-auto transition-colors ${
+          isNothing
+            ? isDarkMode
+              ? 'bg-[#0a0a0a] border-zinc-800 text-white rounded-2xl font-["Space_Mono"]'
+              : 'bg-white border-zinc-300 text-black rounded-2xl font-["Space_Mono"]'
+            : 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 rounded-2xl'
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* Modal Header */}
-        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-500">
+        <div className={`px-4 sm:px-5 py-3 flex items-center justify-between border-b shrink-0 ${
+          isNothing
+            ? isDarkMode
+              ? 'bg-black border-zinc-800'
+              : 'bg-zinc-100 border-zinc-200'
+            : 'bg-zinc-100 dark:bg-black border-zinc-200 dark:border-zinc-800'
+        }`}>
+          <div className="flex items-center gap-2.5">
+            <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${
+              isNothing
+                ? 'rounded-full border border-zinc-700 bg-zinc-900 text-[#D71921]'
+                : 'rounded-lg bg-amber-500/20 text-amber-500'
+            }`}>
               <BookOpen className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-extrabold text-zinc-900 dark:text-white">
-                Track Level Field Guide & Tutorial
+              <h2 className={`text-sm sm:text-base font-black ${
+                isNothing ? 'uppercase font-["Space_Mono"]' : 'font-extrabold text-zinc-900 dark:text-white'
+              }`}>
+                {isNothing ? '[ Field Guide & Handbook ]' : 'Track Level Field Guide & Tutorial'}
               </h2>
-              <p className="text-[11px] text-zinc-500">
+              <p className={`text-[11px] ${
+                isNothing ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-400' : 'text-zinc-500'
+              }`}>
                 Step {currentStep + 1} of {steps.length}: {steps[currentStep].shortTitle}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition"
+            className={`p-1.5 transition ${
+              isNothing
+                ? 'rounded-full text-zinc-400 hover:text-white hover:bg-zinc-900'
+                : 'rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
+            }`}
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -108,15 +142,25 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
         </div>
 
         {/* Step Tabs Navigation - Desktop (sm and up) */}
-        <div className="hidden sm:flex overflow-x-auto border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-2 pt-2 gap-1 text-xs font-bold scrollbar-none shrink-0">
+        <div className={`hidden sm:flex overflow-x-auto border-b px-2 pt-2 gap-1 text-xs font-bold scrollbar-none shrink-0 ${
+          isNothing
+            ? isDarkMode
+              ? 'border-zinc-800 bg-black/60 font-["Space_Mono"] uppercase'
+              : 'border-zinc-200 bg-zinc-100 font-["Space_Mono"] uppercase'
+            : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50'
+        }`}>
           {steps.map((s, idx) => (
             <button
               key={s.id}
               onClick={() => setCurrentStep(idx)}
-              className={`px-3 py-2 rounded-t-xl transition whitespace-nowrap flex items-center gap-1.5 border-t border-x text-xs ${
-                currentStep === idx
-                  ? 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
-                  : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+              className={`px-3 py-2 transition whitespace-nowrap flex items-center gap-1.5 text-xs ${
+                isNothing
+                  ? currentStep === idx
+                    ? 'border-b-2 border-[#D71921] text-[#D71921] font-bold'
+                    : 'text-zinc-500 hover:text-zinc-200'
+                  : currentStep === idx
+                  ? 'rounded-t-xl bg-white dark:bg-zinc-950 border-t border-x border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
+                  : 'rounded-t-xl border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
               }`}
             >
               <s.icon className="w-3.5 h-3.5" />
@@ -126,13 +170,25 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
         </div>
 
         {/* Step Navigation - Mobile (Zero horizontal scrolling: 5-column grid fitting 100% width) */}
-        <div className="grid grid-cols-5 gap-1 p-1.5 bg-zinc-50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800 sm:hidden shrink-0">
+        <div className={`grid grid-cols-5 gap-1 p-1.5 border-b sm:hidden shrink-0 ${
+          isNothing
+            ? isDarkMode
+              ? 'bg-black border-zinc-800 font-["Space_Mono"] uppercase'
+              : 'bg-zinc-100 border-zinc-200 font-["Space_Mono"] uppercase'
+            : 'bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800'
+        }`}>
           {steps.map((s, idx) => (
             <button
               key={s.id}
               onClick={() => setCurrentStep(idx)}
               className={`py-1.5 px-0.5 rounded-lg text-center transition flex flex-col items-center justify-center gap-0.5 ${
-                currentStep === idx
+                isNothing
+                  ? currentStep === idx
+                    ? 'border border-[#D71921] bg-[#D71921] text-white font-bold'
+                    : isDarkMode
+                    ? 'border border-zinc-800 bg-zinc-900/60 text-zinc-400'
+                    : 'border border-zinc-300 bg-zinc-200/60 text-zinc-700'
+                  : currentStep === idx
                   ? 'bg-amber-500 text-black font-extrabold shadow-xs'
                   : 'bg-zinc-200/60 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 font-semibold'
               }`}
@@ -150,10 +206,18 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
           
           {/* Interactive Tutorial Banner */}
           {onStartTutorial && (
-            <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <Play className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
-                <span className="text-zinc-800 dark:text-zinc-200">
+            <div className={`p-3 rounded-xl flex items-center justify-between gap-3 text-xs border ${
+              isNothing
+                ? isDarkMode
+                  ? 'bg-zinc-950 border-zinc-800 font-["Space_Mono"]'
+                  : 'bg-zinc-50 border-zinc-300 font-["Space_Mono"]'
+                : 'bg-amber-500/10 border-amber-500/30'
+            }`}>
+              <div className="flex items-center gap-2 min-w-0">
+                <Play className={`w-4 h-4 shrink-0 ${
+                  isNothing ? 'text-[#D71921] fill-[#D71921]' : 'text-amber-500 fill-amber-500'
+                }`} />
+                <span className={isNothing ? 'text-zinc-300 text-[11px]' : 'text-zinc-800 dark:text-zinc-200'}>
                   Prefer an interactive walkthrough? Start the <strong>step-by-step tutorial</strong>.
                 </span>
               </div>
@@ -163,7 +227,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
                   onClose();
                   onStartTutorial();
                 }}
-                className="px-3 py-1.5 rounded-lg bg-amber-500 text-black font-bold text-xs hover:bg-amber-400 transition whitespace-nowrap shadow-xs active:scale-95 shrink-0"
+                className={`px-3 py-1.5 transition whitespace-nowrap shadow-xs active:scale-95 shrink-0 text-xs font-bold ${
+                  isNothing
+                    ? 'rounded-full border border-[#D71921] bg-[#D71921] text-white font-["Space_Mono"] uppercase tracking-wider text-[11px]'
+                    : 'rounded-lg bg-amber-500 text-black hover:bg-amber-400'
+                }`}
               >
                 Start Tutorial
               </button>
@@ -779,12 +847,22 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
         </div>
 
         {/* Modal Footer Navigation */}
-        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+        <div className={`px-4 sm:px-5 py-3 border-t flex items-center justify-between shrink-0 ${
+          isNothing
+            ? isDarkMode
+              ? 'bg-black border-zinc-800 font-["Space_Mono"]'
+              : 'bg-zinc-100 border-zinc-200 font-["Space_Mono"]'
+            : 'bg-zinc-100 dark:bg-black border-zinc-200 dark:border-zinc-800'
+        }`}>
           <button
             type="button"
             disabled={currentStep === 0}
             onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
-            className="px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900 disabled:opacity-30 disabled:pointer-events-none text-xs font-bold transition flex items-center gap-1"
+            className={`px-3 py-1.5 text-xs font-bold transition flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none ${
+              isNothing
+                ? 'rounded-full border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white uppercase'
+                : 'rounded-xl border border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'
+            }`}
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Previous</span>
@@ -794,8 +872,14 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
             {steps.map((_, idx) => (
               <div
                 key={idx}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  currentStep === idx ? 'w-5 bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-800'
+                className={`rounded-full transition-all ${
+                  currentStep === idx
+                    ? isNothing
+                      ? 'w-5 h-2 bg-[#D71921]'
+                      : 'w-5 h-2 bg-amber-500'
+                    : isNothing
+                    ? 'w-2 h-2 bg-zinc-700'
+                    : 'w-2 h-2 bg-zinc-300 dark:bg-zinc-800'
                 }`}
               />
             ))}
@@ -805,7 +889,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
             <button
               type="button"
               onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-extrabold transition flex items-center gap-1 shadow-sm active:scale-95"
+              className={`px-3.5 py-1.5 text-xs font-extrabold transition flex items-center gap-1 shadow-sm active:scale-95 ${
+                isNothing
+                  ? 'rounded-full border border-[#D71921] bg-[#D71921] text-white uppercase font-["Space_Mono"] tracking-wider'
+                  : 'rounded-xl bg-amber-500 hover:bg-amber-400 text-black'
+              }`}
             >
               <span>Next</span>
               <ChevronRight className="w-4 h-4 stroke-[2.5]" />
@@ -814,7 +902,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose,
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-200 dark:hover:bg-white text-white dark:text-black text-xs font-extrabold transition shadow-sm active:scale-95"
+              className={`px-4 py-1.5 text-xs font-extrabold transition shadow-sm active:scale-95 ${
+                isNothing
+                  ? 'rounded-full border border-zinc-700 bg-zinc-900 text-zinc-200 hover:text-white uppercase font-["Space_Mono"]'
+                  : 'rounded-xl bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-200 dark:hover:bg-white text-white dark:text-black'
+              }`}
             >
               Close
             </button>

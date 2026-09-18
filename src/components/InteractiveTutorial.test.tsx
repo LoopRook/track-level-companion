@@ -175,7 +175,7 @@ describe('InteractiveTutorial Component', () => {
     expect(html).toBe('');
   });
 
-  it('renders nothing when isKeypadOpen is true (yields to keypad to prevent overlap)', () => {
+  it('renders compact guide banner when isKeypadOpen is true so guidance remains active', () => {
     const html = renderToString(
       <InteractiveTutorial
         isActive={true}
@@ -188,7 +188,8 @@ describe('InteractiveTutorial Component', () => {
       />
     );
 
-    expect(html).toBe('');
+    expect(html).toContain('Tutorial:');
+    expect(html).toContain('Tap the cell to enter 5.25');
   });
 
   it('renders with Nothing OS design system when prototypeStyle is nothing', () => {
@@ -209,5 +210,30 @@ describe('InteractiveTutorial Component', () => {
     expect(html).toContain('#D71921');
     expect(html).toContain('rounded-full');
     expect(html).toContain('Next Step');
+  });
+
+  it('renders ultra-compact Action HUD with flip and details buttons on mobile', () => {
+    const originalWindow = (globalThis as any).window;
+    (globalThis as any).window = { innerWidth: 390, innerHeight: 844 };
+    try {
+      const html = renderToString(
+        <InteractiveTutorial
+          isActive={true}
+          currentStep={0}
+          prototypeStyle="nothing"
+          isDarkMode={true}
+          onNextStep={vi.fn()}
+          onPrevStep={vi.fn()}
+          onExitTutorial={vi.fn()}
+          onCompleteTutorial={vi.fn()}
+        />
+      );
+
+      expect(html).toContain('data-testid="tutorial-flip-btn"');
+      expect(html).toContain('data-testid="tutorial-details-toggle"');
+      expect(html).toContain('Up');
+    } finally {
+      (globalThis as any).window = originalWindow;
+    }
   });
 });

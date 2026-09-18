@@ -1512,6 +1512,8 @@ export const App: React.FC = () => {
                 setIsGuideOpen(false);
                 setIsTutorialsModalOpen(true);
               }}
+              prototypeStyle={prototypeStyle}
+              isDarkMode={isDarkMode}
             />
           )}
         </React.Suspense>
@@ -1544,6 +1546,8 @@ export const App: React.FC = () => {
         {/* First-Time Welcome Modal */}
         <FirstTimeWelcomeModal
           isOpen={isWelcomeModalOpen}
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
           onClose={() => setIsWelcomeModalOpen(false)}
           onStartTutorial={() => {
             setIsWelcomeModalOpen(false);
