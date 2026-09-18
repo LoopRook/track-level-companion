@@ -5,7 +5,7 @@ import App from './App';
 describe('App Component SSR render', () => {
   it('renders App without crashing', () => {
     const html = renderToString(<App />);
-    expect(html).toContain('Track Vertical Profile');
+    expect(html).toMatch(/Track Vertical Profile/i);
     expect(html).toMatch(/Trackside Leveling Checklist/i);
     expect(html).toContain('Track Section Name');
   });

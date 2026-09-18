@@ -18,7 +18,8 @@ import {
   AlertCircle,
   Plus,
   RefreshCw,
-  QrCode
+  QrCode,
+  Printer,
 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
@@ -456,28 +457,53 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsQrModalOpen(true)}
-                  className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl flex items-center justify-center gap-2 font-extrabold text-xs shadow-sm transition active:scale-95 sm:col-span-2"
+                  className={`p-3 rounded-xl flex items-center justify-center gap-2 font-extrabold text-xs shadow-sm transition active:scale-95 sm:col-span-2 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'bg-[#D71921] hover:bg-[#b5141b] text-white font-["Space_Mono"] uppercase tracking-wider'
+                      : 'bg-amber-500 hover:bg-amber-400 text-black'
+                  }`}
                 >
                   <QrCode className="w-4 h-4 stroke-[2.5]" />
-                  <span>Share via QR Code</span>
+                  <span>{prototypeStyle === 'nothing' ? '[ SHARE VIA QR CODE ]' : 'Share via QR Code'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleExportCSV(currentProject)}
-                  className="p-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl flex items-center justify-center gap-2 font-bold text-xs shadow-sm transition active:scale-95"
+                  className={`p-3 rounded-xl flex items-center justify-center gap-2 font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-black border border-zinc-700 dark:border-zinc-300 font-["Space_Mono"] uppercase tracking-wider'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                  }`}
                 >
                   <Download className="w-4 h-4 stroke-[2.5]" />
-                  <span>Download .CSV File</span>
+                  <span>{prototypeStyle === 'nothing' ? '[ DOWNLOAD CSV ]' : 'Download .CSV File'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className={`p-3 rounded-xl flex items-center justify-center gap-2 font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-black border border-zinc-700 dark:border-zinc-300 font-["Space_Mono"] uppercase tracking-wider'
+                      : 'bg-blue-600 hover:bg-blue-500 text-white'
+                  }`}
+                >
+                  <Printer className="w-4 h-4 stroke-[2.5]" />
+                  <span>{prototypeStyle === 'nothing' ? '[ PRINT / PDF FIELD SHEET ]' : 'Print / PDF Field Sheet'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleCopyCSV}
-                  className="p-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95"
+                  className={`p-3 border rounded-xl flex items-center justify-center gap-2 font-bold text-xs transition active:scale-95 sm:col-span-2 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 hover:border-[#D71921] hover:text-[#D71921] text-zinc-800 dark:text-zinc-200 font-["Space_Mono"] uppercase tracking-wider'
+                      : 'bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200'
+                  }`}
                 >
-                  <Copy className="w-4 h-4 text-amber-500" />
-                  <span>Copy CSV to Clipboard</span>
+                  <Copy className={`w-4 h-4 ${prototypeStyle === 'nothing' ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                  <span>{prototypeStyle === 'nothing' ? '[ COPY CSV TO CLIPBOARD ]' : 'Copy CSV to Clipboard'}</span>
                 </button>
               </div>
 

@@ -638,38 +638,42 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
               </div>
             </div>
 
-            {/* Mobile Immediate Action Prompt (Primary focal point) */}
-            <div className={`px-2.5 py-1.5 rounded-lg flex items-start gap-1.5 text-xs font-semibold leading-tight ${
+            {/* Mobile Context & Educational Explanation Body */}
+            <div className={`px-2.5 py-1.5 rounded-lg border text-[11px] leading-snug space-y-1.5 ${
               isNothing
                 ? isDarkMode
-                  ? 'bg-zinc-950 border border-zinc-800/80 text-zinc-100'
-                  : 'bg-zinc-100 border border-zinc-200 text-zinc-900'
-                : 'bg-amber-500/10 border border-amber-500/30 text-zinc-900 dark:text-amber-200'
+                  ? 'bg-zinc-950/90 border-zinc-800 text-zinc-200 font-["Space_Mono"]'
+                  : 'bg-zinc-50 border-zinc-200 text-zinc-900 font-["Space_Mono"]'
+                : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200'
             }`}>
-              <Sparkles className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
-              <span className="text-[11px] sm:text-xs">
-                {currentStepData.actionHint || currentStepData.content}
-              </span>
-            </div>
+              <p className="leading-relaxed">
+                {currentStepData.content}
+              </p>
 
-            {/* Collapsible Extended Theory & ProTip (Hidden by default to save 100% of viewport) */}
-            {showDetails && (
-              <div className={`p-2.5 rounded-xl space-y-2 border text-xs animate-in fade-in slide-in-from-top-1 ${
-                isNothing
-                  ? isDarkMode ? 'bg-black border-zinc-800 text-zinc-300' : 'bg-zinc-50 border-zinc-200 text-zinc-700'
-                  : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300'
-              }`}>
-                <p className="leading-relaxed text-[11px]">{currentStepData.content}</p>
-                {currentStepData.proTip && (
-                  <div className={`text-[10px] leading-relaxed pt-1 border-t ${
-                    isNothing ? 'border-zinc-800 text-zinc-400' : 'border-zinc-200 dark:border-zinc-800 text-zinc-500'
-                  }`}>
-                    <span className={`font-bold ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`}>Tip: </span>
-                    {currentStepData.proTip}
-                  </div>
-                )}
-              </div>
-            )}
+              {/* Action Hint Banner (when action is required or specific directive is given) */}
+              {currentStepData.actionHint && (
+                <div className={`pt-1 border-t flex items-start gap-1.5 text-[10.5px] font-semibold leading-tight ${
+                  isNothing
+                    ? isDarkMode ? 'border-zinc-800 text-zinc-300' : 'border-zinc-200 text-zinc-800'
+                    : 'border-amber-500/20 text-zinc-700 dark:text-zinc-300'
+                }`}>
+                  <Sparkles className={`w-3 h-3 shrink-0 mt-0.5 ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                  <span>{currentStepData.actionHint}</span>
+                </div>
+              )}
+
+              {/* Extended ProTip (toggled by info button) */}
+              {showDetails && currentStepData.proTip && (
+                <div className={`pt-1 border-t text-[10px] leading-relaxed animate-in fade-in slide-in-from-top-1 ${
+                  isNothing
+                    ? isDarkMode ? 'border-zinc-800 text-zinc-400' : 'border-zinc-200 text-zinc-600'
+                    : 'border-zinc-200 dark:border-zinc-800 text-zinc-500'
+                }`}>
+                  <span className={`font-bold ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`}>Tip: </span>
+                  {currentStepData.proTip}
+                </div>
+              )}
+            </div>
 
             {/* Mobile Controls & Dots Row */}
             <div className="flex items-center justify-between gap-2 pt-0.5">
