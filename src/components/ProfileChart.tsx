@@ -175,30 +175,19 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   }, []);
 
   // Responsive Base Width & Height:
-  // On mobile portrait (< 640px), a tighter viewBox (600px width) and taller height (200px-300px)
-  // yields an aspect ratio of ~2.5:1 instead of 6.67:1. This makes the SVG curve and dots >2.6x taller
+  // On mobile portrait (< 640px), a tighter viewBox (600px width) and taller height (220px)
+  // yields an aspect ratio of ~2.7:1 instead of 6.67:1. This makes the SVG curve and dots >2.4x taller
   // and dramatically more readable and touch-friendly on phones.
   const baseWidth = isMobile ? 600 : 1200;
 
-  // Chart Height adapts to give more physical headroom as zoom increases
+  // Chart Height: Constant physical canvas height across all zoom levels to prevent layout shifts.
+  // Zooming adjusts the elevation calculation span window (Y-axis magnification), NOT the physical DOM height.
   const chartHeight = useMemo(() => {
     if (isMobile) {
-      switch (zoomScale) {
-        case '1x': return 190;
-        case '3x': return 230;
-        case '8x': return 260;
-        case '15x': return 300;
-        default: return 230;
-      }
+      return 220;
     }
-    switch (zoomScale) {
-      case '1x': return 160;
-      case '3x': return 180;
-      case '8x': return 210;
-      case '15x': return 250;
-      default: return 180;
-    }
-  }, [zoomScale, isMobile]);
+    return 180;
+  }, [isMobile]);
 
   const padding = useMemo(() => {
     if (isMobile) {
@@ -535,7 +524,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   return (
     <div
       data-tutorial="profile-chart"
-      className="proto-card bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden flex flex-col transition-colors"
+      className="proto-card bg-white dark:bg-black md:border border-b border-zinc-200 dark:border-zinc-800 md:rounded-2xl md:shadow-sm overflow-hidden flex flex-col transition-colors mobile-edge-to-edge"
     >
       {/* Header Toolbar */}
       <div className="px-3.5 py-2.5 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2.5 bg-zinc-50 dark:bg-zinc-950">
@@ -554,7 +543,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           </h3>
           <span className={`text-[11px] ${
             prototypeStyle === 'nothing'
-              ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-["Space_Mono"] uppercase tracking-wider px-2 py-0.5 rounded-full'
+              ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-["Space_Mono"] uppercase tracking-wider px-2 py-0.5 rounded-md'
               : 'bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 font-mono px-2 py-0.5 rounded-md'
           } whitespace-nowrap shrink-0`}>
             {measuredStations.length}/{stations.length} Shot
@@ -563,7 +552,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             <span
               className={`text-[11px] ${
                 prototypeStyle === 'nothing'
-                  ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white font-["Space_Mono"] uppercase tracking-wider px-2 py-0.5 rounded-full'
+                  ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white font-["Space_Mono"] uppercase tracking-wider px-2 py-0.5 rounded-md'
                   : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md border border-emerald-500/25'
               } whitespace-nowrap shrink-0`}
               title={
@@ -599,8 +588,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             className={`h-7.5 sm:h-7 flex items-center gap-1.5 px-2.5 text-xs font-bold transition active:scale-95 whitespace-nowrap shrink-0 ${
               prototypeStyle === 'nothing'
                 ? isMeasureModeActive || isRangeLocked
-                  ? 'bg-black text-white dark:bg-white dark:text-black font-["Space_Mono"] uppercase tracking-wider rounded-full shadow-none'
-                  : 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider rounded-full shadow-none'
+                  ? 'bg-black text-white dark:bg-white dark:text-black font-["Space_Mono"] uppercase tracking-wider rounded-lg shadow-none'
+                  : 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider rounded-lg shadow-none'
                 : isMeasureModeActive || isRangeLocked
                 ? 'bg-sky-500 text-black shadow-sm rounded-lg'
                 : 'bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-800 border border-zinc-300 dark:border-zinc-800 rounded-lg'
@@ -613,7 +602,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             {isRangeLocked && activeSubsetGrade && (
               <span className={`${
                 prototypeStyle === 'nothing'
-                  ? 'bg-black/10 dark:bg-white/20 text-current px-1.5 py-0.2 rounded-full text-[10px] font-mono'
+                  ? 'bg-black/10 dark:bg-white/20 text-current px-1.5 py-0.2 rounded-md text-[10px] font-mono'
                   : 'bg-black/20 text-black px-1.5 py-0.2 rounded text-[10px] font-mono font-extrabold'
               }`}>
                 {activeSubsetGrade.distanceFt}'
@@ -624,7 +613,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
           {/* Vertical Zoom Sensitivity Buttons */}
           <div className={`h-7.5 sm:h-7 flex items-center p-0.5 shrink-0 ${
             prototypeStyle === 'nothing'
-              ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 rounded-full'
+              ? 'bg-zinc-100 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-lg'
               : 'bg-zinc-200/80 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-lg'
           }`}>
             <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold px-1.5 hidden md:inline font-mono">
@@ -637,8 +626,8 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 className={`h-full px-2 font-mono text-xs transition active:scale-95 flex items-center justify-center ${
                   prototypeStyle === 'nothing'
                     ? zoomScale === scale
-                      ? 'bg-black text-white dark:bg-white dark:text-black font-bold rounded-full shadow-none'
-                      : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white rounded-full'
+                      ? 'bg-black text-white dark:bg-white dark:text-black font-bold rounded-md shadow-none font-["Space_Mono"]'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white rounded-md font-["Space_Mono"]'
                     : zoomScale === scale
                     ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-amber-400 shadow-sm ring-1 ring-amber-400/50 rounded'
                     : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 rounded'
@@ -663,7 +652,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
             onClick={() => setIsScrollable(!isScrollable)}
             className={`h-7.5 sm:h-7 flex items-center gap-1 px-2.5 text-xs font-semibold transition whitespace-nowrap shrink-0 ${
               prototypeStyle === 'nothing'
-                ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider shadow-none'
+                ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider shadow-none'
                 : 'rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-800'
             }`}
             title={isScrollable ? 'Fit entire track to screen' : 'Expand track for wide horizontal scrolling'}
@@ -688,7 +677,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               onClick={() => setShowExportMenu(!showExportMenu)}
               className={`h-7.5 sm:h-7 flex items-center gap-1 px-2.5 text-xs font-semibold transition active:scale-95 whitespace-nowrap ${
                 prototypeStyle === 'nothing'
-                  ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider shadow-none'
+                  ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider shadow-none'
                   : 'rounded-lg bg-zinc-200/80 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-800 shadow-xs'
               }`}
               title="Export PNG or print track profile chart"
@@ -936,7 +925,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
               <div className="flex items-center gap-2 font-sans font-bold self-end sm:self-auto shrink-0">
                 {currentInspectStation.completed && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 whitespace-nowrap shrink-0 ${
+                  <span className={`text-xs px-2 py-0.5 rounded-md flex items-center gap-1 whitespace-nowrap shrink-0 ${
                     prototypeStyle === 'nothing'
                       ? 'text-[#4A9E5C] border border-[#4A9E5C] font-["Space_Mono"]'
                       : 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 border border-emerald-500/30'
@@ -983,7 +972,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   onClick={() => onSelectStation(currentInspectStation)}
                   className={`px-3 py-1 text-xs font-bold transition active:scale-95 flex items-center gap-1 whitespace-nowrap shrink-0 ${
                     prototypeStyle === 'nothing'
-                      ? 'bg-black text-white dark:bg-white dark:text-black font-["Space_Mono"] uppercase tracking-wider rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200'
+                      ? 'bg-black text-white dark:bg-white dark:text-black font-["Space_Mono"] uppercase tracking-wider rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200'
                       : 'bg-amber-500 text-black rounded-lg shadow-sm hover:bg-amber-400'
                   }`}
                 >

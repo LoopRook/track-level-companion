@@ -430,12 +430,11 @@ html.style-nothing.light body {
   font-family: 'Space Mono', monospace !important;
 }
 
-/* Nothing Buttons: Pill (9999px), Space Mono, ALL CAPS, 12-13px */
+/* Nothing Buttons: Space Mono, ALL CAPS, hardware styling */
 .style-nothing.dark button:not(.proto-ignore) {
   font-family: 'Space Mono', monospace !important;
   text-transform: uppercase !important;
   letter-spacing: 0.06em !important;
-  border-radius: 9999px !important;
   box-shadow: none !important;
 }
 
@@ -443,7 +442,6 @@ html.style-nothing.light body {
   font-family: 'Space Mono', monospace !important;
   text-transform: uppercase !important;
   letter-spacing: 0.06em !important;
-  border-radius: 9999px !important;
   box-shadow: none !important;
 }
 
@@ -451,14 +449,12 @@ html.style-nothing.light body {
 .style-nothing.dark input[type="text"],
 .style-nothing.dark input[type="number"] {
   font-family: 'Space Mono', monospace !important;
-  border-radius: 9999px !important;
 }
 
 .style-nothing.light select,
 .style-nothing.light input[type="text"],
 .style-nothing.light input[type="number"] {
   font-family: 'Space Mono', monospace !important;
-  border-radius: 9999px !important;
 }
 
 /* Nothing Accent Signal Light (Red #D71921) */
@@ -581,7 +577,9 @@ html.style-cockpit.light body {
   html.style-claymorphism.light body .mobile-edge-to-edge,
   html.style-cockpit.dark body .mobile-edge-to-edge,
   html.style-cockpit.light body .mobile-edge-to-edge {
-    border: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
     border-radius: 0px !important;
     background-color: transparent !important;
     box-shadow: none !important;

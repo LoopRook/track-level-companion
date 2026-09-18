@@ -102,7 +102,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className={`w-9 h-9 flex items-center justify-center shadow-sm shrink-0 ${
             prototypeStyle === 'nothing'
-              ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-full'
+              ? 'bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white rounded-lg'
               : 'rounded-xl bg-amber-500/20 dark:bg-amber-500/15 border border-amber-500/40 text-amber-500'
           }`}>
             <Compass className="w-4.5 h-4.5 stroke-[2]" />
@@ -129,7 +129,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
                 <span
                   className={`flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.2 rounded ${
                     prototypeStyle === 'nothing'
-                      ? 'border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-full'
+                      ? 'border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-md'
                       : 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
                   }`}
                   title="Offline mode: all changes persist in browser storage"
@@ -172,7 +172,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
               onClick={onOpenToolsModal}
               className={`md:hidden h-8 px-2 sm:px-2.5 flex items-center gap-1.5 transition active:scale-95 text-xs font-bold shrink-0 cursor-pointer ${
                 prototypeStyle === 'nothing'
-                  ? 'rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-white font-["Space_Mono"] uppercase tracking-wider'
+                  ? 'rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-white font-["Space_Mono"] uppercase tracking-wider'
                   : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300'
               }`}
               title="Open Field Tools & Settings Menu"
@@ -203,7 +203,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
             onClick={onToggleDarkMode}
             className={`h-8 w-8 flex items-center justify-center transition active:scale-95 text-zinc-700 dark:text-zinc-300 shrink-0 cursor-pointer ${
               prototypeStyle === 'nothing'
-                ? 'rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-white'
+                ? 'rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-900 dark:text-white'
                 : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800'
             }`}
             title={isDarkMode ? 'Switch to Bright Sunlight Mode' : 'Switch to Dark Mode'}
@@ -227,7 +227,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
             onClick={onInstallApp}
             className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-black transition active:scale-95 whitespace-nowrap cursor-pointer ${
               prototypeStyle === 'nothing'
-                ? 'rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-["Space_Mono"] uppercase tracking-wider'
+                ? 'rounded-lg bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-["Space_Mono"] uppercase tracking-wider'
                 : 'rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black shadow-sm'
             }`}
             title="Install Track Level Companion as a standalone desktop app"
@@ -243,7 +243,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           onClick={onOpenNewTrackModal}
           className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-black transition active:scale-95 whitespace-nowrap cursor-pointer ${
             prototypeStyle === 'nothing'
-              ? 'rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-["Space_Mono"] uppercase tracking-wider'
+              ? 'rounded-lg bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-["Space_Mono"] uppercase tracking-wider'
               : 'rounded-xl bg-amber-500 hover:bg-amber-400 text-black shadow-sm'
           }`}
           title="Start New Track (Blank, Pre-Generated Grid, or Clear Readings)"
@@ -259,7 +259,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
             onClick={onStartTutorial}
             className={`flex-1 h-8 flex items-center justify-center gap-1.5 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap cursor-pointer ${
               prototypeStyle === 'nothing'
-                ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
+                ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
                 : 'rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30'
             }`}
             title="Open Interactive Step-by-Step Field Walkthroughs"
@@ -275,7 +275,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           onClick={onOpenGuideModal}
           className={`flex-1 h-8 flex items-center justify-center gap-1.5 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap cursor-pointer ${
             prototypeStyle === 'nothing'
-              ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
+              ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
               : 'rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30'
           }`}
           title="Open Field Guide, Laser Principles & Math Handbook"
@@ -291,7 +291,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           data-tutorial="header-files-btn"
           className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap ${
             prototypeStyle === 'nothing'
-              ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
+              ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
               : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800'
           }`}
         >
@@ -306,7 +306,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
             onClick={onOpenSettingsModal}
             className={`flex-1 h-8 flex items-center justify-center gap-1 px-2 text-xs font-bold transition active:scale-95 whitespace-nowrap ${
               prototypeStyle === 'nothing'
-                ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
+                ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
                 : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800'
             }`}
             title="Open App Settings (Grade Tolerance, Keypad Resolution, Default Units)"
@@ -336,7 +336,7 @@ const getToleranceLabel = (tol?: number, unit?: UnitFormat) => {
 export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, summary, prototypeStyle = 'original' }) => {
   if (prototypeStyle === 'nothing') {
     return (
-      <div className="rounded-2xl border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#000000] overflow-hidden shadow-xs divide-y divide-zinc-200 dark:divide-zinc-800">
+      <div className="md:rounded-2xl md:border border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#000000] overflow-hidden shadow-xs divide-y divide-zinc-200 dark:divide-zinc-800 mobile-edge-to-edge">
         <div className="grid grid-cols-2 divide-x divide-zinc-200 dark:divide-zinc-800">
           {/* Cell 1: Track Length */}
           <div className="p-2.5 sm:p-3 flex flex-col justify-between min-h-[74px] sm:min-h-[78px]">
@@ -589,7 +589,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
     return (
       <div
         data-tutorial="alignment-bar"
-        className="proto-card bg-white dark:bg-[#000000] border border-zinc-300 dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-2.5 text-xs transition-colors"
+        className="proto-card bg-white dark:bg-[#000000] md:border border-b border-zinc-200 dark:border-zinc-800 md:rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-2.5 text-xs transition-colors mobile-edge-to-edge"
       >
         {/* Tier 1: Target Grade Mode Selector & Readout */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -597,13 +597,13 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
             <span className="font-['Space_Mono'] uppercase tracking-[0.08em] text-[10px] text-zinc-500 shrink-0">
               [ TARGET: ]
             </span>
-            <div className="flex p-0.5 h-7 items-center rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent">
+            <div className="flex p-0.5 h-7 items-center rounded-lg border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950">
               <button
                 type="button"
                 onClick={() => onChangeProject({ gradeMode: 'target_grade' })}
-                className={`h-full px-3 text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider rounded-full transition ${
+                className={`h-full px-3 text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider rounded-md transition ${
                   project.gradeMode === 'target_grade'
-                    ? 'bg-black text-white dark:bg-white dark:text-black'
+                    ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
                     : 'text-zinc-500 hover:text-black dark:hover:text-white'
                 }`}
                 title="Target a specific grade across the section (e.g. 0.0% flat)"
@@ -613,9 +613,9 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
               <button
                 type="button"
                 onClick={() => onChangeProject({ gradeMode: 'end_to_end' })}
-                className={`h-full px-3 text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider rounded-full transition ${
+                className={`h-full px-3 text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider rounded-md transition ${
                   project.gradeMode === 'end_to_end'
-                    ? 'bg-black text-white dark:bg-white dark:text-black'
+                    ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
                     : 'text-zinc-500 hover:text-black dark:hover:text-white'
                 }`}
                 title="Connect fixed benchmark ends and any locked control points (e.g. over tree roots)"
@@ -643,10 +643,10 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
                     key={g}
                     type="button"
                     onClick={() => onChangeProject({ targetGradePercent: g })}
-                    className={`px-1.5 py-0.5 text-[10px] font-bold font-['Space_Mono'] rounded-full transition ${
+                    className={`px-1.5 py-0.5 text-[10px] font-bold font-['Space_Mono'] rounded-md border transition ${
                       project.targetGradePercent === g
-                        ? 'bg-black text-white dark:bg-white dark:text-black'
-                        : 'text-zinc-500 hover:text-black dark:hover:text-white'
+                        ? 'bg-black text-white dark:bg-white dark:text-black border-transparent shadow-xs'
+                        : 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-black dark:hover:text-white bg-transparent'
                     }`}
                   >
                     {g}%
@@ -700,7 +700,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
             <select
               value={project.stationIntervalFt}
               onChange={(e) => onChangeProject({ stationIntervalFt: parseInt(e.target.value, 10) })}
-              className="w-full h-7 px-2 font-['Space_Mono'] text-[11px] font-bold rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-black text-zinc-900 dark:text-white outline-none cursor-pointer"
+              className="w-full h-7 px-2 font-['Space_Mono'] text-[11px] font-bold rounded-lg border border-zinc-300 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none cursor-pointer"
             >
               <option value="1">1 ft (fine)</option>
               <option value="2">2 ft</option>
@@ -716,7 +716,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
             <select
               value={project.unitFormat}
               onChange={(e) => onChangeProject({ unitFormat: e.target.value as UnitFormat })}
-              className="w-full h-7 px-2 font-['Space_Mono'] text-[11px] font-bold rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-black text-zinc-900 dark:text-white outline-none cursor-pointer"
+              className="w-full h-7 px-2 font-['Space_Mono'] text-[11px] font-bold rounded-lg border border-zinc-300 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none cursor-pointer"
             >
               <option value="feet_inches_fraction">Ft, In & 1/16"</option>
               <option value="inches_fraction">Inches & 1/16"</option>
@@ -732,7 +732,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
   return (
     <div
       data-tutorial="alignment-bar"
-      className="proto-card bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-2xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs transition-colors"
+      className="proto-card bg-white dark:bg-black md:border border-b border-zinc-200 dark:border-zinc-800 md:rounded-2xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs transition-colors mobile-edge-to-edge"
     >
       {/* Target Grade Mode Segmented Control */}
       <div className="flex items-center gap-2 flex-wrap">

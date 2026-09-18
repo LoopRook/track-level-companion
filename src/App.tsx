@@ -33,7 +33,7 @@ const UserGuideModal = React.lazy(() =>
 );
 import { useBodyScrollLock } from './core/useBodyScrollLock';
 import { getHapticPreference, setHapticPreference } from './core/haptics';
-import { ListTodo, TrendingUp, Plus, Sliders, Flag, Layers } from 'lucide-react';
+import { ListTodo, TrendingUp, Plus, Sliders, Flag, Layers, HelpCircle, CheckSquare } from 'lucide-react';
 
 const INITIAL_STATIONS: StationPoint[] = [
   { id: 'st-0', distanceFt: 0, readingInches: 6.28 },
@@ -1123,6 +1123,38 @@ export const App: React.FC = () => {
     }
   };
 
+  const profileChartNode = (
+    <ProfileChart
+      stations={calculatedStations}
+      gradeMode={project.gradeMode}
+      targetGradePercent={project.targetGradePercent}
+      trackName={project.name}
+      onSelectStation={handleSelectStation}
+      selectedStationId={activeEditingStation?.id}
+      onToggleMeasureMode={(isActive) => {
+        if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 0 && isActive) {
+          setTutorialStep(1);
+        }
+      }}
+      onSubsetSpanChange={() => {
+        if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 1) {
+          setTutorialStep(2);
+        }
+      }}
+      onApplyTargetGrade={(grade) => {
+        handleUpdateProject({
+          gradeMode: 'target_grade',
+          targetGradePercent: Number(grade.toFixed(2)),
+        });
+        if (isTutorialActive && activeTutorialId === 'evaluate-grade') {
+          handleCompleteTutorial();
+        }
+      }}
+      prototypeStyle={prototypeStyle}
+      isDarkMode={isDarkMode}
+    />
+  );
+
   return (
     <>
       <div className={`app-interactive-screen ${
@@ -1158,130 +1190,91 @@ export const App: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsSettingsOpen(true)}
-                className="flex items-center gap-1.5 min-w-0 text-left cursor-pointer group"
-                title="Tap to configure track details in Settings"
+                className="text-left font-bold truncate hover:underline flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer"
+                title="Tap to view project settings"
               >
-                <span className="text-[9px] uppercase tracking-wider font-bold text-zinc-500 shrink-0">
-                  Track:
-                </span>
-                <span className={`text-[11px] font-bold truncate group-hover:underline ${
-                  prototypeStyle === 'nothing'
-                    ? isDarkMode ? 'text-white' : 'text-black'
-                    : isDarkMode ? 'text-zinc-200' : 'text-zinc-800'
+                <span className={prototypeStyle === 'nothing' ? 'text-zinc-500 text-[10px]' : 'text-zinc-400 text-[11px]'}>TRACK:</span>
+                <span className={`truncate ${
+                  prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-zinc-100 font-bold text-xs tracking-tight' : 'font-mono text-zinc-900 dark:text-white'
                 }`}>
-                  {project.name}
+                  {project.name || 'Untitled Section'}
                 </span>
               </button>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsGuideOpen(true)}
-                  className="proto-ignore text-[10px] font-bold text-[#D71921] hover:text-white px-1.5 py-0.5 rounded border border-zinc-800 hover:border-zinc-600 bg-zinc-900/60 font-mono transition cursor-pointer"
-                  title="Open Field Guide & Handbook (?)"
+                  className={`proto-ignore h-6 w-6 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'rounded-md border border-zinc-700/80 bg-zinc-900 text-zinc-300 hover:text-white'
+                      : 'rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                  }`}
+                  title="Field Guide & Handbook (?)"
                   aria-label="Open Field Guide"
                 >
-                  ?
+                  <HelpCircle className="w-3.5 h-3.5 text-[#D71921]" />
                 </button>
-
-                <div className="flex items-center gap-1">
-                  <span className="text-[9px] text-zinc-500 uppercase tracking-wider">
-                    {isOnline ? 'Online' : 'Offline'}
-                  </span>
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${isOnline ? 'bg-[#4A9E5C]' : 'bg-[#D71921]'}`}
-                    title={isOnline ? 'Offline ready' : 'Offline'}
-                  />
-                </div>
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                <span className="text-[10px] uppercase font-mono text-zinc-400">
+                  {isOnline ? 'Online' : 'Offline'}
+                </span>
               </div>
             </div>
 
-            {/* ROW 2: Balanced Field Telemetry Gauges (Pure Metrics, Zero Squish) */}
-            <div className="flex items-center justify-between gap-2 pt-1 border-t border-zinc-800/30 dark:border-zinc-800/60 text-xs">
-              {/* Section Length & Total Ties */}
-              <div className="flex items-center gap-1 shrink-0">
-                <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>
-                  {summary.lengthFt}'
-                </span>
-                <span className="text-zinc-500 text-[10px]">
-                  ({summary.totalStations} ties)
-                </span>
+            {/* ROW 2: Essential Survey Telemetry (Station Length, Grade Mode, On-Grade Count) */}
+            <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-zinc-200/60 dark:border-zinc-800/60 text-[11px]">
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-zinc-900 dark:text-zinc-100">{summary.lengthFt}'</span>
+                <span className="text-zinc-500">({summary.totalStations} ties)</span>
               </div>
-
-              {/* Target Grade */}
-              <div className="flex items-center gap-1 shrink-0">
-                <span className="text-zinc-500 text-[10px] uppercase">Grade:</span>
-                <span className={`font-bold ${
-                  prototypeStyle === 'nothing'
-                    ? isDarkMode ? 'text-white' : 'text-black'
-                    : 'text-amber-500'
-                }`}>
+              <div className="flex items-center gap-1 truncate max-w-[130px]">
+                <span className="text-zinc-500 uppercase text-[10px]">Grade:</span>
+                <span className={`font-bold truncate ${prototypeStyle === 'nothing' ? 'text-zinc-900 dark:text-white' : 'text-amber-600 dark:text-amber-400'}`}>
                   {project.gradeMode === 'end_to_end' ? 'End-to-End' : `${project.targetGradePercent >= 0 ? '+' : ''}${project.targetGradePercent.toFixed(2)}%`}
                 </span>
               </div>
-
-              {/* On-Grade Progress */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className={`font-bold ${prototypeStyle === 'nothing' ? isDarkMode ? 'text-[#4A9E5C]' : 'text-[#2D7A3E]' : 'text-emerald-500'}`}>
+              <div className="flex items-center gap-1 shrink-0">
+                <span className={`font-bold ${prototypeStyle === 'nothing' ? 'text-[#4A9E5C]' : 'text-emerald-700 dark:text-emerald-400'}`}>
                   ✓ {summary.onGradeCount}/{summary.measuredCount} On Grade
                 </span>
               </div>
             </div>
           </div>
-        ) : (
-          <div className="md:hidden shrink-0">
-            <StationConfigHeader
-              project={project}
-              onChangeProject={handleUpdateProject}
-              isDarkMode={isDarkMode}
-              onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-              onOpenDataModal={() => setIsDataModalOpen(true)}
-              onOpenGuideModal={() => setIsGuideOpen(true)}
-              onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
-              onOpenSettingsModal={() => setIsSettingsOpen(true)}
-              onStartTutorial={() => setIsTutorialsModalOpen(true)}
-              onInstallApp={handleInstallApp}
-              canInstall={!!installPrompt}
-              summary={summary}
-              prototypeStyle={prototypeStyle}
-              isEmbedded={isEmbedded}
-              onOpenToolsModal={() => setIsMobileToolsOpen(true)}
-            />
-          </div>
-        )}
+        ) : null}
 
         {/* Mobile Tab Navigation (visible only on < md phone screens when mobileLayout is 'tabbed') */}
         {mobileLayout === 'tabbed' && (
-          <div className="md:hidden sticky top-2 z-20 mb-2 bg-zinc-100/95 dark:bg-zinc-900/95 backdrop-blur-md p-1 rounded-2xl border border-zinc-300 dark:border-zinc-800 shadow-md flex gap-1">
+          <div className={`md:hidden grid grid-cols-2 p-1 rounded-2xl border text-xs font-bold shrink-0 ${
+            prototypeStyle === 'nothing'
+              ? 'bg-[#F2F2F2] dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 font-["Space_Mono"] uppercase tracking-wider'
+              : 'bg-zinc-200/80 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-800'
+          }`}>
             <button
-              type="button"
+              role="tab"
+              aria-selected={mobileTab === 'checklist'}
               onClick={() => setMobileTab('checklist')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 mobileTab === 'checklist'
-                  ? 'bg-amber-500 text-black shadow-sm font-extrabold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                  ? prototypeStyle === 'nothing'
+                    ? 'bg-black text-white dark:bg-white dark:text-black shadow-none'
+                    : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
               }`}
             >
-              <ListTodo className="w-4 h-4" />
-              <span>Checklist</span>
-              <span
-                className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold ${
-                  mobileTab === 'checklist'
-                    ? 'bg-black/20 text-black'
-                    : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
-                }`}
-              >
-                {summary.totalStations}
-              </span>
+              <CheckSquare className="w-4 h-4" />
+              <span>Checklist ({summary.measuredCount}/{summary.totalStations})</span>
             </button>
-
             <button
-              type="button"
+              role="tab"
+              aria-selected={mobileTab === 'graph'}
               onClick={() => setMobileTab('graph')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer ${
                 mobileTab === 'graph'
-                  ? 'bg-amber-500 text-black shadow-sm font-extrabold'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                  ? prototypeStyle === 'nothing'
+                    ? 'bg-black text-white dark:bg-white dark:text-black shadow-none'
+                    : 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm'
+                  : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
               }`}
             >
               <TrendingUp className="w-4 h-4" />
@@ -1290,55 +1283,28 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* TOP SECTION: Full-Width Panoramic Profile Graph (Prime position across top of page on tablet & desktop >= 768px) */}
-        <div
-          className={`w-full shrink-0 ${
-            (mobileLayout === 'tabbed' || mobileLayout === 'bottom_nav') && mobileTab !== 'graph' ? 'hidden md:block' : 'block'
-          }`}
-        >
-          <ProfileChart
-            stations={calculatedStations}
-            gradeMode={project.gradeMode}
-            targetGradePercent={project.targetGradePercent}
-            trackName={project.name}
-            onSelectStation={handleSelectStation}
-            selectedStationId={activeEditingStation?.id}
-            onToggleMeasureMode={(isActive) => {
-              if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 0 && isActive) {
-                setTutorialStep(1);
-              }
-            }}
-            onSubsetSpanChange={() => {
-              if (isTutorialActive && activeTutorialId === 'evaluate-grade' && tutorialStep === 1) {
-                setTutorialStep(2);
-              }
-            }}
-            onApplyTargetGrade={(grade) => {
-              handleUpdateProject({
-                gradeMode: 'target_grade',
-                targetGradePercent: Number(grade.toFixed(2)),
-              });
-              if (isTutorialActive && activeTutorialId === 'evaluate-grade') {
-                handleCompleteTutorial();
-              }
-            }}
-            prototypeStyle={prototypeStyle}
-            isDarkMode={isDarkMode}
-          />
+        {/* TOP SECTION: Full-Width Panoramic Profile Graph (Desktop / Tablet >= 768px) */}
+        <div className="hidden md:block w-full shrink-0">
+          {profileChartNode}
         </div>
 
         {/* BOTTOM SECTION: Split View below the graph (Left: Field Control Center, Right: Checklist Table) */}
-        <div className={`flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-4 items-stretch ${
+        <div className={`flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-0 md:gap-2.5 sm:gap-3 lg:gap-4 items-stretch ${
           (mobileLayout === 'bottom_nav' || mobileLayout === 'tabbed') ? 'overflow-hidden' : ''
         }`}>
           {/* LEFT COLUMN: Field Control Center (Header Card + Summary Cards 2x2 + Alignment Controls) */}
           <div
-            className={`md:col-span-5 xl:col-span-4 flex flex-col gap-2.5 sm:gap-3 overflow-y-auto pr-0 md:pr-1 ${
+            className={`md:col-span-5 xl:col-span-4 flex flex-col gap-0 md:gap-2.5 sm:gap-3 overflow-y-auto pr-0 md:pr-1 ${
               (mobileLayout === 'tabbed' || mobileLayout === 'bottom_nav') && mobileTab !== 'graph'
                 ? 'hidden md:flex'
                 : 'flex'
-            } ${mobileLayout === 'bottom_nav' ? 'pb-28 md:pb-0' : ''}`}
+            } ${mobileLayout === 'bottom_nav' ? 'pb-36 md:pb-0' : ''}`}
           >
+            {/* Mobile-only Profile Graph (Housed inside the scrollable column so the whole Profile tab scrolls as one cohesive view on phones) */}
+            <div className="block md:hidden shrink-0">
+              {profileChartNode}
+            </div>
+
             {/* Desktop / Tablet Panel Header Card */}
             <div className="hidden md:block shrink-0">
               <StationConfigHeader
