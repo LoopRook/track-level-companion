@@ -90,7 +90,11 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                 )}
               </h2>
               <p className={`text-xs font-medium truncate sm:whitespace-normal ${
-                isNothing ? 'uppercase text-[11px] tracking-wider text-zinc-400' : 'text-zinc-500 dark:text-zinc-400'
+                isNothing
+                  ? isDarkMode
+                    ? 'uppercase text-[11px] tracking-wider text-zinc-400'
+                    : 'uppercase text-[11px] tracking-wider text-zinc-600'
+                  : 'text-zinc-500 dark:text-zinc-400'
               }`}>
                 {isNothing ? 'Hands-on field workflows to master leveling' : 'Hands-on field workflows to master track leveling, slopes, and laser relocation.'}
               </p>
@@ -107,7 +111,9 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                 type="button"
                 className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md ${
                   isNothing
-                    ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase shadow-xs'
+                    ? isDarkMode
+                      ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase shadow-xs'
+                      : 'bg-white border border-zinc-300 text-black font-["Space_Mono"] uppercase shadow-xs'
                     : 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
                 }`}
                 disabled
@@ -122,7 +128,9 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                 }}
                 className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md cursor-pointer transition ${
                   isNothing
-                    ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
+                    ? isDarkMode
+                      ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
+                      : 'text-zinc-700 hover:text-black font-["Space_Mono"] uppercase'
                     : 'text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white'
                 }`}
                 title="Switch to Field Guide & Handbook"
@@ -164,7 +172,9 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                           isNothing
                             ? isGettingStarted
                               ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-[#D71921]'
-                              : 'rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300'
+                              : isDarkMode
+                              ? 'rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300'
+                              : 'rounded-lg border border-zinc-300 bg-zinc-200 text-zinc-700'
                             : isGettingStarted
                             ? 'rounded-xl bg-amber-500 text-black shadow-sm'
                             : 'rounded-xl bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
@@ -175,7 +185,11 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
 
                       <div className="min-w-0 flex-1">
                         <h3 className={`text-sm sm:text-base font-bold leading-tight ${
-                          isNothing ? 'text-zinc-100 font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'
+                          isNothing
+                            ? isDarkMode
+                              ? 'text-zinc-100 font-["Space_Mono"] uppercase'
+                              : 'text-zinc-900 font-["Space_Mono"] uppercase'
+                            : 'text-zinc-900 dark:text-zinc-100'
                         }`}>
                           {tutorial.title}
                         </h3>
@@ -183,7 +197,9 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                         <div className="flex items-center gap-2 flex-wrap mt-1">
                           <span className={`text-xs font-bold px-2 py-0.5 ${
                             isNothing
-                              ? 'proto-ignore rounded border border-zinc-700 bg-transparent text-zinc-400 font-["Space_Mono"] uppercase text-[10px]'
+                              ? isDarkMode
+                                ? 'proto-ignore rounded border border-zinc-700 bg-transparent text-zinc-400 font-["Space_Mono"] uppercase text-[10px]'
+                                : 'proto-ignore rounded border border-zinc-300 bg-transparent text-zinc-700 font-["Space_Mono"] uppercase text-[10px]'
                               : 'rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                           }`}>
                             {tutorial.category}
@@ -210,7 +226,11 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
                     </div>
 
                     <p className={`text-xs leading-relaxed font-normal mt-2.5 ${
-                      isNothing ? 'text-zinc-400 font-["Space_Mono"]' : 'text-zinc-600 dark:text-zinc-400'
+                      isNothing
+                        ? isDarkMode
+                          ? 'text-zinc-400 font-["Space_Mono"]'
+                          : 'text-zinc-700 font-["Space_Mono"]'
+                        : 'text-zinc-600 dark:text-zinc-400'
                     }`}>
                       {tutorial.description}
                     </p>
@@ -243,7 +263,7 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
               : 'bg-zinc-50 border-zinc-200'
             : 'bg-zinc-50 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'
         }`}>
-          <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 font-medium">
+          <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 font-medium">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
             <span className={`hidden sm:inline ${isNothing ? 'font-["Space_Mono"] text-[11px] uppercase tracking-wider' : ''}`}>
               Starting a tutorial safely stashes your active survey and restores it when finished.
@@ -258,7 +278,9 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
             onClick={onClose}
             className={`proto-ignore px-3.5 py-1.5 text-xs font-bold transition shrink-0 cursor-pointer ${
               isNothing
-                ? 'border border-zinc-700 bg-transparent text-zinc-300 hover:text-white rounded-lg font-["Space_Mono"] uppercase'
+                ? isDarkMode
+                  ? 'border border-zinc-700 bg-transparent text-zinc-300 hover:text-white rounded-lg font-["Space_Mono"] uppercase'
+                  : 'border border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 rounded-lg font-["Space_Mono"] uppercase'
                 : 'rounded-xl text-zinc-700 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700'
             }`}
           >

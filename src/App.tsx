@@ -1738,7 +1738,12 @@ export const App: React.FC = () => {
                   <button
                     type="button"
                     data-tutorial="move-laser-btn"
-                    onClick={() => setIsMobileMoveLaserOpen(true)}
+                    onClick={() => {
+                      setIsMobileMoveLaserOpen(true);
+                      if (isTutorialActive && activeTutorialId === 'laser-relocation' && (tutorialStep === 0 || tutorialStep === 1)) {
+                        setTutorialStep(2);
+                      }
+                    }}
                     className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
                       prototypeStyle === 'nothing'
                         ? isDarkMode

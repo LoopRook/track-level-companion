@@ -23,6 +23,7 @@ export interface TutorialStepConfig {
   content: string;
   proTip?: string;
   actionHint?: string;
+  requiresAction?: boolean;
   autoFillOnNext?: () => void;
 }
 
@@ -81,7 +82,8 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-reading-0"]',
       content:
         'Every track leveling survey starts at Station 0. Imagine your rotary laser is set up on a tripod nearby. You place your grade rod on top of the rail head at Station 0 to establish your baseline elevation datum.',
-      actionHint: 'Tap the cell to enter 5.25" with your keyboard/numpad or touch keys, or tap Next Step.',
+      actionHint: 'Tap the cell to enter 5.25" with your keyboard/numpad or touch keys.',
+      requiresAction: true,
       proTip: 'All other ties along your track will be compared against this reference datum.',
     },
     {
@@ -94,7 +96,8 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-reading-5"]',
       content:
         'Now walk 5 feet down the track to Station 5. Place the grade rod on the rail head and record the laser reading.',
-      actionHint: 'Enter 5.625" (5-5/8") and press Enter or tap "Save", or tap Next Step.',
+      actionHint: 'Enter 5.625" (5-5/8") and press Enter or tap "Save".',
+      requiresAction: true,
       proTip:
         'Surveying rule: A LARGER rod reading (5.625" vs 5.25") means the detector slid lower—the rail head is physically dipped!',
     },
@@ -109,6 +112,7 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       content:
         'Notice Station 10: The laser rod read 5.28"—which is 0.03" off your 5.25" target—yet its badge is green (ON GRADE ✓)! That is your tolerance margin (±0.05") in action. Railroad trackwork doesn\'t require millimeter perfection on every tie; staying within the green margin guarantees smooth running while saving hours of unnecessary shimming.',
       actionHint: 'Review Station 10\'s green ON GRADE status, then tap Next Step.',
+      requiresAction: false,
       proTip:
         'You can customize your railroad\'s tolerance threshold (e.g., ±1/16" or ±1/8") in Settings anytime.',
     },
@@ -123,6 +127,7 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       content:
         'The Profile Graph plots your entire rail surface in real time. Notice the visible sag dip between 0 ft and 10 ft. The green dashed line is your target grade plane.',
       actionHint: 'Review the sag in the curve, then tap Next Step.',
+      requiresAction: false,
       proTip:
         'Uncorrected sags collect ponding rainwater, trigger ballast mud-pumping, and create jarring equipment dips when trains pass.',
     },
@@ -136,7 +141,8 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-reading-5"]',
       content:
         'Your crew placed the track jack at Station 5, raised the rail 3/8", and tamped ballast. Now record your verification shot! Tap Station 5\'s reading cell (5.625") and enter 5.25" to bring the tie onto target grade.',
-      actionHint: 'Tap Station 5\'s reading cell and enter 5.25" using your keyboard, numpad, or touch keys, or tap Next Step.',
+      actionHint: 'Tap Station 5\'s reading cell and enter 5.25" using your keyboard, numpad, or touch keys.',
+      requiresAction: true,
       proTip:
         'Taking a verification shot confirms the rail physically lifted to the target grade line and turns the tie green.',
     },
@@ -150,7 +156,8 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-complete-5"]',
       content:
         'With Station 5 raised to grade and verified green (ON GRADE ✓), tap the circle checkbox to mark Station 5 as finished work (LEVELED ✓).',
-      actionHint: 'Tap the circle checkbox on Station 5 to mark it complete, or tap Next Step.',
+      actionHint: 'Tap the circle checkbox on Station 5 to mark it complete.',
+      requiresAction: true,
       proTip:
         'Checking off completed ties keeps your track crew in sync so no one loses track of which ties are finished.',
     },
@@ -165,6 +172,7 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       content:
         'Tap Files (or the bottom Tools menu on mobile) to download a CSV backup or print a clean inspection report for your railroad records. Or tap Share via QR Code to beam the track to a crew member\'s phone with zero internet!',
       actionHint: 'Tap Tools on mobile or Files on desktop, or tap Finish Tutorial to complete.',
+      requiresAction: false,
       proTip: 'Track Level Companion works 100% offline out in the woods or at the track.',
     },
   ],
@@ -211,7 +219,8 @@ export const TUTORIAL_LOCKED_POINTS: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-row-20"]',
       content:
         'Station 20 sits atop an immovable tree root or fixed bridge abutment. Notice the amber LOWER badge (LOWER -0.80"): standard end-to-end leveling asks you to lower the rail, which is physically impossible through solid bridge concrete or heavy roots!',
-      actionHint: 'Notice Station 20 requires lowering. Click the Padlock icon on Station 20, or tap Next Step.',
+      actionHint: 'Review how standard leveling requests an impossible lower through the root, then tap Next Step.',
+      requiresAction: false,
       proTip:
         'In live steam and grand-scale railroading, you almost never dig down into settled roadbed; you raise the surrounding track up to clear high spots.',
     },
@@ -225,7 +234,8 @@ export const TUTORIAL_LOCKED_POINTS: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-lock-20"]',
       content:
         'Click the Padlock icon on Station 20. This designates it as a fixed control point (ROOT / PIVOT) that cannot be lowered.',
-      actionHint: 'Click the Padlock icon on Station 20 to lock it, or tap Next Step.',
+      actionHint: 'Click the Padlock icon on Station 20 to lock it as a fixed anchor.',
+      requiresAction: true,
       proTip:
         'Locked points stay exactly at their surveyed elevation, anchoring the calculated grade plane.',
     },
@@ -240,6 +250,7 @@ export const TUTORIAL_LOCKED_POINTS: TutorialDefinition = {
       content:
         'Observe the Profile Chart! The green grade plane instantly adjusted upward, pivoting cleanly through Station 20. Instead of lowering through the fixed obstacle, the app now calculates gentle, safe ballast lifts on the surrounding ties!',
       actionHint: 'Review the new lifted grade profile on the graph, then tap Next Step.',
+      requiresAction: false,
       proTip:
         'You can lock multiple fixed points along a long track section. The app will calculate multi-chord grade breaks seamlessly.',
     },
@@ -254,6 +265,7 @@ export const TUTORIAL_LOCKED_POINTS: TutorialDefinition = {
       content:
         'Check Stations 10 and 30 in the checklist table: both now show smooth, manageable lifts (+0.40") that carry your train smoothly onto the bridge deck with zero jarring dips or clearance snags.',
       actionHint: 'Tap Finish Tutorial to complete.',
+      requiresAction: false,
       proTip:
         'Locking high points prevents rail humps and kinked joints at grade crossings and bridge approaches.',
     },
@@ -314,7 +326,8 @@ export const TUTORIAL_EVALUATE_GRADE: TutorialDefinition = {
       targetSelector: '[data-tutorial="evaluate-grade-btn"]',
       content:
         'When maintaining scenic railroads or sidings, you often need to check whether a specific section (like a road crossing approach or switch lead) meets slope specifications. Click "Evaluate Grade" on the Profile Chart toolbar.',
-      actionHint: 'Click "Evaluate Grade" on the graph toolbar, or tap Next Step.',
+      actionHint: 'Click "Evaluate Grade" on the graph toolbar.',
+      requiresAction: true,
       proTip:
         'Evaluate Grade lets you measure pitch, span, and total rise between any subset of ties without altering your project settings.',
     },
@@ -329,6 +342,7 @@ export const TUTORIAL_EVALUATE_GRADE: TutorialDefinition = {
       content:
         'The subset tool allows measuring between any two points along the track. By default, it spans the entire section, but you can choose any start and end station dropdown to inspect localized pitch.',
       actionHint: 'Review the subset station selectors, then tap Next Step.',
+      requiresAction: false,
       proTip:
         'Inspecting 20-30 foot segments helps pinpoint localized grade spikes that could cause train stalls or coupler breaks.',
     },
@@ -343,6 +357,7 @@ export const TUTORIAL_EVALUATE_GRADE: TutorialDefinition = {
       content:
         'Look at the real-time readout: it displays the exact distance Span (85 ft), physical Rise/Fall (+2.86"), and computed slope (+0.28% grade ↗). This reveals the true slope of your track!',
       actionHint: 'Review the calculated grade and rise/fall readout, then tap Next Step.',
+      requiresAction: false,
       proTip:
         'The app also displays the Best-Fit regression slope if intermediate stations deviate from a straight chord.',
     },
@@ -357,6 +372,7 @@ export const TUTORIAL_EVALUATE_GRADE: TutorialDefinition = {
       content:
         'If you want your entire track realignment target to adopt this measured slope, click "Apply as Target". This instantly sets your project\'s target slope without manual arithmetic!',
       actionHint: 'Click "Apply as Target" to adopt this grade, or tap Finish Tutorial to complete.',
+      requiresAction: false,
       proTip:
         'Applying a measured grade sets your target slope to match existing terrain, minimizing the amount of ballast needed.',
     },
@@ -407,7 +423,8 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       targetSelector: '[data-tutorial="station-row-50"]',
       content:
         'Why do you need a Turning Point? When curves, trees, or distance obstruct your laser beam, you must move your tripod forward. To keep all your elevations connected without math errors, you designate an already surveyed tie—Station 50—to serve as your shared benchmark between both laser locations.',
-      actionHint: 'Station 50 is our benchmark tie (recorded at 5.50" under Laser Setup 1). Click "Move Laser" in the toolbar, or tap Next Step.',
+      actionHint: 'Review Station 50 as our benchmark tie, then tap Next Step.',
+      requiresAction: false,
       proTip:
         'In railroad surveying, a Turning Point (TP) is simply a tie measured from both tripod setups so the computer can calculate the exact height difference between them.',
     },
@@ -422,6 +439,7 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       content:
         'Imagine you moved your tripod 50 feet forward down the track and leveled it at Position 2. You place your grade rod back on Station 50. Because the new tripod sits at a different ground elevation, the detector reads a new number. Click "Move Laser" in the toolbar (or "Laser" in the mobile field bar) to open the relocation tool.',
       actionHint: 'Click "Move Laser" (or "[ ⚐ Laser ]" on mobile) to open the relocation dialog.',
+      requiresAction: true,
       proTip:
         'Crucial rule: Never move the detector clamp on your rod when relocating the laser!',
     },
@@ -436,6 +454,7 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       content:
         'Look at the dialog: Station 50 previously read 5.50". With your laser at its new tripod location, suppose your rod now reads 7.50" (7-1/2"). Type 7.50 into the reading box. The app will calculate a +2.00" datum shift to seamlessly align all previous ties to your new laser setup!',
       actionHint: 'Type 7.50 (or 7 1/2) into the reading box and click "Apply Laser Relocation".',
+      requiresAction: true,
       proTip:
         'The app shifts previously recorded ties so your active laser matches your survey seamlessly with zero manual arithmetic.',
     },
@@ -450,6 +469,7 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       content:
         'Look at the purple banner! The app automatically converted all previously recorded stations (0 ft to 50 ft) to match your new active laser scale (+2.00"). All physical elevations, target grades, and ballast lifts remain 100% accurate. You can now survey Stations 60 and 70 with zero cumulative math error!',
       actionHint: 'Review the purple banner and shifted ties, then tap Finish Tutorial to return to your workspace.',
+      requiresAction: false,
       proTip:
         'You can move the laser as many times as needed across miles of track. Station 0\'s true elevation datum is never lost.',
     },

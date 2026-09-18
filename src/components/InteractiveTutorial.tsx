@@ -169,23 +169,31 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   // so the tutorial DOES NOT vanish and still gives the exact number to enter!
   if (isKeypadOpen) {
     return (
-      <div className="fixed top-2 left-2 right-2 z-[70] pointer-events-auto flex items-center justify-between gap-2 px-3 py-2 rounded-xl border bg-black/95 text-white border-[#D71921] shadow-2xl animate-in slide-in-from-top-3 font-['Space_Mono']">
+      <div className={`fixed top-2 left-2 right-2 z-[70] pointer-events-auto flex items-center justify-between gap-2 px-3 py-2 rounded-xl border shadow-2xl animate-in slide-in-from-top-3 font-['Space_Mono'] ${
+        isNothing
+          ? isDarkMode
+            ? 'bg-black/95 text-white border-[#D71921]'
+            : 'bg-white/95 text-zinc-950 border-[#D71921]'
+          : 'bg-black/95 text-white border-[#D71921]'
+      }`}>
         <div className="flex items-center gap-2 min-w-0">
           <Sparkles className="w-4 h-4 text-[#D71921] shrink-0 animate-pulse" />
           <div className="text-[11px] leading-tight truncate">
             <span className="font-bold text-[#D71921] uppercase">Tutorial: </span>
-            <span className="text-zinc-200">
+            <span className={isDarkMode ? 'text-zinc-200' : 'text-zinc-800 font-semibold'}>
               {currentStepData.actionHint || `Enter reading and tap Save`}
             </span>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={handleNext}
-          className="px-2.5 py-1 text-[10px] font-black bg-[#D71921] text-white rounded-full uppercase tracking-wider shrink-0 active:scale-95"
-        >
-          {isLastStep ? 'Done' : 'Next'}
-        </button>
+        {!currentStepData.requiresAction && (
+          <button
+            type="button"
+            onClick={handleNext}
+            className="px-2.5 py-1 text-[10px] font-black bg-[#D71921] text-white rounded-full uppercase tracking-wider shrink-0 active:scale-95"
+          >
+            {isLastStep ? 'Done' : 'Next'}
+          </button>
+        )}
       </div>
     );
   }
@@ -336,7 +344,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-mono font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
                       isNothing
-                        ? 'border border-zinc-700 bg-black text-white'
+                        ? isDarkMode
+                          ? 'border border-zinc-700 bg-black text-white'
+                          : 'border border-zinc-300 bg-zinc-200 text-zinc-900'
                         : 'bg-amber-500 text-black'
                     }`}>
                       Step {currentStepData.stepNumber} of {currentStepData.totalSteps}
@@ -351,7 +361,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   </div>
                   <h3 className={`text-sm sm:text-base font-black leading-tight ${
                     isNothing
-                      ? 'uppercase tracking-tight text-white dark:text-white'
+                      ? isDarkMode ? 'uppercase tracking-tight text-white' : 'uppercase tracking-tight text-zinc-950'
                       : 'text-zinc-900 dark:text-white'
                   }`}>
                     {currentStepData.title}
@@ -364,7 +374,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 onClick={onExitTutorial}
                 className={`p-1.5 transition shrink-0 ${
                   isNothing
-                    ? 'text-zinc-400 hover:text-white rounded-lg'
+                    ? isDarkMode
+                      ? 'text-zinc-400 hover:text-white rounded-lg'
+                      : 'text-zinc-600 hover:text-black rounded-lg'
                     : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg'
                 }`}
                 title="Exit Tutorial"
@@ -447,7 +459,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 onClick={onExitTutorial}
                 className={`text-xs font-semibold px-2 py-1.5 rounded-lg transition ${
                   isNothing
-                    ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-500 hover:text-white'
+                    ? isDarkMode
+                      ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-500 hover:text-white'
+                      : 'font-["Space_Mono"] uppercase tracking-wider text-zinc-600 hover:text-black'
                     : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
@@ -461,7 +475,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                     onClick={onPrevStep}
                     className={`px-3 py-2 text-xs font-bold transition flex items-center gap-1 ${
                       isNothing
-                        ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-lg font-["Space_Mono"] uppercase'
+                        ? isDarkMode
+                          ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-lg font-["Space_Mono"] uppercase'
+                          : 'border border-zinc-300 bg-zinc-100 text-zinc-800 hover:text-black rounded-lg font-["Space_Mono"] uppercase'
                         : 'rounded-xl text-zinc-700 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700'
                     }`}
                   >
@@ -470,22 +486,36 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   </button>
                 )}
 
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className={`px-4 py-2 text-xs font-black active:scale-95 transition shadow-sm flex items-center gap-1.5 ${
-                    isNothing
-                      ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-lg font-["Space_Mono"] uppercase tracking-wider'
-                      : 'rounded-xl text-black bg-amber-500 hover:bg-amber-400'
-                  }`}
-                >
-                  <span>{isLastStep ? 'Finish Tutorial' : 'Next Step'}</span>
-                  {isLastStep ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
-                  ) : (
-                    <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
-                  )}
-                </button>
+                {currentStepData.requiresAction ? (
+                  <div
+                    data-testid="tutorial-action-required"
+                    className={`px-3.5 py-2 text-xs font-black flex items-center gap-2 cursor-default select-none ${
+                      isNothing
+                        ? 'border border-[#D71921] bg-[#D71921]/15 text-[#D71921] rounded-lg font-["Space_Mono"] uppercase tracking-wider'
+                        : 'rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-800 dark:text-amber-300 font-bold'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-[#D71921] animate-ping shrink-0" />
+                    <span>Action Required</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className={`px-4 py-2 text-xs font-black active:scale-95 transition shadow-sm flex items-center gap-1.5 ${
+                      isNothing
+                        ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-lg font-["Space_Mono"] uppercase tracking-wider'
+                        : 'rounded-xl text-black bg-amber-500 hover:bg-amber-400'
+                    }`}
+                  >
+                    <span>{isLastStep ? 'Finish Tutorial' : 'Next Step'}</span>
+                    {isLastStep ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                    ) : (
+                      <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -497,19 +527,27 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <span className={`text-[10px] font-mono font-black uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 ${
-                  isNothing ? 'border border-[#D71921] text-[#D71921] bg-transparent' : 'bg-amber-500 text-black'
+                  isNothing
+                    ? isDarkMode
+                      ? 'border border-[#D71921] text-[#D71921] bg-transparent'
+                      : 'border border-[#D71921] text-[#D71921] bg-[#D71921]/10 font-bold'
+                    : 'bg-amber-500 text-black'
                 }`}>
                   Step {currentStepData.stepNumber} of {currentStepData.totalSteps}
                 </span>
                 {tutorialCategory && (
                   <span className={`text-[10px] font-bold truncate hidden xs:inline ${
-                    isNothing ? 'text-zinc-400 font-["Space_Mono"] uppercase' : 'text-amber-700 dark:text-amber-400'
+                    isNothing
+                      ? isDarkMode ? 'text-zinc-400 font-["Space_Mono"] uppercase' : 'text-zinc-600 font-["Space_Mono"] uppercase'
+                      : 'text-amber-700 dark:text-amber-400'
                   }`}>
                     {tutorialCategory}
                   </span>
                 )}
                 <h3 className={`text-xs font-black truncate ${
-                  isNothing ? 'uppercase text-white' : 'text-zinc-900 dark:text-white'
+                  isNothing
+                    ? isDarkMode ? 'uppercase text-white' : 'uppercase text-zinc-950'
+                    : 'text-zinc-900 dark:text-white'
                 }`}>
                   {currentStepData.title}
                 </h3>
@@ -523,7 +561,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   data-testid="tutorial-flip-btn"
                   className={`px-2 py-0.5 text-[10px] font-bold border transition flex items-center gap-1 ${
                     isNothing
-                      ? 'rounded-md border-zinc-700 bg-zinc-900/80 text-zinc-300 hover:text-white'
+                      ? isDarkMode
+                        ? 'rounded-md border-zinc-700 bg-zinc-900/80 text-zinc-300 hover:text-white'
+                        : 'rounded-md border-zinc-300 bg-zinc-100 text-zinc-700 hover:text-black'
                       : 'rounded-lg border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
                   }`}
                   title={currentCardPos === 'top' ? 'Move card to bottom' : 'Move card to top'}
@@ -540,7 +580,11 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   className={`p-1 text-xs border transition ${
                     showDetails
                       ? isNothing ? 'border-[#D71921] text-[#D71921] rounded-md' : 'bg-amber-500/20 text-amber-500 rounded-lg'
-                      : isNothing ? 'border-zinc-700 text-zinc-400 hover:text-white rounded-md' : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 rounded-lg'
+                      : isNothing
+                      ? isDarkMode
+                        ? 'border-zinc-700 text-zinc-400 hover:text-white rounded-md'
+                        : 'border-zinc-300 text-zinc-600 hover:text-black rounded-md'
+                      : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 rounded-lg'
                   }`}
                   title={showDetails ? 'Hide details' : 'Show background details'}
                 >
@@ -551,7 +595,11 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 <button
                   type="button"
                   onClick={onExitTutorial}
-                  className={`p-1 text-zinc-400 hover:text-white transition rounded-md`}
+                  className={`p-1 transition rounded-md ${
+                    isNothing
+                      ? isDarkMode ? 'text-zinc-400 hover:text-white' : 'text-zinc-600 hover:text-black'
+                      : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                  }`}
                   title="Exit Tutorial"
                   aria-label="Exit Tutorial"
                 >
@@ -601,7 +649,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   onClick={onPrevStep}
                   className={`px-2.5 py-1 text-[10px] font-bold transition flex items-center gap-1 ${
                     isNothing
-                      ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-md uppercase font-["Space_Mono"]'
+                      ? isDarkMode
+                        ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-md uppercase font-["Space_Mono"]'
+                        : 'border border-zinc-300 bg-zinc-100 text-zinc-700 hover:text-black rounded-md uppercase font-["Space_Mono"]'
                       : 'rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                   }`}
                 >
@@ -632,23 +682,37 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 ))}
               </div>
 
-              {/* Hero Action Key (Next / Finish) */}
-              <button
-                type="button"
-                onClick={handleNext}
-                className={`px-3 py-1.5 text-xs font-black transition active:scale-95 flex items-center gap-1 shadow-sm ${
-                  isNothing
-                    ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-md uppercase text-[10px] tracking-wider font-["Space_Mono"]'
-                    : 'rounded-xl text-black bg-amber-500 hover:bg-amber-400 text-xs'
-                }`}
-              >
-                <span>{isLastStep ? 'Finish Tutorial' : 'Next Step'}</span>
-                {isLastStep ? (
-                  <CheckCircle2 className="w-3 h-3 stroke-[2.5]" />
-                ) : (
-                  <ChevronRight className="w-3 h-3 stroke-[2.5]" />
-                )}
-              </button>
+              {/* Hero Action Key (Next / Finish) or Action Required */}
+              {currentStepData.requiresAction ? (
+                <div
+                  data-testid="tutorial-action-required-mobile"
+                  className={`px-2.5 py-1 text-[10px] font-bold flex items-center gap-1.5 cursor-default select-none shrink-0 ${
+                    isNothing
+                      ? 'border border-[#D71921] bg-[#D71921]/15 text-[#D71921] rounded-md font-["Space_Mono"] uppercase tracking-wider'
+                      : 'rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-800 dark:text-amber-300'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D71921] animate-ping shrink-0" />
+                  <span>Action Required</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className={`px-3 py-1.5 text-xs font-black transition active:scale-95 flex items-center gap-1 shadow-sm ${
+                    isNothing
+                      ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-md uppercase text-[10px] tracking-wider font-["Space_Mono"]'
+                      : 'rounded-xl text-black bg-amber-500 hover:bg-amber-400 text-xs'
+                  }`}
+                >
+                  <span>{isLastStep ? 'Finish Tutorial' : 'Next Step'}</span>
+                  {isLastStep ? (
+                    <CheckCircle2 className="w-3 h-3 stroke-[2.5]" />
+                  ) : (
+                    <ChevronRight className="w-3 h-3 stroke-[2.5]" />
+                  )}
+                </button>
+              )}
             </div>
           </div>
         )}

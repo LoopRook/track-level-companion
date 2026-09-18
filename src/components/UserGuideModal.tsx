@@ -125,7 +125,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 )}
               </h2>
               <p className={`text-[10px] sm:text-[11px] truncate sm:whitespace-normal ${
-                isNothing ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-400' : 'text-zinc-500'
+                isNothing
+                  ? isDarkMode
+                    ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-400'
+                    : 'font-["Space_Mono"] uppercase tracking-wider text-zinc-600'
+                  : 'text-zinc-500 dark:text-zinc-400'
               }`}>
                 Step {currentStep + 1} of {steps.length}: {steps[currentStep].shortTitle}
               </p>
@@ -146,7 +150,9 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 }}
                 className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md cursor-pointer transition ${
                   isNothing
-                    ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
+                    ? isDarkMode
+                      ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
+                      : 'text-zinc-700 hover:text-black font-["Space_Mono"] uppercase'
                     : 'text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white'
                 }`}
                 title="Switch to Interactive Tutorials"
@@ -157,7 +163,9 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 type="button"
                 className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md ${
                   isNothing
-                    ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase shadow-xs'
+                    ? isDarkMode
+                      ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase shadow-xs'
+                      : 'bg-white border border-zinc-300 text-black font-["Space_Mono"] uppercase shadow-xs'
                     : 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
                 }`}
                 disabled
@@ -184,7 +192,9 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                 isNothing
                   ? currentStep === idx
                     ? 'border-b-2 border-[#D71921] text-[#D71921] font-bold'
-                    : 'text-zinc-500 hover:text-zinc-200'
+                    : isDarkMode
+                    ? 'text-zinc-400 hover:text-white'
+                    : 'text-zinc-600 hover:text-black'
                   : currentStep === idx
                   ? 'rounded-t-xl bg-white dark:bg-zinc-950 border-t border-x border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
                   : 'rounded-t-xl border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -237,15 +247,15 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
               isNothing
                 ? isDarkMode
                   ? 'bg-zinc-950 border-zinc-800 font-["Space_Mono"]'
-                  : 'bg-zinc-50 border-zinc-300 font-["Space_Mono"]'
+                  : 'bg-zinc-100 border-zinc-300 font-["Space_Mono"]'
                 : 'bg-amber-500/10 border-amber-500/30'
             }`}>
               <div className="flex items-center gap-2 min-w-0">
                 <Play className={`w-4 h-4 shrink-0 ${
                   isNothing ? 'text-[#D71921] fill-[#D71921]' : 'text-amber-500 fill-amber-500'
                 }`} />
-                <span className={isNothing ? 'text-zinc-300 text-[11px]' : 'text-zinc-800 dark:text-zinc-200'}>
-                  Prefer an interactive walkthrough? Start the <strong>step-by-step tutorial</strong>.
+                <span className={isNothing ? (isDarkMode ? 'text-zinc-300 text-[11px]' : 'text-zinc-800 text-[11px] font-medium') : 'text-zinc-800 dark:text-zinc-200'}>
+                  Prefer an interactive walkthrough? Start the <strong className={isNothing && !isDarkMode ? 'text-black font-bold' : ''}>step-by-step tutorial</strong>.
                 </span>
               </div>
               <button
@@ -286,7 +296,7 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                   </span>
                   <div className={`inline-flex p-0.5 rounded-lg border font-mono text-xs ${
                     isNothing
-                      ? 'border-zinc-800 bg-zinc-950'
+                      ? isDarkMode ? 'border-zinc-800 bg-zinc-950' : 'border-zinc-300 bg-zinc-200'
                       : 'border-zinc-300 dark:border-zinc-800 bg-zinc-200 dark:bg-zinc-900'
                   }`}>
                     <button
@@ -295,8 +305,12 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                       className={`proto-ignore px-2.5 py-1 rounded-md text-[11px] font-bold uppercase transition cursor-pointer ${
                         interactiveDip === 'dip'
                           ? isNothing
-                            ? 'bg-zinc-800 border border-zinc-600 text-white shadow-xs'
+                            ? isDarkMode
+                              ? 'bg-zinc-800 border border-zinc-600 text-white shadow-xs'
+                              : 'bg-white border border-zinc-400 text-black shadow-xs'
                             : 'bg-sky-500 text-white shadow-sm'
+                          : isNothing
+                          ? isDarkMode ? 'text-zinc-400 hover:text-white' : 'text-zinc-700 hover:text-black'
                           : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                       }`}
                     >
@@ -310,6 +324,8 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                           ? isNothing
                             ? 'bg-[#4A9E5C] text-white shadow-xs'
                             : 'bg-emerald-500 text-white shadow-sm'
+                          : isNothing
+                          ? isDarkMode ? 'text-zinc-400 hover:text-white' : 'text-zinc-700 hover:text-black'
                           : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                       }`}
                     >
@@ -321,8 +337,12 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                       className={`proto-ignore px-2.5 py-1 rounded-md text-[11px] font-bold uppercase transition cursor-pointer ${
                         interactiveDip === 'hump'
                           ? isNothing
-                            ? 'bg-zinc-800 border border-zinc-600 text-white shadow-xs'
+                            ? isDarkMode
+                              ? 'bg-zinc-800 border border-zinc-600 text-white shadow-xs'
+                              : 'bg-white border border-zinc-400 text-black shadow-xs'
                             : 'bg-amber-500 text-black shadow-sm'
+                          : isNothing
+                          ? isDarkMode ? 'text-zinc-400 hover:text-white' : 'text-zinc-700 hover:text-black'
                           : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
                       }`}
                     >
@@ -548,16 +568,18 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                   <div className="flex items-start gap-3">
                     <div className={`w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold ${
                       isNothing
-                        ? 'rounded-md border border-zinc-700 bg-zinc-900 text-zinc-300 font-["Space_Mono"]'
+                        ? isDarkMode
+                          ? 'rounded-md border border-zinc-700 bg-zinc-900 text-zinc-300 font-["Space_Mono"]'
+                          : 'rounded-md border border-zinc-300 bg-zinc-200 text-zinc-800 font-["Space_Mono"]'
                         : 'rounded-full bg-amber-500 text-black font-extrabold'
                     }`}>
                       {isNothing ? '01' : '1'}
                     </div>
                     <div>
-                      <h4 className={`font-bold text-xs ${isNothing ? 'text-zinc-100 font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                      <h4 className={`font-bold text-xs ${isNothing ? (isDarkMode ? 'text-zinc-100' : 'text-zinc-900') + ' font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'}`}>
                         Pick a Benchmark Tie (e.g. Station 25 ft)
                       </h4>
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
                         Take your normal rod reading with <strong>Laser 1</strong> (e.g. <code>1' 2"</code>).
                       </p>
                     </div>
@@ -566,16 +588,18 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                   <div className="flex items-start gap-3">
                     <div className={`w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold ${
                       isNothing
-                        ? 'rounded-md border border-zinc-700 bg-zinc-900 text-zinc-300 font-["Space_Mono"]'
+                        ? isDarkMode
+                          ? 'rounded-md border border-zinc-700 bg-zinc-900 text-zinc-300 font-["Space_Mono"]'
+                          : 'rounded-md border border-zinc-300 bg-zinc-200 text-zinc-800 font-["Space_Mono"]'
                         : 'rounded-full bg-amber-500 text-black font-extrabold'
                     }`}>
                       {isNothing ? '02' : '2'}
                     </div>
                     <div>
-                      <h4 className={`font-bold text-xs ${isNothing ? 'text-zinc-100 font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                      <h4 className={`font-bold text-xs ${isNothing ? (isDarkMode ? 'text-zinc-100' : 'text-zinc-900') + ' font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'}`}>
                         Move Laser Tripod & Re-Shoot the Same Tie
                       </h4>
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
                         Set up the tripod further down the track. Place the rod back on Station 25 and read the beam on <strong>Laser 2</strong> (e.g. <code>1' 8"</code>).
                       </p>
                     </div>
@@ -584,16 +608,18 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
                   <div className="flex items-start gap-3">
                     <div className={`w-6 h-6 flex items-center justify-center text-xs shrink-0 mt-0.5 font-bold ${
                       isNothing
-                        ? 'rounded-md border border-zinc-700 bg-zinc-900 text-zinc-300 font-["Space_Mono"]'
+                        ? isDarkMode
+                          ? 'rounded-md border border-zinc-700 bg-zinc-900 text-zinc-300 font-["Space_Mono"]'
+                          : 'rounded-md border border-zinc-300 bg-zinc-200 text-zinc-800 font-["Space_Mono"]'
                         : 'rounded-full bg-amber-500 text-black font-extrabold'
                     }`}>
                       {isNothing ? '03' : '3'}
                     </div>
                     <div>
-                      <h4 className={`font-bold text-xs ${isNothing ? 'text-zinc-100 font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                      <h4 className={`font-bold text-xs ${isNothing ? (isDarkMode ? 'text-zinc-100' : 'text-zinc-900') + ' font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'}`}>
                         Tap "Move Laser (Datum)" in the Toolbar
                       </h4>
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
                         Tap the purple <strong>Move Laser (Datum)</strong> button in the checklist header, enter <code>1' 8"</code>, and tap <strong>Apply Laser Relocation</strong>.
                       </p>
                     </div>
@@ -942,7 +968,9 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
               onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
               className={`proto-ignore px-2.5 sm:px-3 py-1.5 text-xs font-bold transition flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none cursor-pointer ${
                 isNothing
-                  ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white uppercase font-["Space_Mono"]'
+                  ? isDarkMode
+                    ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white uppercase font-["Space_Mono"]'
+                    : 'rounded-lg border border-zinc-300 bg-white text-zinc-800 hover:text-black uppercase font-["Space_Mono"]'
                   : 'rounded-xl border border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'
               }`}
             >

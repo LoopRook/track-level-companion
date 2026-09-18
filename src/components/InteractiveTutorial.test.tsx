@@ -53,7 +53,7 @@ describe('InteractiveTutorial Component', () => {
     expect(html).toMatch(/Step\s*(<!-- -->)?\s*1\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
     expect(html).toContain('1. The Reference Benchmark (Station 0)');
     expect(html).toContain('Every track leveling survey starts at Station 0');
-    expect(html).toContain('Next Step');
+    expect(html).toContain('Action Required');
     expect(html).toContain('Exit Tutorial');
   });
 
@@ -208,8 +208,7 @@ describe('InteractiveTutorial Component', () => {
 
     expect(html).toContain('Space_Mono');
     expect(html).toContain('#D71921');
-    expect(html).toContain('rounded-full');
-    expect(html).toContain('Next Step');
+    expect(html).toContain('Action Required');
   });
 
   it('renders ultra-compact Action HUD with flip and details buttons on mobile', () => {
@@ -235,5 +234,53 @@ describe('InteractiveTutorial Component', () => {
     } finally {
       (globalThis as any).window = originalWindow;
     }
+  });
+
+  it('enforces action on action-required steps and displays Next Step on informational steps', () => {
+    // Step 0: requiresAction = true -> Action Required, no Next Step
+    const actionHtml = renderToString(
+      <InteractiveTutorial
+        isActive={true}
+        currentStep={0}
+        onNextStep={vi.fn()}
+        onPrevStep={vi.fn()}
+        onExitTutorial={vi.fn()}
+        onCompleteTutorial={vi.fn()}
+      />
+    );
+    expect(actionHtml).toContain('data-testid="tutorial-action-required"');
+    expect(actionHtml).not.toContain('Next Step');
+
+    // Step 2: requiresAction = false -> Next Step, no Action Required
+    const infoHtml = renderToString(
+      <InteractiveTutorial
+        isActive={true}
+        currentStep={2}
+        onNextStep={vi.fn()}
+        onPrevStep={vi.fn()}
+        onExitTutorial={vi.fn()}
+        onCompleteTutorial={vi.fn()}
+      />
+    );
+    expect(infoHtml).toContain('Next Step');
+    expect(infoHtml).not.toContain('data-testid="tutorial-action-required"');
+  });
+
+  it('renders dark text and high contrast borders in light mode', () => {
+    const html = renderToString(
+      <InteractiveTutorial
+        isActive={true}
+        currentStep={0}
+        prototypeStyle="nothing"
+        isDarkMode={false}
+        onNextStep={vi.fn()}
+        onPrevStep={vi.fn()}
+        onExitTutorial={vi.fn()}
+        onCompleteTutorial={vi.fn()}
+      />
+    );
+    expect(html).toContain('bg-white');
+    expect(html).toContain('text-zinc-950');
+    expect(html).toContain('border-zinc-300');
   });
 });
