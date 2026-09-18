@@ -1327,7 +1327,12 @@ export const App: React.FC = () => {
                 onChangeProject={handleUpdateProject}
                 isDarkMode={isDarkMode}
                 onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-                onOpenDataModal={() => setIsDataModalOpen(true)}
+                onOpenDataModal={() => {
+                  if (isTutorialActive && activeTutorialId === 'getting-started' && tutorialStep === 6) {
+                    handleCompleteTutorial();
+                  }
+                  setIsDataModalOpen(true);
+                }}
                 onOpenGuideModal={() => setIsGuideOpen(true)}
                 onOpenNewTrackModal={() => setIsNewTrackModalOpen(true)}
                 onOpenSettingsModal={() => setIsSettingsOpen(true)}
@@ -1337,7 +1342,12 @@ export const App: React.FC = () => {
                 summary={summary}
                 prototypeStyle={prototypeStyle}
                 isEmbedded={isEmbedded}
-                onOpenToolsModal={() => setIsMobileToolsOpen(true)}
+                onOpenToolsModal={() => {
+                  if (isTutorialActive && activeTutorialId === 'getting-started' && tutorialStep === 6) {
+                    handleCompleteTutorial();
+                  }
+                  setIsMobileToolsOpen(true);
+                }}
               />
             </div>
 
@@ -1423,6 +1433,8 @@ export const App: React.FC = () => {
           fractionResolution={project.fractionResolution}
           stationIndex={activeEditingStation ? project.stations.findIndex(s => s.id === activeEditingStation.id) + 1 : undefined}
           totalStations={project.stations.length}
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
           tutorialHint={
             isTutorialActive
               ? activeEditingStation?.distanceFt === 0
@@ -1460,6 +1472,8 @@ export const App: React.FC = () => {
               onClose={() => setIsDataModalOpen(false)}
               currentProject={project}
               calculatedStations={calculatedStations}
+              prototypeStyle={prototypeStyle}
+              isDarkMode={isDarkMode}
               onLoadProject={(p) => setProject(p)}
               onResetProject={handleResetProject}
               onLoadDemoTrack={handleLoadDemoTrack}
@@ -1910,7 +1924,12 @@ export const App: React.FC = () => {
               <button
                 type="button"
                 data-tutorial="header-actions"
-                onClick={() => setIsMobileToolsOpen(true)}
+                onClick={() => {
+                  if (isTutorialActive && activeTutorialId === 'getting-started' && tutorialStep === 6) {
+                    handleCompleteTutorial();
+                  }
+                  setIsMobileToolsOpen(true);
+                }}
                 className={`flex items-center justify-center gap-1 py-1.5 px-2.5 sm:px-3 rounded-xl border transition-all cursor-pointer active:scale-95 min-h-[38px] shrink-0 ${
                   isMobileToolsOpen
                     ? prototypeStyle === 'nothing'

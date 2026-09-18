@@ -28,8 +28,8 @@ describe('FractionKeypad Component', () => {
       />
     );
 
-    expect(html).toContain('Recording Station');
-    expect(html).toMatch(/0\s*(<!-- -->)?\s*ft/);
+    expect(html).toMatch(/RECORDING STATION/i);
+    expect(html).toMatch(/0\s*(<!-- -->)?\s*ft/i);
     expect(html).toContain('Decimal In');
     // Desktop keyboard hint
     expect(html).toContain('type on Numpad/Keyboard');

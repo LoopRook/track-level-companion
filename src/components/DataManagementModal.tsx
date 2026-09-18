@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { TrackProject, StationPoint, CalculatedStation } from '../core/types';
+import { TrackProject, StationPoint, CalculatedStation, PrototypeStyle } from '../core/types';
 import { exportTrackToCSV, parseTrackFromCSV, appendStations, generateCSVTemplate, generateGoogleSheetsTSVTemplate } from '../core/csv';
 import { formatMeasurement } from '../core/units';
 import {
@@ -30,6 +30,8 @@ interface DataManagementModalProps {
   onClose: () => void;
   currentProject: TrackProject;
   calculatedStations?: CalculatedStation[];
+  prototypeStyle?: PrototypeStyle;
+  isDarkMode?: boolean;
   onLoadProject: (project: TrackProject) => void;
   onResetProject: () => void;
   onLoadDemoTrack: () => void;
@@ -48,6 +50,8 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   onClose,
   currentProject,
   calculatedStations,
+  prototypeStyle = 'nothing',
+  isDarkMode: _isDarkMode = true,
   onLoadProject,
   onResetProject,
   onLoadDemoTrack,
@@ -326,56 +330,92 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+        <div className={`px-4 sm:px-5 py-3.5 flex items-center justify-between border-b shrink-0 ${
+          prototypeStyle === 'nothing'
+            ? 'bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 font-["Space_Mono"]'
+            : 'bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800'
+        }`}>
           <div className="flex items-center gap-2">
-            <FolderOpen className="w-5 h-5 text-amber-500" />
-            <h2 className="text-base sm:text-lg font-bold">Track Profiles & CSV</h2>
+            {prototypeStyle === 'nothing' ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-[#D71921] shrink-0" />
+                <h2 className="text-sm sm:text-base font-bold tracking-wider uppercase font-['Space_Mono']">
+                  [ TRACK PROFILES & CSV ]
+                </h2>
+              </>
+            ) : (
+              <>
+                <FolderOpen className="w-5 h-5 text-amber-500" />
+                <h2 className="text-base sm:text-lg font-bold">Track Profiles & CSV</h2>
+              </>
+            )}
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {prototypeStyle === 'nothing' ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-2.5 py-1 text-xs font-['Space_Mono'] font-bold tracking-wider uppercase rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-[#D71921] hover:text-[#D71921] transition active:scale-95 cursor-pointer shrink-0"
+              aria-label="Close"
+            >
+              [ Close ]
+            </button>
+          ) : (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950/60 px-3 pt-2 gap-1 text-xs font-bold shrink-0">
+        <div className={`flex border-b px-3 pt-2 gap-1 text-xs font-bold shrink-0 ${
+          prototypeStyle === 'nothing'
+            ? 'bg-zinc-100/50 dark:bg-zinc-950/80 border-zinc-200 dark:border-zinc-800 font-["Space_Mono"]'
+            : 'bg-zinc-50 dark:bg-zinc-950/60 border-zinc-200 dark:border-zinc-800'
+        }`}>
           <button
             onClick={() => { setActiveTab('export'); setPendingCsvStations(null); }}
-            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x cursor-pointer ${
               activeTab === 'export'
-                ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
+                ? prototypeStyle === 'nothing'
+                  ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-[#D71921] font-bold -mb-px'
+                  : 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
                 : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
+            <span>{prototypeStyle === 'nothing' ? '[ EXPORT CSV ]' : 'Export CSV'}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('import')}
-            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x cursor-pointer ${
               activeTab === 'import'
-                ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
+                ? prototypeStyle === 'nothing'
+                  ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-[#D71921] font-bold -mb-px'
+                  : 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
                 : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             <Upload className="w-3.5 h-3.5" />
-            <span>Import CSV</span>
+            <span>{prototypeStyle === 'nothing' ? '[ IMPORT CSV ]' : 'Import CSV'}</span>
           </button>
 
           <button
             onClick={() => { setActiveTab('saved'); setPendingCsvStations(null); }}
-            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x ${
+            className={`px-3 py-2 rounded-t-xl transition flex items-center gap-1.5 border-t border-x cursor-pointer ${
               activeTab === 'saved'
-                ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
+                ? prototypeStyle === 'nothing'
+                  ? 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-[#D71921] font-bold -mb-px'
+                  : 'bg-white dark:bg-black border-zinc-200 dark:border-zinc-800 text-amber-600 dark:text-amber-400 -mb-px'
                 : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
             }`}
           >
             <FolderOpen className="w-3.5 h-3.5" />
-            <span>Saved Tracks ({savedProjects.length})</span>
+            <span>{prototypeStyle === 'nothing' ? `[ SAVED (${savedProjects.length}) ]` : `Saved Tracks (${savedProjects.length})`}</span>
           </button>
         </div>
 

@@ -206,6 +206,36 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
 
     const cardMaxWidth = Math.min(440, viewportWidth - 32);
 
+    // Detect if an active modal dialog (such as Move Laser or Data Management) is present in the DOM
+    const isModalActive =
+      typeof document !== 'undefined' &&
+      (!!document.querySelector('[data-tutorial="tp-new-reading-input"]') ||
+       !!document.querySelector('.fixed.inset-0.z-50') ||
+       !!document.querySelector('[role="dialog"]'));
+
+    if (isModalActive && userPositionOverride === 'auto') {
+      if (isDesktop) {
+        return {
+          position: 'fixed',
+          top: '20px',
+          right: '24px',
+          maxWidth: `${cardMaxWidth}px`,
+          width: `${cardMaxWidth}px`,
+          zIndex: 80,
+        };
+      } else {
+        return {
+          position: 'fixed',
+          top: '12px',
+          left: '10px',
+          right: '10px',
+          maxWidth: 'calc(100vw - 20px)',
+          width: 'calc(100vw - 20px)',
+          zIndex: 80,
+        };
+      }
+    }
+
     if (!targetRect) {
       return {
         position: 'fixed',

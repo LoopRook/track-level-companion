@@ -93,7 +93,7 @@ describe('InteractiveTutorial with Modular Tutorial Definitions', () => {
     );
 
     expect(html).toMatch(/Step\s*(<!-- -->)?\s*1\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*4/);
-    expect(html).toContain('1. The Fixed Obstacle Dilemma');
+    expect(html).toContain('1. The Fixed Obstacle Problem');
     expect(html).toContain('Grade &amp; Align');
     expect(html).toContain('Next Step');
   });
@@ -130,7 +130,7 @@ describe('InteractiveTutorial with Modular Tutorial Definitions', () => {
       />
     );
 
-    expect(html).toContain('1. The Turning Point Benchmark');
+    expect(html).toContain('1. The Shared Turning Point (Station 50)');
     expect(html).toContain('Field Operations');
   });
 });

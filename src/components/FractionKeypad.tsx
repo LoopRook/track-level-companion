@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UnitFormat } from '../core/types';
+import { UnitFormat, PrototypeStyle } from '../core/types';
 import {
   parseMeasurement,
   toFractionalParts,
@@ -24,6 +24,8 @@ interface FractionKeypadProps {
   totalStations?: number;
   tutorialHint?: string;
   tutorialSaveButtonLabel?: string;
+  prototypeStyle?: PrototypeStyle;
+  isDarkMode?: boolean;
   onSave: (valInches: number | null) => void;
   onSaveAndNext?: (valInches: number | null) => void;
   onSaveAndPrev?: (valInches: number | null) => void;
@@ -73,6 +75,8 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
   totalStations,
   tutorialHint,
   tutorialSaveButtonLabel,
+  prototypeStyle = 'nothing',
+  isDarkMode: _isDarkMode = true,
   onSave,
   onSaveAndNext,
   onSaveAndPrev,
@@ -476,16 +480,35 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Station & Target Measurement info */}
-        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 py-3 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+        <div className={`px-4 py-3 flex items-center justify-between border-b shrink-0 ${
+          prototypeStyle === 'nothing'
+            ? 'bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800 font-["Space_Mono"]'
+            : 'bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white border-zinc-200 dark:border-zinc-800'
+        }`}>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold whitespace-nowrap shrink-0">Recording Station</span>
+              {prototypeStyle === 'nothing' && (
+                <span className="w-2 h-2 rounded-full bg-[#D71921] shrink-0" />
+              )}
+              <span className={`text-[10px] uppercase tracking-wider font-bold whitespace-nowrap shrink-0 ${
+                prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-zinc-500' : 'text-zinc-500'
+              }`}>
+                {prototypeStyle === 'nothing' ? '[ RECORDING STATION ]' : 'Recording Station'}
+              </span>
               {stationIndex !== undefined && totalStations !== undefined && (
-                <span className="text-[10px] uppercase font-bold text-zinc-600 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.2 rounded whitespace-nowrap shrink-0">
+                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.2 rounded whitespace-nowrap shrink-0 ${
+                  prototypeStyle === 'nothing'
+                    ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 font-["Space_Mono"]'
+                    : 'text-zinc-600 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800'
+                }`}>
                   Tie {stationIndex} of {totalStations}
                 </span>
               )}
-              <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 bg-amber-500/15 px-1.5 py-0.2 rounded border border-amber-500/30 whitespace-nowrap shrink-0">
+              <span className={`text-[10px] uppercase font-bold px-1.5 py-0.2 rounded border whitespace-nowrap shrink-0 ${
+                prototypeStyle === 'nothing'
+                  ? 'border-zinc-300 dark:border-zinc-700 bg-zinc-200/60 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-["Space_Mono"]'
+                  : 'text-amber-600 dark:text-amber-400 bg-amber-500/15 border-amber-500/30'
+              }`}>
                 {unitFormat === 'decimal_inches'
                   ? 'Decimal In'
                   : unitFormat === 'metric_mm'
@@ -496,25 +519,44 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span className={`text-xl font-extrabold text-amber-500 dark:text-amber-400 font-mono inline-block rounded-md px-1 -ml-1 transition-all whitespace-nowrap shrink-0 ${pulseDistance ? 'animate-pulse-highlight bg-amber-500/20 ring-2 ring-amber-400' : ''}`}>
-                {stationDistanceFt} ft
+              <span className={`text-xl font-extrabold inline-block rounded-md px-1 -ml-1 transition-all whitespace-nowrap shrink-0 ${
+                prototypeStyle === 'nothing'
+                  ? 'font-["Space_Mono"] text-zinc-950 dark:text-white tracking-wide'
+                  : 'text-amber-500 dark:text-amber-400 font-mono'
+              } ${pulseDistance ? 'animate-pulse-highlight bg-[#D71921]/20 ring-2 ring-[#D71921]' : ''}`}>
+                {prototypeStyle === 'nothing' ? `[ STATION ${stationDistanceFt} FT ]` : `${stationDistanceFt} ft`}
               </span>
               {targetReadingInches !== null && targetReadingInches !== undefined && (
-                <div className="flex items-center gap-1 text-xs font-mono font-bold text-sky-700 dark:text-sky-300 bg-sky-500/15 px-2 py-0.5 rounded-lg border border-sky-500/30 whitespace-nowrap shrink-0">
-                  <Target className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                <div className={`flex items-center gap-1 text-xs font-mono font-bold px-2 py-0.5 rounded-lg border whitespace-nowrap shrink-0 ${
+                  prototypeStyle === 'nothing'
+                    ? 'text-zinc-700 dark:text-zinc-300 bg-zinc-200/80 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 font-["Space_Mono"]'
+                    : 'text-sky-700 dark:text-sky-300 bg-sky-500/15 border-sky-500/30'
+                }`}>
+                  <Target className={`w-3.5 h-3.5 shrink-0 ${prototypeStyle === 'nothing' ? 'text-[#D71921]' : 'text-sky-500'}`} />
                   <span>Target: {formatMeasurement(targetReadingInches, unitFormat, fractionResolution)}</span>
                   {actionText && <span className="font-sans font-normal opacity-80 whitespace-nowrap">({actionText})</span>}
                 </div>
               )}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {prototypeStyle === 'nothing' ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-2.5 py-1 text-xs font-['Space_Mono'] font-bold tracking-wider uppercase rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-[#D71921] hover:text-[#D71921] transition active:scale-95 cursor-pointer shrink-0"
+              aria-label="Close"
+            >
+              [ Close ]
+            </button>
+          ) : (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Practice Tutorial Guidance Banner inside Keypad */}
@@ -552,18 +594,24 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
           {/* Live Readout Display */}
           <div className="bg-zinc-50 dark:bg-black p-4 border-b border-zinc-200 dark:border-zinc-800/80 flex flex-col items-center shrink-0">
             <div className="flex items-center justify-between w-full max-w-xs mb-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-              <span>Tape / Rod Reading</span>
+              <span className={prototypeStyle === 'nothing' ? 'font-["Space_Mono"]' : ''}>
+                {prototypeStyle === 'nothing' ? '[ ROD READING ]' : 'Tape / Rod Reading'}
+              </span>
               {currentReadingInches !== null ? (
                 <span className="font-mono text-zinc-600 dark:text-zinc-300 font-semibold normal-case">
                   Last: {formatMeasurement(currentReadingInches, unitFormat, fractionResolution)}
                 </span>
               ) : (
-                <span className="font-mono text-amber-600 dark:text-amber-400/80 font-normal italic normal-case">
+                <span className={`font-normal italic normal-case ${prototypeStyle === 'nothing' ? 'text-zinc-400 font-["Space_Mono"]' : 'font-mono text-amber-600 dark:text-amber-400/80'}`}>
                   New Reading
                 </span>
               )}
             </div>
-          <div className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 font-mono tracking-tight text-center min-h-[44px] flex items-center justify-center">
+          <div className={`text-3xl sm:text-4xl font-extrabold tracking-tight text-center min-h-[44px] flex items-center justify-center ${
+            prototypeStyle === 'nothing'
+              ? 'font-["Doto",monospace] text-zinc-950 dark:text-white tracking-widest'
+              : 'text-zinc-900 dark:text-zinc-100 font-mono'
+          }`}>
             {currentComputedInches !== null ? (
               <>
                 <span>{formatMeasurement(currentComputedInches, unitFormat, fractionResolution)}</span>
@@ -579,14 +627,18 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 )}
               </>
             ) : (
-              <span className="text-zinc-400 dark:text-zinc-500 italic text-2xl font-normal">
+              <span className="text-zinc-400 dark:text-zinc-500 italic text-2xl font-normal font-sans">
                 Tap numbers to set
               </span>
             )}
           </div>
 
           {datumOffsetInches !== undefined && datumOffsetInches !== 0 && currentComputedInches !== null && (
-            <div className="mt-2 text-xs font-mono text-purple-700 dark:text-purple-300 bg-purple-500/10 px-3 py-1 rounded-xl border border-purple-500/20 inline-block text-center max-w-full">
+            <div className={`mt-2 text-xs font-mono px-3 py-1 rounded-xl border inline-block text-center max-w-full ${
+              prototypeStyle === 'nothing'
+                ? 'text-zinc-300 bg-zinc-900 border-zinc-700 font-["Space_Mono"]'
+                : 'text-purple-700 dark:text-purple-300 bg-purple-500/10 border-purple-500/20'
+            }`}>
               Normalized: <strong>{formatMeasurement(currentComputedInches - datumOffsetInches, unitFormat, fractionResolution)}</strong>{' '}
               <span className="whitespace-nowrap">
                 ({datumOffsetInches >= 0 ? '+' : ''}{formatMeasurement(datumOffsetInches, unitFormat, fractionResolution)} shift)
@@ -596,84 +648,80 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
 
           {/* Quick +/- Nudge Toolbar */}
           <div className="flex items-center gap-1.5 mt-3 w-full justify-center flex-wrap">
-            <span className="text-xs text-zinc-500 font-medium mr-1">Nudge:</span>
+            <span className={`text-xs font-medium mr-1 ${prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-[11px] text-zinc-500' : 'text-zinc-500'}`}>
+              Nudge:
+            </span>
             {unitFormat === 'metric_mm' ? (
               <>
-                <button
-                  onClick={() => handleNudge(-10 / 25.4)}
-                  className="px-2 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
-                >
-                  -10mm
-                </button>
-                <button
-                  onClick={() => handleNudge(-1 / 25.4)}
-                  className="px-2 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
-                >
-                  -1mm
-                </button>
-                <button
-                  onClick={() => handleNudge(1 / 25.4)}
-                  className="px-2 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
-                >
-                  +1mm
-                </button>
-                <button
-                  onClick={() => handleNudge(10 / 25.4)}
-                  className="px-2 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
-                >
-                  +10mm
-                </button>
+                {[-10, -1, 1, 10].map(val => (
+                  <button
+                    key={val}
+                    onClick={() => handleNudge(val / 25.4)}
+                    className={`px-2 py-1 text-xs font-bold rounded-lg active:scale-95 transition cursor-pointer ${
+                      prototypeStyle === 'nothing'
+                        ? 'border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-[#D71921] hover:text-[#D71921] font-["Space_Mono"]'
+                        : 'bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200'
+                    }`}
+                  >
+                    {val > 0 ? `+${val}mm` : `${val}mm`}
+                  </button>
+                ))}
               </>
             ) : unitFormat === 'decimal_inches' ? (
               <>
-                <button
-                  onClick={() => handleNudge(-1.0)}
-                  className="px-2 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
-                >
-                  -1.0"
-                </button>
-                <button
-                  onClick={() => handleNudge(-0.1)}
-                  className="px-2 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
-                >
-                  -0.1"
-                </button>
-                <button
-                  onClick={() => handleNudge(0.1)}
-                  className="px-2 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
-                >
-                  +0.1"
-                </button>
-                <button
-                  onClick={() => handleNudge(1.0)}
-                  className="px-2 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
-                >
-                  +1.0"
-                </button>
+                {[-1.0, -0.1, 0.1, 1.0].map(val => (
+                  <button
+                    key={val}
+                    onClick={() => handleNudge(val)}
+                    className={`px-2 py-1 text-xs font-bold rounded-lg active:scale-95 transition cursor-pointer ${
+                      prototypeStyle === 'nothing'
+                        ? 'border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-[#D71921] hover:text-[#D71921] font-["Space_Mono"]'
+                        : 'bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200'
+                    }`}
+                  >
+                    {val > 0 ? `+${val.toFixed(1)}"` : `${val.toFixed(1)}"`}
+                  </button>
+                ))}
               </>
             ) : (
               <>
                 <button
                   onClick={() => handleNudge(-0.25)}
-                  className="px-2.5 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg active:scale-95 transition cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-[#D71921] hover:text-[#D71921] font-["Space_Mono"]'
+                      : 'bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200'
+                  }`}
                 >
                   -1/4"
                 </button>
                 <button
                   onClick={() => handleNudge(-1 / fractionResolution)}
-                  className="px-2.5 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg active:scale-95 transition cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-[#D71921] hover:text-[#D71921] font-["Space_Mono"]'
+                      : 'bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200'
+                  }`}
                 >
                   -1/{fractionResolution}"
                 </button>
                 <button
                   onClick={() => handleNudge(1 / fractionResolution)}
-                  className="px-2.5 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg active:scale-95 transition cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-[#D71921] hover:text-[#D71921] font-["Space_Mono"]'
+                      : 'bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200'
+                  }`}
                 >
                   +1/{fractionResolution}"
                 </button>
                 <button
                   onClick={() => handleNudge(0.25)}
-                  className="px-2.5 py-1 text-xs font-bold bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded text-zinc-800 dark:text-zinc-200 active:scale-95 transition"
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg active:scale-95 transition cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-[#D71921] hover:text-[#D71921] font-["Space_Mono"]'
+                      : 'bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200'
+                  }`}
                 >
                   +1/4"
                 </button>
@@ -682,14 +730,22 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
             <button
               type="button"
               onClick={handleKeypadClear}
-              className="px-2.5 py-1 text-xs font-bold rounded bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200 active:scale-95 transition ml-1"
+              className={`px-2.5 py-1 text-xs font-bold rounded-lg active:scale-95 transition ml-1 cursor-pointer ${
+                prototypeStyle === 'nothing'
+                  ? 'border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-600 hover:text-[#D71921] hover:border-[#D71921] dark:text-zinc-400 font-["Space_Mono"]'
+                  : 'bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
+              }`}
               title="Clear measurement (set to blank)"
             >
               Clear
             </button>
             <button
               onClick={() => setUseDirectInput(!useDirectInput)}
-              className="ml-auto p-1.5 rounded text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-200 dark:bg-zinc-900 transition"
+              className={`ml-auto p-1.5 rounded-lg transition cursor-pointer ${
+                prototypeStyle === 'nothing'
+                  ? 'border border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-black dark:hover:text-white bg-zinc-100 dark:bg-zinc-900'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 bg-zinc-200 dark:bg-zinc-900'
+              }`}
               title={useDirectInput ? 'Switch to Touch Keypad' : 'Switch to Direct Keyboard Typing'}
             >
               {useDirectInput ? <SlidersHorizontal className="w-4 h-4" /> : <Keyboard className="w-4 h-4" />}
@@ -747,7 +803,11 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                     key={digit}
                     type="button"
                     onClick={() => handleKeypadDigit(digit)}
-                    className="h-12 rounded-xl text-lg font-bold font-mono bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:bg-amber-500 hover:text-black active:scale-95 transition shadow-sm border border-zinc-200 dark:border-zinc-800"
+                    className={`h-12 rounded-lg text-lg font-bold transition shadow-sm active:scale-95 cursor-pointer ${
+                      prototypeStyle === 'nothing'
+                        ? 'bg-zinc-100 dark:bg-zinc-900/80 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-800 hover:border-[#D71921] hover:text-[#D71921] active:bg-[#D71921] active:text-white font-["Space_Mono"]'
+                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:bg-amber-500 hover:text-black border border-zinc-200 dark:border-zinc-800 font-mono'
+                    }`}
                   >
                     {digit}
                   </button>
@@ -755,7 +815,11 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 <button
                   type="button"
                   onClick={handleKeypadBackspace}
-                  className="h-12 rounded-xl text-base font-bold flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-red-500 hover:text-white active:scale-95 transition shadow-sm"
+                  className={`h-12 rounded-lg text-base font-bold flex items-center justify-center transition shadow-sm active:scale-95 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:border-[#D71921] hover:text-[#D71921] active:bg-[#D71921] active:text-white font-["Space_Mono"]'
+                      : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-red-500 hover:text-white'
+                  }`}
                   title="Backspace"
                 >
                   <Delete className="w-5 h-5" />
@@ -776,7 +840,7 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 <button
                   type="button"
                   onClick={handleKeypadClear}
-                  className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline"
+                  className={`text-xs font-bold hover:underline ${prototypeStyle === 'nothing' ? 'text-[#D71921] font-["Space_Mono"]' : 'text-amber-600 dark:text-amber-400'}`}
                 >
                   Clear
                 </button>
@@ -794,7 +858,11 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                     key={digit}
                     type="button"
                     onClick={() => handleKeypadDigit(digit)}
-                    className="h-12 rounded-xl text-lg font-bold font-mono bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:bg-amber-500 hover:text-black active:scale-95 transition shadow-sm border border-zinc-200 dark:border-zinc-800"
+                    className={`h-12 rounded-lg text-lg font-bold transition shadow-sm active:scale-95 cursor-pointer ${
+                      prototypeStyle === 'nothing'
+                        ? 'bg-zinc-100 dark:bg-zinc-900/80 text-zinc-900 dark:text-zinc-100 border border-zinc-300 dark:border-zinc-800 hover:border-[#D71921] hover:text-[#D71921] active:bg-[#D71921] active:text-white font-["Space_Mono"]'
+                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:bg-amber-500 hover:text-black border border-zinc-200 dark:border-zinc-800 font-mono'
+                    }`}
                   >
                     {digit}
                   </button>
@@ -802,7 +870,11 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                 <button
                   type="button"
                   onClick={handleKeypadBackspace}
-                  className="h-12 rounded-xl text-base font-bold flex items-center justify-center bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-red-500 hover:text-white active:scale-95 transition shadow-sm"
+                  className={`h-12 rounded-lg text-base font-bold flex items-center justify-center transition shadow-sm active:scale-95 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:border-[#D71921] hover:text-[#D71921] active:bg-[#D71921] active:text-white font-["Space_Mono"]'
+                      : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-red-500 hover:text-white'
+                  }`}
                   title="Backspace"
                 >
                   <Delete className="w-5 h-5" />
@@ -859,9 +931,13 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                           setTotalInchesOnly(inch);
                           setHasEnteredValue(true);
                         }}
-                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
+                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 cursor-pointer ${
                           isSelected
-                            ? 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            ? prototypeStyle === 'nothing'
+                              ? 'bg-[#D71921] text-white font-black shadow-sm font-["Space_Mono"]'
+                              : 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            : prototypeStyle === 'nothing'
+                            ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-zinc-500 border border-zinc-200 dark:border-zinc-800 font-["Space_Mono"]'
                             : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
                         }`}
                       >
@@ -894,9 +970,13 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                           setDenominator(frac.den);
                           setHasEnteredValue(true);
                         }}
-                        className={`h-10 rounded-lg font-mono font-bold text-xs transition active:scale-95 ${
+                        className={`h-10 rounded-lg font-mono font-bold text-xs transition active:scale-95 cursor-pointer ${
                           isSelected
-                            ? 'bg-amber-500 text-black font-black shadow-md ring-2 ring-amber-400'
+                            ? prototypeStyle === 'nothing'
+                              ? 'bg-[#D71921] text-white font-black shadow-md border border-[#D71921] font-["Space_Mono"]'
+                              : 'bg-amber-500 text-black font-black shadow-md ring-2 ring-amber-400'
+                            : prototypeStyle === 'nothing'
+                            ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 hover:border-zinc-500 border border-zinc-200 dark:border-zinc-800 font-["Space_Mono"]'
                             : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800'
                         }`}
                       >
@@ -927,9 +1007,13 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                           setFeet(f);
                           setHasEnteredValue(true);
                         }}
-                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
+                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 cursor-pointer ${
                           isSelected
-                            ? 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            ? prototypeStyle === 'nothing'
+                              ? 'bg-[#D71921] text-white font-black shadow-sm font-["Space_Mono"]'
+                              : 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            : prototypeStyle === 'nothing'
+                            ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-zinc-500 border border-zinc-200 dark:border-zinc-800 font-["Space_Mono"]'
                             : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
                         }`}
                       >
@@ -957,9 +1041,13 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                           setInches(inch);
                           setHasEnteredValue(true);
                         }}
-                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 ${
+                        className={`h-10 rounded-lg font-bold text-sm transition active:scale-95 cursor-pointer ${
                           isSelected
-                            ? 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            ? prototypeStyle === 'nothing'
+                              ? 'bg-[#D71921] text-white font-black shadow-sm font-["Space_Mono"]'
+                              : 'bg-amber-500 text-black font-extrabold shadow-sm'
+                            : prototypeStyle === 'nothing'
+                            ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:border-zinc-500 border border-zinc-200 dark:border-zinc-800 font-["Space_Mono"]'
                             : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
                         }`}
                       >
@@ -992,9 +1080,13 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
                           setDenominator(frac.den);
                           setHasEnteredValue(true);
                         }}
-                        className={`h-10 rounded-lg font-mono font-bold text-xs transition active:scale-95 ${
+                        className={`h-10 rounded-lg font-mono font-bold text-xs transition active:scale-95 cursor-pointer ${
                           isSelected
-                            ? 'bg-amber-500 text-black font-black shadow-md ring-2 ring-amber-400'
+                            ? prototypeStyle === 'nothing'
+                              ? 'bg-[#D71921] text-white font-black shadow-md border border-[#D71921] font-["Space_Mono"]'
+                              : 'bg-amber-500 text-black font-black shadow-md ring-2 ring-amber-400'
+                            : prototypeStyle === 'nothing'
+                            ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 hover:border-zinc-500 border border-zinc-200 dark:border-zinc-800 font-["Space_Mono"]'
                             : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800'
                         }`}
                       >
@@ -1011,11 +1103,19 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 shrink-0">
+        <div className={`p-3 border-t flex items-center gap-2 shrink-0 ${
+          prototypeStyle === 'nothing'
+            ? 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800'
+            : 'bg-zinc-100 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800'
+        }`}>
           {onSaveAndPrev && (
             <button
               onClick={handleSaveAndPrev}
-              className="group px-3 py-3 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold hover:bg-zinc-300 dark:hover:bg-zinc-800 transition active:scale-95 flex items-center justify-center"
+              className={`group px-3 py-3 rounded-lg font-bold transition active:scale-95 flex items-center justify-center cursor-pointer ${
+                prototypeStyle === 'nothing'
+                  ? 'bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 hover:border-[#D71921] hover:text-[#D71921] font-["Space_Mono"]'
+                  : 'bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-800'
+              }`}
               title="Save and go to previous station"
             >
               <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1 group-active:-translate-x-2" />
@@ -1025,7 +1125,11 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
           {tutorialSaveButtonLabel ? (
             <button
               onClick={onSaveAndNext ? handleSaveAndNext : handleSave}
-              className="flex-1 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm shadow-md transition active:scale-98 flex items-center justify-center gap-1.5"
+              className={`flex-1 py-3 px-4 rounded-lg font-bold text-xs uppercase tracking-wider shadow-md transition active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer ${
+                prototypeStyle === 'nothing'
+                  ? 'bg-[#D71921] hover:bg-[#b01319] text-white font-["Space_Mono"]'
+                  : 'bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm'
+              }`}
             >
               <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
               <span>{tutorialSaveButtonLabel}</span>
@@ -1034,18 +1138,26 @@ export const FractionKeypad: React.FC<FractionKeypadProps> = ({
             <>
               <button
                 onClick={handleSave}
-                className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md transition active:scale-98 flex items-center justify-center gap-1.5"
+                className={`flex-1 py-3 px-4 rounded-lg font-bold text-xs uppercase tracking-wider shadow-md transition active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer ${
+                  prototypeStyle === 'nothing'
+                    ? 'bg-[#D71921] hover:bg-[#b01319] text-white font-["Space_Mono"]'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white text-sm'
+                }`}
               >
                 <Check className="w-4 h-4 stroke-[2.5]" />
-                Save
+                {prototypeStyle === 'nothing' ? '[ Save ]' : 'Save'}
               </button>
 
               {onSaveAndNext && (
                 <button
                   onClick={handleSaveAndNext}
-                  className="group flex-1 py-3 px-4 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-extrabold text-sm shadow-md hover:bg-zinc-800 dark:hover:bg-zinc-100 transition active:scale-98 flex items-center justify-center gap-1.5"
+                  className={`group flex-1 py-3 px-4 rounded-lg font-bold text-xs uppercase tracking-wider shadow-md transition active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'bg-zinc-900 dark:bg-white text-white dark:text-black border border-zinc-700 dark:border-zinc-300 hover:bg-zinc-800 dark:hover:bg-zinc-100 font-["Space_Mono"]'
+                      : 'bg-zinc-900 dark:bg-white text-white dark:text-black font-extrabold text-sm hover:bg-zinc-800 dark:hover:bg-zinc-100'
+                  }`}
                 >
-                  <span>Next Station</span>
+                  <span>{prototypeStyle === 'nothing' ? '[ Next Station ]' : 'Next Station'}</span>
                   <ArrowRight className="w-4 h-4 stroke-[2.5] transition-transform group-hover:translate-x-1 group-active:translate-x-2" />
                 </button>
               )}

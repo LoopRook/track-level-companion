@@ -88,11 +88,11 @@ describe('InteractiveTutorial Component', () => {
     );
 
     expect(html).toMatch(/Step\s*(<!-- -->)?\s*3\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
-    expect(html).toContain('3. The Tolerance Margin');
-    expect(html).toContain('tolerance margin (±0.05&quot;) in action');
+    expect(html).toContain('3. The Tolerance Window (±0.05&quot;)');
+    expect(html).toContain('tolerance window (±0.05&quot; or ~1/16&quot;)');
   });
 
-  it('renders Step 4 (Visualizing the Sag Dip) correctly', () => {
+  it('renders Step 4 (Profile Graph: Spotting Rail Sags) correctly', () => {
     const html = renderToString(
       <InteractiveTutorial
         isActive={true}
@@ -105,8 +105,8 @@ describe('InteractiveTutorial Component', () => {
     );
 
     expect(html).toMatch(/Step\s*(<!-- -->)?\s*4\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
-    expect(html).toContain('4. Visualizing the Sag Dip');
-    expect(html).toContain('visible sag dip between 0 ft and 10 ft');
+    expect(html).toContain('4. Profile Graph: Spotting Rail Sags');
+    expect(html).toContain('sags visibly between 0 ft and 10 ft');
   });
 
   it('renders Step 5 (Verification Shot: Raise to Grade) correctly', () => {
@@ -143,7 +143,7 @@ describe('InteractiveTutorial Component', () => {
     expect(html).toContain('LEVELED ✓');
   });
 
-  it('renders Step 7 (Documenting & QR Sharing) correctly with Finish button', () => {
+  it('renders Step 7 (Exporting, Printing & QR Sharing) correctly with Finish button', () => {
     const html = renderToString(
       <InteractiveTutorial
         isActive={true}
@@ -156,7 +156,7 @@ describe('InteractiveTutorial Component', () => {
     );
 
     expect(html).toMatch(/Step\s*(<!-- -->)?\s*7\s*(<!-- -->)?\s*of\s*(<!-- -->)?\s*7/);
-    expect(html).toContain('7. Documenting &amp; QR Sharing');
+    expect(html).toContain('7. Exporting, Printing &amp; QR Sharing');
     expect(html).toContain('Finish Tutorial');
   });
 

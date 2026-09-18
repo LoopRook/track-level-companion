@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CalculatedStation, GradeMode, PrototypeStyle } from '../core/types';
 import { formatFeetInches, formatMeasurement } from '../core/units';
 import { calculateGradeInfo, calculateSubsetGrade, SubsetGradeInfo } from '../core/calculations';
-import { Maximize2, Minimize2, Ruler, Download, Image as ImageIcon, Printer } from 'lucide-react';
+import { Maximize2, Minimize2, Ruler, Download, Image as ImageIcon, Printer, ChevronDown } from 'lucide-react';
 
 interface ProfileChartProps {
   stations: CalculatedStation[];
@@ -108,6 +108,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   // Selected start & end station for subset evaluation / pinned inspection
   const [selectedStartId, setSelectedStartId] = useState<string | null>(selectedStationId || null);
   const [selectedEndId, setSelectedEndId] = useState<string | null>(null);
+  const [openStationPicker, setOpenStationPicker] = useState<'start' | 'end' | null>(null);
 
   // Smooth hover tracking across the track
   const [hoveredStationId, setHoveredStationId] = useState<string | null>(null);
@@ -129,6 +130,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
     setIsMeasureModeActive(false);
     setSelectedStartId(null);
     setSelectedEndId(null);
+    setOpenStationPicker(null);
   }, [trackName]);
 
   // Filter measured stations
@@ -158,6 +160,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
 
   // Single station to inspect if no subset is active
   const startStation = stations.find(s => s.id === selectedStartId) || null;
+  const endStation = stations.find(s => s.id === selectedEndId) || null;
   const hoveredStation = stations.find(s => s.id === hoveredStationId) || null;
   const currentInspectStation = !activeSubsetGrade ? (hoveredStation || startStation || null) : null;
 
@@ -717,48 +720,64 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
         </div>
       </div>
 
-      {/* Subset Grade Evaluator Bar (Dropdown controls) */}
+      {/* Subset Grade Evaluator Bar (Nothing OS Custom Station Pickers) */}
       {isMeasureModeActive && (
-        <div className="px-3.5 py-2 bg-sky-500/10 dark:bg-sky-950/40 border-b border-sky-500/20 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-2 transition-colors">
+        <div className={`px-3.5 py-2 border-b flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-2 transition-colors ${
+          prototypeStyle === 'nothing'
+            ? 'bg-zinc-50 dark:bg-zinc-950/80 border-zinc-200 dark:border-zinc-800'
+            : 'bg-sky-500/10 dark:bg-sky-950/40 border-sky-500/20'
+        }`}>
           <div className="flex items-center gap-2 flex-wrap font-mono">
-            <span className="font-bold text-sky-700 dark:text-sky-300 flex items-center gap-1">
-              <Ruler className="w-3.5 h-3.5" /> Subset:
+            <span className={`font-bold flex items-center gap-1 ${
+              prototypeStyle === 'nothing' ? 'text-zinc-900 dark:text-zinc-100 font-["Space_Mono"] uppercase tracking-wider' : 'text-sky-700 dark:text-sky-300'
+            }`}>
+              <Ruler className={`w-3.5 h-3.5 ${prototypeStyle === 'nothing' ? 'text-[#D71921]' : ''}`} />
+              {prototypeStyle === 'nothing' ? '[ SUBSET ]' : 'Subset:'}
             </span>
-            <div className="flex items-center gap-1" data-tutorial="evaluate-grade-from">
-              <span className="text-zinc-500 font-sans text-[11px]">From:</span>
-              <select
-                value={selectedStartId || ''}
-                onChange={(e) => {
-                  setSelectedStartId(e.target.value || null);
-                  onSubsetSpanChange?.();
-                }}
-                className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 font-semibold shadow-xs"
+
+            {/* Custom Nothing OS Station Pickers (replacing native <select> mobile wheel traps) */}
+            <div className="flex items-center gap-1.5" data-tutorial="evaluate-grade-from">
+              <span className={`text-[11px] ${prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-zinc-500 uppercase' : 'text-zinc-500 font-sans'}`}>
+                From:
+              </span>
+              <button
+                type="button"
+                onClick={() => setOpenStationPicker('start')}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition active:scale-95 flex items-center gap-1 cursor-pointer ${
+                  prototypeStyle === 'nothing'
+                    ? 'bg-white dark:bg-black border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 hover:border-[#D71921] font-["Space_Mono"]'
+                    : 'bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                }`}
               >
-                <option value="">Select Start...</option>
-                {stations.map(s => (
-                  <option key={`start-${s.id}`} value={s.id}>
-                    {s.distanceFt} ft {s.elevationInches !== null ? `(${formatMeasurement(s.elevationInches, 'inches_fraction')})` : ''}
-                  </option>
-                ))}
-              </select>
+                <span>
+                  {startStation
+                    ? `${startStation.distanceFt} ft`
+                    : 'Select Start...'}
+                </span>
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </button>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-zinc-500 font-sans text-[11px]">To:</span>
-              <select
-                value={selectedEndId || ''}
-                onChange={(e) => {
-                  setSelectedEndId(e.target.value || null);
-                  onSubsetSpanChange?.();
-                }}
-                className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-zinc-900 dark:text-zinc-100 font-semibold shadow-xs"
+
+            <div className="flex items-center gap-1.5">
+              <span className={`text-[11px] ${prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-zinc-500 uppercase' : 'text-zinc-500 font-sans'}`}>
+                To:
+              </span>
+              <button
+                type="button"
+                onClick={() => setOpenStationPicker('end')}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition active:scale-95 flex items-center gap-1 cursor-pointer ${
+                  prototypeStyle === 'nothing'
+                    ? 'bg-white dark:bg-black border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 hover:border-[#D71921] font-["Space_Mono"]'
+                    : 'bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                }`}
               >
-                <option value="">Select End...</option>
-                {stations.map(s => (
-                  <option key={`end-${s.id}`} value={s.id}>
-                    {s.distanceFt} ft {s.elevationInches !== null ? `(${formatMeasurement(s.elevationInches, 'inches_fraction')})` : ''}
-                  </option>
-                ))}
-              </select>
+                <span>
+                  {endStation
+                    ? `${endStation.distanceFt} ft`
+                    : 'Select End...'}
+                </span>
+                <ChevronDown className="w-3 h-3 opacity-60" />
+              </button>
             </div>
 
             {activeSubsetGrade && (
@@ -776,7 +795,11 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                   </strong>
                 </span>
                 <span className="text-zinc-400">|</span>
-                <span className="font-bold text-sky-700 dark:text-sky-300 bg-sky-500/15 px-2 py-0.5 rounded border border-sky-500/30">
+                <span className={`font-bold px-2 py-0.5 rounded border ${
+                  prototypeStyle === 'nothing'
+                    ? 'bg-black text-white dark:bg-white dark:text-black border-zinc-700 dark:border-zinc-300 font-["Space_Mono"]'
+                    : 'text-sky-700 dark:text-sky-300 bg-sky-500/15 border-sky-500/30'
+                }`}>
                   Grade: {activeSubsetGrade.netGradePercent >= 0 ? '+' : ''}
                   {activeSubsetGrade.netGradePercent.toFixed(2)}%{' '}
                   {activeSubsetGrade.direction === 'uphill' ? '↗' : activeSubsetGrade.direction === 'downhill' ? '↘' : '→'}
@@ -796,10 +819,14 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
               <button
                 data-tutorial="evaluate-grade-apply"
                 onClick={() => onApplyTargetGrade(activeSubsetGrade.netGradePercent)}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition active:scale-95"
+                className={`px-3 py-1.5 rounded-lg font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer ${
+                  prototypeStyle === 'nothing'
+                    ? 'bg-[#D71921] hover:bg-[#b01319] text-white font-["Space_Mono"] uppercase tracking-wider'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                }`}
                 title={`Set target grade to ${activeSubsetGrade.netGradePercent.toFixed(2)}%`}
               >
-                Apply as Target
+                {prototypeStyle === 'nothing' ? '[ Apply as Target ]' : 'Apply as Target'}
               </button>
             )}
             <button
@@ -808,10 +835,78 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
                 setSelectedEndId(null);
                 setIsMeasureModeActive(false);
               }}
-              className="px-2.5 py-1.5 rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-semibold transition"
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition active:scale-95 cursor-pointer ${
+                prototypeStyle === 'nothing'
+                  ? 'border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white font-["Space_Mono"] uppercase'
+                  : 'bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300'
+              }`}
             >
-              Reset
+              {prototypeStyle === 'nothing' ? '[ Reset ]' : 'Reset'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Nothing OS Custom Station Picker Modal / Sheet */}
+      {openStationPicker && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overscroll-none"
+          onClick={() => setOpenStationPicker(null)}
+        >
+          <div
+            className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col max-h-[75vh] font-['Space_Mono']"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#D71921]" />
+                <span className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-white">
+                  [ SELECT {openStationPicker === 'start' ? 'START' : 'END'} STATION ]
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpenStationPicker(null)}
+                className="px-2.5 py-1 text-xs font-bold uppercase rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:border-[#D71921] hover:text-[#D71921] transition active:scale-95 cursor-pointer"
+              >
+                [ Close ]
+              </button>
+            </div>
+            <div className="p-2 overflow-y-auto modal-scroll-container space-y-1 divide-y divide-zinc-100 dark:divide-zinc-900">
+              {stations.map((s) => {
+                const isSelected = openStationPicker === 'start' ? selectedStartId === s.id : selectedEndId === s.id;
+                return (
+                  <button
+                    key={`picker-${s.id}`}
+                    type="button"
+                    onClick={() => {
+                      if (openStationPicker === 'start') {
+                        setSelectedStartId(s.id);
+                      } else {
+                        setSelectedEndId(s.id);
+                      }
+                      onSubsetSpanChange?.();
+                      setOpenStationPicker(null);
+                    }}
+                    className={`w-full px-3 py-2.5 rounded-lg text-left text-xs font-mono transition flex items-center justify-between cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#D71921] text-white font-bold'
+                        : 'text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold font-['Space_Mono']">Station {s.distanceFt} ft</span>
+                      {s.elevationInches !== null && (
+                        <span className={`text-[11px] ${isSelected ? 'text-white/80' : 'text-zinc-500'}`}>
+                          ({formatMeasurement(s.elevationInches, 'inches_fraction')})
+                        </span>
+                      )}
+                    </div>
+                    {isSelected && <span className="text-[10px] font-bold uppercase tracking-wider font-['Space_Mono']">[ Selected ]</span>}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

@@ -1118,7 +1118,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-zinc-500 font-medium">Length to add (feet):</label>
-                  <span className="text-xs font-mono font-bold text-amber-500">+{extendLength} ft</span>
+                  <span className={`text-xs font-mono font-bold ${prototypeStyle === 'nothing' ? 'text-[#D71921] font-["Space_Mono"]' : 'text-amber-500'}`}>
+                    +{extendLength} ft
+                  </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5 mb-2">
                   {[25, 50, 100].map(amt => (
@@ -1126,9 +1128,13 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       key={amt}
                       type="button"
                       onClick={() => setExtendLength(amt)}
-                      className={`py-1.5 rounded-lg text-xs font-bold border transition ${
+                      className={`py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
                         extendLength === amt
-                          ? 'bg-amber-500 text-black border-amber-500 shadow-sm'
+                          ? prototypeStyle === 'nothing'
+                            ? 'bg-[#D71921] text-white border-[#D71921] font-["Space_Mono"]'
+                            : 'bg-amber-500 text-black border-amber-500 shadow-sm'
+                          : prototypeStyle === 'nothing'
+                          ? 'bg-transparent text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-800 hover:border-zinc-500 font-["Space_Mono"]'
                           : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
                       }`}
                     >
@@ -1156,7 +1162,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                           setExtendLength(0);
                         }
                       }}
-                      className="w-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-amber-500 pr-8"
+                      className={`w-full border rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none pr-8 ${
+                        prototypeStyle === 'nothing'
+                          ? 'bg-white dark:bg-black border-zinc-300 dark:border-zinc-800 focus:border-[#D71921] font-["Space_Mono"]'
+                          : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-300 dark:border-zinc-800 focus:border-amber-500'
+                      }`}
                       placeholder="e.g. 75"
                     />
                     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-zinc-400 font-medium pointer-events-none">ft</span>
@@ -1171,9 +1181,13 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       key={inv}
                       type="button"
                       onClick={() => setExtendInterval(inv)}
-                      className={`py-1.5 rounded-lg text-xs font-bold border transition ${
+                      className={`py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${
                         extendInterval === inv
-                          ? 'bg-amber-500 text-black border-amber-500'
+                          ? prototypeStyle === 'nothing'
+                            ? 'bg-[#D71921] text-white border-[#D71921] font-["Space_Mono"]'
+                            : 'bg-amber-500 text-black border-amber-500'
+                          : prototypeStyle === 'nothing'
+                          ? 'bg-transparent text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-800 hover:border-zinc-500 font-["Space_Mono"]'
                           : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
                       }`}
                     >
@@ -1189,9 +1203,13 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   <button
                     type="button"
                     onClick={() => setExtendDirection('forward')}
-                    className={`py-1.5 px-2.5 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-1 ${
+                    className={`py-1.5 px-2.5 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-1 cursor-pointer ${
                       extendDirection === 'forward'
-                        ? 'bg-amber-500 text-black border-amber-500 shadow-sm'
+                        ? prototypeStyle === 'nothing'
+                          ? 'bg-[#D71921] text-white border-[#D71921] font-["Space_Mono"]'
+                          : 'bg-amber-500 text-black border-amber-500 shadow-sm'
+                        : prototypeStyle === 'nothing'
+                        ? 'bg-transparent text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-800 hover:border-zinc-500 font-["Space_Mono"]'
                         : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
                     }`}
                   >
@@ -1200,9 +1218,13 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   <button
                     type="button"
                     onClick={() => setExtendDirection('backward')}
-                    className={`py-1.5 px-2.5 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-1 ${
+                    className={`py-1.5 px-2.5 rounded-lg text-xs font-bold border transition flex items-center justify-center gap-1 cursor-pointer ${
                       extendDirection === 'backward'
-                        ? 'bg-amber-500 text-black border-amber-500 shadow-sm'
+                        ? prototypeStyle === 'nothing'
+                          ? 'bg-[#D71921] text-white border-[#D71921] font-["Space_Mono"]'
+                          : 'bg-amber-500 text-black border-amber-500 shadow-sm'
+                        : prototypeStyle === 'nothing'
+                        ? 'bg-transparent text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-800 hover:border-zinc-500 font-["Space_Mono"]'
                         : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800'
                     }`}
                   >
@@ -1300,7 +1322,11 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       setTpError(null);
                     }
                   }}
-                  className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 outline-none font-mono focus:border-purple-500 transition"
+                  className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 outline-none transition cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'bg-white dark:bg-black border-zinc-300 dark:border-zinc-800 font-["Space_Mono"] focus:border-[#D71921]'
+                      : 'bg-white dark:bg-black border-zinc-300 dark:border-zinc-800 font-mono focus:border-purple-500'
+                  }`}
                 >
                   {stations.map(s => (
                     <option key={s.id} value={s.id}>
@@ -1336,8 +1362,48 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     value={tpNewReadingStr}
                     onChange={(e) => setTpNewReadingStr(e.target.value)}
                     placeholder="e.g. 7.50, 7 1/2, or 1' 4 3/8"
-                    className="w-full bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none font-mono focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition shadow-inner"
+                    className={`w-full border rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none transition shadow-inner ${
+                      prototypeStyle === 'nothing'
+                        ? 'bg-white dark:bg-black border-zinc-300 dark:border-zinc-800 focus:border-[#D71921] focus:ring-1 focus:ring-[#D71921] font-["Space_Mono"]'
+                        : 'bg-white dark:bg-black border-zinc-300 dark:border-zinc-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 font-mono'
+                    }`}
                   />
+                  {/* Quick-fill preset chips */}
+                  <div className="flex items-center gap-1.5 pt-1.5 flex-wrap">
+                    <span className="text-[10px] uppercase font-bold text-zinc-400 font-['Space_Mono']">Quick fill:</span>
+                    <button
+                      type="button"
+                      onClick={() => setTpNewReadingStr('7.50')}
+                      className={`px-2 py-0.5 rounded text-xs font-mono font-bold transition active:scale-95 cursor-pointer ${
+                        tpNewReadingStr === '7.50'
+                          ? 'bg-[#D71921] text-white border border-[#D71921]'
+                          : 'border border-zinc-300 dark:border-zinc-700 hover:border-[#D71921] hover:text-[#D71921] text-zinc-700 dark:text-zinc-300'
+                      }`}
+                      title="Quick fill 7.50 for Tutorial 4"
+                    >
+                      7.50" (Tutorial)
+                    </button>
+                    {turningPointStation.readingInches !== null && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setTpNewReadingStr((turningPointStation.readingInches! + 1.0).toFixed(2))}
+                          className="px-2 py-0.5 rounded border border-zinc-300 dark:border-zinc-700 hover:border-[#D71921] hover:text-[#D71921] text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 transition active:scale-95 cursor-pointer"
+                          title="Add 1.00 inch"
+                        >
+                          +1.00"
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTpNewReadingStr((Math.max(0, turningPointStation.readingInches! - 1.0)).toFixed(2))}
+                          className="px-2 py-0.5 rounded border border-zinc-300 dark:border-zinc-700 hover:border-[#D71921] hover:text-[#D71921] text-xs font-mono font-bold text-zinc-700 dark:text-zinc-300 transition active:scale-95 cursor-pointer"
+                          title="Subtract 1.00 inch"
+                        >
+                          -1.00"
+                        </button>
+                      </>
+                    )}
+                  </div>
                   {tpError && <p className="text-red-500 text-[11px] font-sans font-medium">{tpError}</p>}
                 </div>
               </div>
@@ -1350,14 +1416,26 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   const st0NewReading = st0 && st0.readingInches !== null ? st0.readingInches + shift : null;
 
                   return (
-                    <div className="p-3 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-800 dark:text-purple-300 text-xs space-y-1.5 font-sans animate-in fade-in duration-150">
+                    <div className={`p-3 rounded-xl border text-xs space-y-1.5 animate-in fade-in duration-150 ${
+                      prototypeStyle === 'nothing'
+                        ? 'bg-zinc-100 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 font-["Space_Mono"]'
+                        : 'bg-purple-500/15 border-purple-500/30 text-purple-800 dark:text-purple-300 font-sans'
+                    }`}>
                       <div className="flex items-center justify-between font-mono font-bold">
                         <span>Laser Relocation Shift:</span>
-                        <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-900 dark:text-purple-100">
+                        <span className={`px-2 py-0.5 rounded ${
+                          prototypeStyle === 'nothing'
+                            ? 'bg-[#D71921] text-white font-["Space_Mono"]'
+                            : 'bg-purple-500/20 text-purple-900 dark:text-purple-100'
+                        }`}>
                           {shift >= 0 ? '+' : ''}{formatMeasurement(shift, unitFormat, fractionResolution)}
                         </span>
                       </div>
-                      <p className="text-[11px] leading-tight text-purple-700 dark:text-purple-400">
+                      <p className={`text-[11px] leading-tight ${
+                        prototypeStyle === 'nothing'
+                          ? 'text-zinc-600 dark:text-zinc-400 font-["Space_Mono"]'
+                          : 'text-purple-700 dark:text-purple-400'
+                      }`}>
                         {shift !== 0
                           ? `Previously measured stations (0 ft to ${turningPointStation.distanceFt} ft) will convert to your active laser's scale (${shift >= 0 ? '+' : ''}${formatMeasurement(shift, unitFormat, fractionResolution)}). ${st0NewReading !== null ? `Station 0 equivalent: ${formatMeasurement(st0NewReading, unitFormat, fractionResolution)}.` : ''}`
                           : `Both setups are at the same elevation (0" shift).`}
