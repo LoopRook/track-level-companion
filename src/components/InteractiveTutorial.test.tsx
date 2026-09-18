@@ -283,4 +283,53 @@ describe('InteractiveTutorial Component', () => {
     expect(html).toContain('text-zinc-950');
     expect(html).toContain('border-zinc-300');
   });
+
+  it('does not display redundant actionHint on informational non-action steps', () => {
+    // Step 2 in getting-started has requiresAction: false
+    const html = renderToString(
+      <InteractiveTutorial
+        isActive={true}
+        currentStep={2}
+        onNextStep={vi.fn()}
+        onPrevStep={vi.fn()}
+        onExitTutorial={vi.fn()}
+        onCompleteTutorial={vi.fn()}
+      />
+    );
+    // Should contain the content paragraph, but NOT redundant Tap Next Step action banner
+    expect(html).toContain('tolerance window');
+    expect(html).not.toContain('Tap Next Step');
+  });
 });
+
+describe('Tutorial Verbiage Integrity across ALL_TUTORIALS', () => {
+  it('ensures all action steps have non-redundant distinct content and actionHint', async () => {
+    const { ALL_TUTORIALS } = await import('../core/tutorials');
+    
+    for (const tut of ALL_TUTORIALS) {
+      for (const step of tut.steps) {
+        if (step.requiresAction && step.actionHint) {
+          // Verify that content does not start with or verbatim repeat the actionHint
+          const first15OfHint = step.actionHint.slice(0, 15).toLowerCase();
+          expect(step.content.toLowerCase()).not.toContain(step.actionHint.toLowerCase());
+          expect(step.content.toLowerCase().startsWith(first15OfHint)).toBe(false);
+        } else if (!step.requiresAction) {
+          // Informational steps should not have an actionHint instructing to "Tap Next Step"
+          expect(step.actionHint).toBeUndefined();
+        }
+      }
+    }
+  });
+
+  it('verifies Locked Control Points Tutorial Step 2 does not duplicate Padlock instructions', async () => {
+    const { TUTORIAL_LOCKED_POINTS } = await import('../core/tutorials');
+    const lockStep = TUTORIAL_LOCKED_POINTS.steps[1];
+    expect(lockStep.id).toBe('lp-toggle-lock');
+    expect(lockStep.requiresAction).toBe(true);
+    // Content should explain the rule/purpose, not repeat "Click the Padlock icon"
+    expect(lockStep.content).toContain('Designating Station 20');
+    expect(lockStep.content).not.toContain('Click the Padlock icon');
+    expect(lockStep.actionHint).toContain('Click the Padlock icon');
+  });
+});
+

@@ -1033,6 +1033,10 @@ export const App: React.FC = () => {
     setMobileTab('checklist');
   };
 
+  useEffect(() => {
+    (window as any).__startTutorial = handleStartTutorial;
+  }, []);
+
   const handleExitTutorial = () => {
     setIsTutorialActive(false);
     setActiveTutorialId(null);

@@ -426,7 +426,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 {currentStepData.content}
               </p>
 
-              {currentStepData.actionHint && (
+              {currentStepData.requiresAction && currentStepData.actionHint && (
                 <div className={`p-2.5 sm:p-3 rounded-xl flex items-start gap-2 text-xs font-semibold ${
                   isNothing
                     ? isDarkMode
@@ -650,8 +650,8 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 {currentStepData.content}
               </p>
 
-              {/* Action Hint Banner (when action is required or specific directive is given) */}
-              {currentStepData.actionHint && (
+              {/* Action Hint Banner (strictly when physical user action is required) */}
+              {currentStepData.requiresAction && currentStepData.actionHint && (
                 <div className={`pt-1 border-t flex items-start gap-1.5 text-[10.5px] font-semibold leading-tight ${
                   isNothing
                     ? isDarkMode ? 'border-zinc-800 text-zinc-300' : 'border-zinc-200 text-zinc-800'
