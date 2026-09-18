@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { UnitFormat, TrackProject, CalculatedStation, PrototypeStyle } from '../core/types';
 import { calculateGradeInfo } from '../core/calculations';
-import { Sliders, Sun, Moon, Compass, BookOpen, CheckCircle2, TrendingUp, Plus, Download, Settings, Smartphone, HelpCircle, Play } from 'lucide-react';
+import { Sliders, Sun, Moon, Compass, BookOpen, CheckCircle2, TrendingUp, Plus, Download, Settings, HelpCircle, Play } from 'lucide-react';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 
 export interface StationSummaryData {
@@ -63,9 +63,6 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
   canInstall,
   summary,
   prototypeStyle = 'original',
-  onToggleMobilePreview,
-  isMobilePreviewOpen = false,
-  isEmbedded = false,
   onOpenToolsModal,
 }) => {
   const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
@@ -165,28 +162,8 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
           </div>
         </div>
 
-        {/* Right Header Buttons: Mobile View Toggle & Theme Toggle */}
+        {/* Right Header Buttons: Help & Theme Toggle */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Mobile Simulator Toggle Button (Desktop testing without DevTools) */}
-          {onToggleMobilePreview && !isEmbedded && (
-            <button
-              type="button"
-              onClick={onToggleMobilePreview}
-              className={`h-8 px-2 sm:px-2.5 flex items-center gap-1.5 transition active:scale-95 text-xs font-bold shrink-0 cursor-pointer ${
-                prototypeStyle === 'nothing'
-                  ? isMobilePreviewOpen
-                    ? 'rounded-full bg-white text-black font-["Space_Mono"] uppercase tracking-wider'
-                    : 'rounded-full border border-zinc-300 dark:border-zinc-700 bg-transparent text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white font-["Space_Mono"] uppercase tracking-wider'
-                  : isMobilePreviewOpen
-                  ? 'rounded-xl bg-amber-500 text-black shadow-sm'
-                  : 'rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300'
-              }`}
-              title="Toggle Mobile Simulator (Test phone bottom dock and touch layout directly on desktop without DevTools)"
-            >
-              <Smartphone className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline">{isMobilePreviewOpen ? 'Desktop' : 'Mobile View'}</span>
-            </button>
-          )}
 
           {/* Mobile Tools Menu Launcher (hidden on desktop md+, visible on mobile phones) */}
           {onOpenToolsModal && (

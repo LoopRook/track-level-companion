@@ -150,15 +150,7 @@ export const App: React.FC = () => {
     return 'nothing'; // Default to Nothing OS UI to immediately showcase it
   });
 
-  const [styleColorMode, setStyleColorMode] = useState<StyleColorMode>(() => {
-    try {
-      const saved = localStorage.getItem('track_level_style_color_mode') as StyleColorMode;
-      if (saved === 'dark' || saved === 'light') return saved;
-      return 'dark';
-    } catch {
-      return 'dark';
-    }
-  });
+  const styleColorMode: StyleColorMode = isDarkMode ? 'dark' : 'light';
 
   // Developer mode: Prototype Lab Header Bar toggle (persisted, default false for clean production layout)
   const [showPrototypeBar, setShowPrototypeBar] = useState<boolean>(() => {
@@ -419,33 +411,25 @@ export const App: React.FC = () => {
 
     if (prototypeStyle !== 'original') {
       root.classList.add(`style-${prototypeStyle}`);
-      if (styleColorMode === 'dark') {
-        root.classList.add('dark');
-        root.classList.remove('light');
-        setIsDarkMode(true);
-      } else {
-        root.classList.remove('dark');
-        root.classList.add('light');
-        setIsDarkMode(false);
-      }
-    } else {
+    }
+
+    if (isDarkMode) {
+      root.classList.add('dark');
       root.classList.remove('light');
-      if (isDarkMode) {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('light');
     }
 
     try {
       localStorage.setItem('track_level_prototype_style', prototypeStyle);
-      localStorage.setItem('track_level_style_color_mode', styleColorMode);
+      localStorage.setItem('track_level_style_color_mode', isDarkMode ? 'dark' : 'light');
       localStorage.setItem('track_level_theme_mode', isDarkMode ? 'dark' : 'light');
       localStorage.setItem('track_level_dark_mode', isDarkMode ? 'true' : 'false');
     } catch (e) {
       console.error(e);
     }
-  }, [prototypeStyle, styleColorMode, isDarkMode]);
+  }, [prototypeStyle, isDarkMode]);
 
   // Persist project changes (do not overwrite active survey with practice tutorial data)
   useEffect(() => {
@@ -1154,7 +1138,7 @@ export const App: React.FC = () => {
             activeStyle={prototypeStyle}
             onChangeStyle={setPrototypeStyle}
             colorMode={styleColorMode}
-            onChangeColorMode={setStyleColorMode}
+            onChangeColorMode={(mode) => setIsDarkMode(mode === 'dark')}
           />
         )}
 
@@ -1371,8 +1355,6 @@ export const App: React.FC = () => {
                 canInstall={!!installPrompt}
                 summary={summary}
                 prototypeStyle={prototypeStyle}
-                onToggleMobilePreview={() => setIsMobileSimulatorOpen(!isMobileSimulatorOpen)}
-                isMobilePreviewOpen={isMobileSimulatorOpen}
                 isEmbedded={isEmbedded}
                 onOpenToolsModal={() => setIsMobileToolsOpen(true)}
               />
@@ -1537,7 +1519,6 @@ export const App: React.FC = () => {
           onChangeShowPrototypeBar={handleToggleShowPrototypeBar}
           isDarkMode={isDarkMode}
           onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
-          onToggleMobilePreview={() => setIsMobileSimulatorOpen(true)}
         />
 
         {/* Field Guide & Animated Tutorial Modal */}
