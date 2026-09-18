@@ -350,7 +350,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             <div
               key={s.id}
               onClick={() => onEditStation(s)}
-              data-tutorial={s.distanceFt === 0 ? 'station-card-0' : s.distanceFt === 5 ? 'station-card-5' : s.distanceFt === 10 ? 'station-card-10' : undefined}
+              data-tutorial={`station-row-${s.distanceFt}`}
               className={`p-3 transition-all cursor-pointer border-l-2 ${
                 prototypeStyle === 'nothing'
                   ? isSelected
@@ -371,7 +371,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 <div className="flex items-center gap-2 flex-wrap min-w-0">
                   <button
                     type="button"
-                    data-tutorial={s.distanceFt === 0 ? 'station-complete-0' : s.distanceFt === 5 ? 'station-complete-5' : undefined}
+                    data-tutorial={`station-complete-${s.distanceFt}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onToggleComplete(s.id);
@@ -497,7 +497,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
 
               {/* Middle Row: Readings & Target/Elevation */}
               <div
-                data-tutorial={s.distanceFt === 0 ? 'station-reading-0' : s.distanceFt === 5 ? 'station-reading-5' : s.distanceFt === 10 ? 'station-reading-10' : undefined}
+                data-tutorial={`station-reading-${s.distanceFt}`}
                 className={`grid grid-cols-2 gap-2 py-1.5 px-2.5 rounded-xl mb-2 text-xs ${
                   prototypeStyle === 'nothing'
                     ? 'bg-zinc-100/80 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800/80 font-["Space_Mono"]'
@@ -770,7 +770,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               return (
                 <tr
                   key={s.id}
-                  data-tutorial={s.distanceFt === 0 ? 'station-row-0' : s.distanceFt === 5 ? 'station-row-5' : s.distanceFt === 10 ? 'station-row-10' : undefined}
+                  data-tutorial={`station-row-${s.distanceFt}`}
                   className={`transition-all cursor-pointer ${
                     prototypeStyle === 'nothing'
                       ? isSelected
@@ -796,7 +796,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   >
                     <button
                       type="button"
-                      data-tutorial={s.distanceFt === 0 ? 'station-complete-0' : s.distanceFt === 5 ? 'station-complete-5' : undefined}
+                      data-tutorial={`station-complete-${s.distanceFt}`}
                       className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-emerald-500 dark:hover:text-emerald-400 active:scale-90 transition mx-auto"
                       title={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
                       aria-label={isCompleted ? 'Mark uncompleted' : 'Mark leveled'}
@@ -851,7 +851,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     className={`py-2 px-2 whitespace-nowrap ${
                       prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-xs' : 'font-mono'
                     }`}
-                    data-tutorial={s.distanceFt === 0 ? 'station-reading-0' : s.distanceFt === 5 ? 'station-reading-5' : s.distanceFt === 10 ? 'station-reading-10' : undefined}
+                    data-tutorial={`station-reading-${s.distanceFt}`}
                   >
                     {s.isTurningPoint ? (
                       <div className="flex flex-col gap-0.5">

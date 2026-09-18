@@ -1037,6 +1037,30 @@ export const App: React.FC = () => {
     }
   };
 
+  // Auto-switch mobile view tab during tutorials so the highlighted element is always in view
+  useEffect(() => {
+    if (!isTutorialActive || !activeTutorialId) return;
+    const def = getTutorialById(activeTutorialId);
+    if (!def) return;
+    const step = def.steps[tutorialStep];
+    if (!step) return;
+
+    if (
+      step.targetSelector.includes('profile-chart') ||
+      step.targetSelector.includes('evaluate-grade')
+    ) {
+      setMobileTab('graph');
+    } else if (
+      step.targetSelector.includes('station-') ||
+      step.targetSelector.includes('move-laser') ||
+      step.targetSelector.includes('tp-') ||
+      step.targetSelector.includes('header-actions') ||
+      step.targetSelector.includes('add-next')
+    ) {
+      setMobileTab('checklist');
+    }
+  }, [isTutorialActive, activeTutorialId, tutorialStep]);
+
   const handleSimulateLevelStation = (stationId: string, readingInches: number) => {
     setProject(prev => ({
       ...prev,
@@ -1498,6 +1522,8 @@ export const App: React.FC = () => {
           onClose={() => setIsTutorialsModalOpen(false)}
           onSelectTutorial={handleStartTutorial}
           onOpenGuide={() => setIsGuideOpen(true)}
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
         />
 
         {/* First Launch Beta Notice Modal */}
@@ -1543,6 +1569,8 @@ export const App: React.FC = () => {
               steps={activeDef?.steps}
               tutorialCategory={activeDef?.category}
               isKeypadOpen={isKeypadOpen}
+              prototypeStyle={prototypeStyle}
+              isDarkMode={isDarkMode}
               onNextStep={() => setTutorialStep(prev => prev + 1)}
               onPrevStep={() => setTutorialStep(prev => Math.max(0, prev - 1))}
               onExitTutorial={handleExitTutorial}
@@ -1664,6 +1692,7 @@ export const App: React.FC = () => {
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
+                  data-tutorial="move-laser-btn"
                   onClick={() => setIsMobileMoveLaserOpen(true)}
                   className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
                     prototypeStyle === 'nothing'
@@ -1680,6 +1709,7 @@ export const App: React.FC = () => {
 
                 <button
                   type="button"
+                  data-tutorial="extend-track-btn"
                   onClick={() => setIsMobileExtendOpen(true)}
                   className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
                     prototypeStyle === 'nothing'
@@ -1696,6 +1726,7 @@ export const App: React.FC = () => {
 
                 <button
                   type="button"
+                  data-tutorial="insert-custom-btn"
                   onClick={handleInsertCustomStation}
                   className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-0.5 transition shrink-0 cursor-pointer ${
                     prototypeStyle === 'nothing'
@@ -1812,6 +1843,7 @@ export const App: React.FC = () => {
               {/* Hero Trigger: + Add Next (Tactile Nothing Red hardware trigger) */}
               <button
                 type="button"
+                data-tutorial="add-next-btn"
                 onClick={handleAddNextStation}
                 className={`flex items-center justify-center gap-1 py-1.5 px-3 sm:px-3.5 rounded-xl transition-all cursor-pointer active:scale-95 min-h-[38px] shrink-0 ${
                   prototypeStyle === 'nothing'
@@ -1826,6 +1858,7 @@ export const App: React.FC = () => {
               {/* Action: Tools Menu (integrates New Track, Files & Export, Tutorials, Guide, Settings, Theme) */}
               <button
                 type="button"
+                data-tutorial="header-actions"
                 onClick={() => setIsMobileToolsOpen(true)}
                 className={`flex items-center justify-center gap-1 py-1.5 px-2.5 sm:px-3 rounded-xl border transition-all cursor-pointer active:scale-95 min-h-[38px] shrink-0 ${
                   isMobileToolsOpen

@@ -163,8 +163,8 @@ export const TUTORIAL_GETTING_STARTED: TutorialDefinition = {
       icon: Share2,
       targetSelector: '[data-tutorial="header-actions"]',
       content:
-        'Tap Files to download a CSV backup or print a clean inspection report for your railroad records. Or tap Share via QR Code to beam the track to a crew member\'s phone with zero internet!',
-      actionHint: 'Tap Finish Tutorial to complete.',
+        'Tap Files (or the bottom Tools menu on mobile) to download a CSV backup or print a clean inspection report for your railroad records. Or tap Share via QR Code to beam the track to a crew member\'s phone with zero internet!',
+      actionHint: 'Tap Tools on mobile or Files on desktop, or tap Finish Tutorial to complete.',
       proTip: 'Track Level Companion works 100% offline out in the woods or at the track.',
     },
   ],
@@ -420,8 +420,8 @@ export const TUTORIAL_LASER_RELOCATION: TutorialDefinition = {
       icon: Flag,
       targetSelector: '[data-tutorial="move-laser-btn"]',
       content:
-        'Imagine you moved your tripod 50 feet forward down the track and leveled it at Position 2. You place your grade rod back on Station 50. Because the new tripod sits at a different ground elevation, the detector reads a new number. Click "Move Laser" in the toolbar to open the relocation tool.',
-      actionHint: 'Click "Move Laser" in the toolbar to open the relocation dialog.',
+        'Imagine you moved your tripod 50 feet forward down the track and leveled it at Position 2. You place your grade rod back on Station 50. Because the new tripod sits at a different ground elevation, the detector reads a new number. Click "Move Laser" in the toolbar (or "Laser" in the mobile field bar) to open the relocation tool.',
+      actionHint: 'Click "Move Laser" (or "[ ⚐ Laser ]" on mobile) to open the relocation dialog.',
       proTip:
         'Crucial rule: Never move the detector clamp on your rod when relocating the laser!',
     },

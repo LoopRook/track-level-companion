@@ -54,6 +54,23 @@ describe('TutorialsModal Component', () => {
     expect(html).toBe('');
   });
 
+  it('renders with Nothing OS design system when prototypeStyle is nothing', () => {
+    const html = renderToString(
+      <TutorialsModal
+        isOpen={true}
+        prototypeStyle="nothing"
+        isDarkMode={true}
+        onClose={vi.fn()}
+        onSelectTutorial={vi.fn()}
+      />
+    );
+
+    expect(html).toContain('[ Interactive Tutorials ]');
+    expect(html).toContain('Space_Mono');
+    expect(html).toContain('#D71921');
+    expect(html).toContain('rounded-full');
+  });
+
   it('has 4 registered tutorials in ALL_TUTORIALS registry', () => {
     expect(ALL_TUTORIALS).toHaveLength(4);
     const ids = ALL_TUTORIALS.map(t => t.id);

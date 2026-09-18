@@ -16,6 +16,8 @@ export interface InteractiveTutorialProps {
   steps?: TutorialStepConfig[];
   tutorialCategory?: string;
   isKeypadOpen?: boolean;
+  prototypeStyle?: string;
+  isDarkMode?: boolean;
   onNextStep: () => void;
   onPrevStep: () => void;
   onExitTutorial: () => void;
@@ -31,6 +33,8 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
   steps,
   tutorialCategory,
   isKeypadOpen = false,
+  prototypeStyle = 'original',
+  isDarkMode = true,
   onNextStep,
   onPrevStep,
   onExitTutorial,
@@ -193,21 +197,21 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
       }
     } else {
       // Single-column mode (Mobile portrait):
-      // If target is in the upper half of the viewport, place card at the BOTTOM
+      // If target is in the upper half of the viewport, place card at the BOTTOM above the field console
       if (targetCenterY < viewportHeight / 2) {
         return {
           position: 'fixed',
-          bottom: '16px',
+          bottom: '88px',
           left: '12px',
           right: '12px',
           maxWidth: 'calc(100vw - 24px)',
           width: 'calc(100vw - 24px)',
         };
       } else {
-        // Target is in the lower half of the viewport, place card at the TOP
+        // Target is in the lower half of the viewport, place card at the TOP below the HUD strip
         return {
           position: 'fixed',
-          top: '16px',
+          top: '52px',
           left: '12px',
           right: '12px',
           maxWidth: 'calc(100vw - 24px)',
@@ -216,6 +220,8 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
       }
     }
   };
+
+  const isNothing = prototypeStyle === 'nothing';
 
   return (
     <div className="fixed inset-0 z-[60] pointer-events-none overscroll-none">
@@ -227,7 +233,11 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
       {/* Spotlight Cutout / Pulsing Border around Target Element */}
       {targetRect && (
         <div
-          className="fixed pointer-events-none transition-all duration-100 ease-out z-[60] rounded-xl ring-4 ring-amber-400 dark:ring-amber-400 ring-offset-2 ring-offset-black/70 shadow-[0_0_25px_rgba(251,191,36,0.6)] animate-pulse"
+          className={`fixed pointer-events-none transition-all duration-100 ease-out z-[60] rounded-xl ring-4 ring-offset-2 ring-offset-black/70 animate-pulse ${
+            isNothing
+              ? 'ring-[#D71921] shadow-[0_0_22px_rgba(215,25,33,0.55)]'
+              : 'ring-amber-400 dark:ring-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.6)]'
+          }`}
           style={{
             top: `${Math.max(4, targetRect.top - 4)}px`,
             left: `${Math.max(4, targetRect.left - 4)}px`,
@@ -241,24 +251,52 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
       <div
         ref={cardRef}
         style={getCardStyle()}
-        className="z-[60] pointer-events-auto bg-white dark:bg-zinc-950 border-2 border-amber-500/80 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 ease-out animate-in fade-in"
+        className={`z-[60] pointer-events-auto overflow-hidden transition-all duration-300 ease-out animate-in fade-in ${
+          isNothing
+            ? isDarkMode
+              ? 'bg-[#111111] border border-zinc-800 text-white rounded-2xl shadow-none font-["Space_Mono"]'
+              : 'bg-white border border-zinc-300 text-black rounded-2xl shadow-none font-["Space_Mono"]'
+            : 'bg-white dark:bg-zinc-950 border-2 border-amber-500/80 rounded-2xl shadow-2xl'
+        }`}
       >
         {/* Top Header Bar */}
-        <div className="bg-amber-500/10 dark:bg-amber-500/15 px-4 py-3 border-b border-amber-500/30 flex items-center justify-between gap-3">
+        <div className={`px-4 py-3 border-b flex items-center justify-between gap-3 ${
+          isNothing
+            ? isDarkMode
+              ? 'bg-black/60 border-zinc-800/80'
+              : 'bg-zinc-100/80 border-zinc-200'
+            : 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30'
+        }`}>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500 text-black flex items-center justify-center font-bold shadow-sm shrink-0">
+            <div className={`w-8 h-8 flex items-center justify-center font-bold shrink-0 ${
+              isNothing
+                ? 'rounded-full border border-zinc-700 bg-zinc-900 text-[#D71921]'
+                : 'rounded-xl bg-amber-500 text-black shadow-sm'
+            }`}>
               <StepIcon className="w-4 h-4 stroke-[2.5]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500 text-black">
+                <span className={`text-[10px] font-mono font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                  isNothing
+                    ? 'border border-zinc-700 bg-black text-white'
+                    : 'bg-amber-500 text-black'
+                }`}>
                   Step {currentStepData.stepNumber} of {currentStepData.totalSteps}
                 </span>
-                <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                <span className={`text-xs font-bold ${
+                  isNothing
+                    ? isDarkMode ? 'text-zinc-400 font-["Space_Mono"] uppercase' : 'text-zinc-600 font-["Space_Mono"] uppercase'
+                    : 'text-amber-700 dark:text-amber-400'
+                }`}>
                   {tutorialCategory || 'Tutorial'}
                 </span>
               </div>
-              <h3 className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight">
+              <h3 className={`text-sm sm:text-base font-black leading-tight ${
+                isNothing
+                  ? 'uppercase tracking-tight text-white dark:text-white'
+                  : 'text-zinc-900 dark:text-white'
+              }`}>
                 {currentStepData.title}
               </h3>
             </div>
@@ -267,7 +305,11 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
           <button
             type="button"
             onClick={onExitTutorial}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition shrink-0"
+            className={`p-1.5 rounded-lg transition shrink-0 ${
+              isNothing
+                ? 'text-zinc-400 hover:text-white rounded-full'
+                : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
+            }`}
             title="Exit Tutorial"
             aria-label="Exit Tutorial"
           >
@@ -277,23 +319,42 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
 
         {/* Step Content */}
         <div className="p-4 sm:p-5 space-y-3">
-          <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-200 leading-relaxed font-medium">
+          <p className={`text-xs sm:text-sm leading-relaxed ${
+            isNothing
+              ? isDarkMode ? 'text-zinc-300 font-normal font-["Space_Mono"]' : 'text-zinc-800 font-normal font-["Space_Mono"]'
+              : 'text-zinc-700 dark:text-zinc-200 font-medium'
+          }`}>
             {currentStepData.content}
           </p>
 
           {/* Action Instruction Box */}
           {currentStepData.actionHint && (
-            <div className="p-2.5 sm:p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200 font-semibold">
-              <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className={`p-2.5 sm:p-3 rounded-xl flex items-start gap-2 text-xs font-semibold ${
+              isNothing
+                ? isDarkMode
+                  ? 'bg-zinc-950 border border-zinc-800 text-zinc-200 font-["Space_Mono"]'
+                  : 'bg-zinc-100 border border-zinc-300 text-zinc-900 font-["Space_Mono"]'
+                : 'bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200'
+            }`}>
+              <Sparkles className={`w-4 h-4 shrink-0 mt-0.5 ${
+                isNothing ? 'text-[#D71921]' : 'text-amber-500'
+              }`} />
               <div className="flex-1">{currentStepData.actionHint}</div>
             </div>
           )}
 
-
           {/* Pro Tip Box */}
           {currentStepData.proTip && (
-            <div className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-[11px] text-zinc-600 dark:text-zinc-400">
-              <span className="font-bold text-zinc-800 dark:text-zinc-200">Tip: </span>
+            <div className={`p-2.5 rounded-xl border text-[11px] ${
+              isNothing
+                ? isDarkMode
+                  ? 'bg-black/60 border-zinc-800/80 text-zinc-400 font-["Space_Mono"]'
+                  : 'bg-zinc-50 border-zinc-300 text-zinc-600 font-["Space_Mono"]'
+                : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
+            }`}>
+              <span className={`font-bold ${
+                isNothing ? 'text-[#D71921]' : 'text-zinc-800 dark:text-zinc-200'
+              }`}>Tip: </span>
               {currentStepData.proTip}
             </div>
           )}
@@ -305,9 +366,13 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 key={s.id}
                 className={`h-1.5 rounded-full transition-all duration-200 ${
                   idx === currentStep
-                    ? 'w-6 bg-amber-500'
+                    ? isNothing
+                      ? 'w-6 bg-[#D71921]'
+                      : 'w-6 bg-amber-500'
                     : idx < currentStep
-                    ? 'w-2 bg-emerald-500'
+                    ? isNothing
+                      ? 'w-2 bg-[#4A9E5C]'
+                      : 'w-2 bg-emerald-500'
                     : 'w-2 bg-zinc-300 dark:bg-zinc-700'
                 }`}
               />
@@ -316,11 +381,21 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
         </div>
 
         {/* Footer Navigation Bar */}
-        <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-900/80 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2">
+        <div className={`px-4 py-3 border-t flex items-center justify-between gap-2 ${
+          isNothing
+            ? isDarkMode
+              ? 'bg-black/80 border-zinc-800/80'
+              : 'bg-zinc-100 border-zinc-200'
+            : 'bg-zinc-50 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'
+        }`}>
           <button
             type="button"
             onClick={onExitTutorial}
-            className="text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 px-2 py-1.5 rounded-lg transition"
+            className={`text-xs font-semibold px-2 py-1.5 rounded-lg transition ${
+              isNothing
+                ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-500 hover:text-white'
+                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'
+            }`}
           >
             Exit Tutorial
           </button>
@@ -330,7 +405,11 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
               <button
                 type="button"
                 onClick={onPrevStep}
-                className="px-3 py-2 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition flex items-center gap-1"
+                className={`px-3 py-2 text-xs font-bold transition flex items-center gap-1 ${
+                  isNothing
+                    ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-full font-["Space_Mono"] uppercase'
+                    : 'rounded-xl text-zinc-700 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                }`}
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 <span>Back</span>
@@ -340,7 +419,11 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
             <button
               type="button"
               onClick={handleNext}
-              className="px-4 py-2 rounded-xl text-xs font-black text-black bg-amber-500 hover:bg-amber-400 active:scale-95 transition shadow-sm flex items-center gap-1.5"
+              className={`px-4 py-2 text-xs font-black active:scale-95 transition shadow-sm flex items-center gap-1.5 ${
+                isNothing
+                  ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-full font-["Space_Mono"] uppercase tracking-wider'
+                  : 'rounded-xl text-black bg-amber-500 hover:bg-amber-400'
+              }`}
             >
               <span>{isLastStep ? 'Finish Tutorial' : 'Next Step'}</span>
               {isLastStep ? (

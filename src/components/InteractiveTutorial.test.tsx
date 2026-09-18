@@ -190,4 +190,24 @@ describe('InteractiveTutorial Component', () => {
 
     expect(html).toBe('');
   });
+
+  it('renders with Nothing OS design system when prototypeStyle is nothing', () => {
+    const html = renderToString(
+      <InteractiveTutorial
+        isActive={true}
+        currentStep={0}
+        prototypeStyle="nothing"
+        isDarkMode={true}
+        onNextStep={vi.fn()}
+        onPrevStep={vi.fn()}
+        onExitTutorial={vi.fn()}
+        onCompleteTutorial={vi.fn()}
+      />
+    );
+
+    expect(html).toContain('Space_Mono');
+    expect(html).toContain('#D71921');
+    expect(html).toContain('rounded-full');
+    expect(html).toContain('Next Step');
+  });
 });
