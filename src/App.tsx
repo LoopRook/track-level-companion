@@ -1230,8 +1230,14 @@ export const App: React.FC = () => {
                 >
                   <HelpCircle className="w-3.5 h-3.5 text-[#D71921]" />
                 </button>
-                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                <span className="text-[10px] uppercase font-mono text-zinc-400">
+                <span
+                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                    isOnline
+                      ? prototypeStyle === 'nothing' ? 'bg-[#4A9E5C]' : 'bg-emerald-500'
+                      : prototypeStyle === 'nothing' ? 'bg-[#D71921]' : 'bg-red-500'
+                  }`}
+                />
+                <span className={`text-[10px] uppercase ${prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-zinc-400' : 'font-mono text-zinc-400'}`}>
                   {isOnline ? 'Online' : 'Offline'}
                 </span>
               </div>
@@ -1575,9 +1581,9 @@ export const App: React.FC = () => {
             <button
               type="button"
               onClick={() => setDismissedLandscapeAdvising(true)}
-              className="proto-ignore px-4 py-2 text-xs font-bold uppercase rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white active:scale-95 transition cursor-pointer"
+              className="proto-ignore px-4 py-2 text-xs font-bold font-['Space_Mono'] uppercase tracking-wider rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white active:scale-95 transition cursor-pointer"
             >
-              Continue in Landscape
+              [ Continue in Landscape ]
             </button>
           </div>
         )}
@@ -1644,6 +1650,8 @@ export const App: React.FC = () => {
           onClose={handleCancelSharedProject}
           project={incomingSharedProject}
           onConfirmLoad={handleConfirmLoadSharedProject}
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
         />
 
         {/* Mobile Unified Tools & Navigation Sheet */}
@@ -1661,7 +1669,10 @@ export const App: React.FC = () => {
         />
 
         {/* Opt-in PWA Update Notification Toast */}
-        <UpdatePrompt />
+        <UpdatePrompt
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
+        />
 
         {/* Mobile Bottom Thumb Console (Pinned 2-tier Nothing OS console for field ergonomics) */}
         {mobileLayout === 'bottom_nav' && (

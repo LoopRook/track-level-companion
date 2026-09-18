@@ -23,7 +23,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
   onClose,
   mobileLayout,
   onChangeMobileLayout,
-  prototypeStyle: _prototypeStyle = 'nothing',
+  prototypeStyle = 'nothing',
   isDarkMode: _isDarkMode = true,
 }) => {
   useBodyScrollLock(isOpen);
@@ -32,6 +32,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const device = DEVICE_PRESETS[selectedDeviceIndex];
+  const isNothing = prototypeStyle === 'nothing';
 
   // Close on Escape key
   useEffect(() => {
@@ -76,15 +77,41 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
       aria-label="Mobile Device Simulator"
     >
       {/* Top Floating Control Bar */}
-      <div className="w-full max-w-4xl bg-zinc-900/90 border border-zinc-800 rounded-2xl px-3 sm:px-5 py-2.5 flex items-center justify-between gap-3 text-zinc-100 shadow-2xl backdrop-blur-md shrink-0">
+      <div
+        className={
+          isNothing
+            ? 'w-full max-w-4xl bg-black/95 border border-zinc-800 rounded-2xl px-3 sm:px-5 py-2.5 flex items-center justify-between gap-3 text-white shadow-2xl backdrop-blur-md shrink-0 font-["Space_Grotesk"]'
+            : 'w-full max-w-4xl bg-zinc-900/90 border border-zinc-800 rounded-2xl px-3 sm:px-5 py-2.5 flex items-center justify-between gap-3 text-zinc-100 shadow-2xl backdrop-blur-md shrink-0'
+        }
+      >
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-500 flex items-center justify-center shrink-0">
+          <div
+            className={
+              isNothing
+                ? 'w-8 h-8 rounded-lg border border-zinc-700 bg-zinc-900 text-[#D71921] flex items-center justify-center shrink-0'
+                : 'w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-500 flex items-center justify-center shrink-0'
+            }
+          >
             <Smartphone className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-xs sm:text-sm">Mobile Mode Simulator</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-mono font-bold border border-amber-500/20">
+              <span
+                className={
+                  isNothing
+                    ? 'font-bold text-xs sm:text-sm font-["Space_Mono"] uppercase tracking-wider'
+                    : 'font-bold text-xs sm:text-sm'
+                }
+              >
+                {isNothing ? '[ Mobile Mode Simulator ]' : 'Mobile Mode Simulator'}
+              </span>
+              <span
+                className={
+                  isNothing
+                    ? 'text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-["Space_Mono"] font-bold border border-zinc-700'
+                    : 'text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-mono font-bold border border-amber-500/20'
+                }
+              >
                 {device.width} × {device.height}
               </span>
             </div>
@@ -102,7 +129,11 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
               type="button"
               onClick={() => setSelectedDeviceIndex(idx)}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
-                selectedDeviceIndex === idx
+                isNothing
+                  ? selectedDeviceIndex === idx
+                    ? 'bg-white text-black font-bold font-["Space_Mono"] uppercase tracking-wider shadow-xs'
+                    : 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase tracking-wider'
+                  : selectedDeviceIndex === idx
                   ? 'bg-amber-500 text-black font-bold shadow-xs'
                   : 'text-zinc-400 hover:text-white'
               }`}
@@ -114,14 +145,20 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
 
         {/* Mobile Layout Mode Quick Selector */}
         <div className="hidden md:flex items-center gap-1 bg-black/50 p-1 rounded-xl border border-zinc-800 text-xs shrink-0">
-          <span className="text-[10px] text-zinc-500 uppercase font-mono px-1">Layout:</span>
+          <span className={`text-[10px] text-zinc-500 uppercase px-1 ${isNothing ? 'font-["Space_Mono"]' : 'font-mono'}`}>
+            Layout:
+          </span>
           {(['bottom_nav', 'tabbed', 'stacked'] as const).map((mode) => (
             <button
               key={mode}
               type="button"
               onClick={() => handleSelectLayout(mode)}
               className={`px-2 py-1 rounded-lg text-[11px] transition cursor-pointer ${
-                mobileLayout === mode
+                isNothing
+                  ? mobileLayout === mode
+                    ? 'bg-white text-black font-bold font-["Space_Mono"] uppercase tracking-wider'
+                    : 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase tracking-wider'
+                  : mobileLayout === mode
                   ? 'bg-zinc-200 text-black font-bold'
                   : 'text-zinc-400 hover:text-white'
               }`}
@@ -145,11 +182,15 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold transition cursor-pointer"
+            className={
+              isNothing
+                ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-500 text-white text-xs font-bold font-["Space_Mono"] uppercase tracking-wider transition cursor-pointer'
+                : 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold transition cursor-pointer'
+            }
             title="Return to full desktop view (Esc)"
           >
             <Monitor className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Desktop View</span>
+            <span className="hidden sm:inline">{isNothing ? '[ Desktop View ]' : 'Desktop View'}</span>
             <X className="w-4 h-4 ml-0.5 text-zinc-400" />
           </button>
         </div>

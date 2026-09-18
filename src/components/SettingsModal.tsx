@@ -59,6 +59,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const activeMobileLayout = mobileLayout ?? 'bottom_nav';
   const isHapticOn = hapticsEnabled ?? true;
+  const isNothing = prototypeStyle === 'nothing';
 
   const [testPulseMsg, setTestPulseMsg] = useState<string | null>(null);
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
@@ -168,8 +169,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
-                <Palette className="w-4 h-4 text-amber-500" />
-                <span>Appearance & Theme</span>
+                <Palette className={`w-4 h-4 ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                <span className={isNothing ? "font-['Space_Mono'] uppercase tracking-wider text-xs sm:text-sm" : ''}>
+                  {isNothing ? '[ Appearance & Theme ]' : 'Appearance & Theme'}
+                </span>
               </div>
               {onToggleDarkMode && (
                 <button
@@ -276,8 +279,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Section 2: Fraction Keypad Precision */}
           <div className="space-y-2.5">
             <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
-              <Hash className="w-4 h-4 text-amber-500" />
-              <span>Fraction Keypad Precision</span>
+              <Hash className={`w-4 h-4 ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+              <span className={isNothing ? "font-['Space_Mono'] uppercase tracking-wider text-xs sm:text-sm" : ''}>
+                {isNothing ? '[ Fraction Keypad Precision ]' : 'Fraction Keypad Precision'}
+              </span>
             </div>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
               Controls the fractional increments and nudge buttons displayed on the trackside fraction keypad.
@@ -295,15 +300,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     key={res}
                     type="button"
                     onClick={() => onChangeProject({ fractionResolution: res })}
-                    className={`p-2.5 rounded-xl border text-left transition ${
+                    className={`p-2.5 rounded-xl border text-left transition cursor-pointer ${
                       isSelected
-                        ? 'border-amber-500 bg-amber-500/10 text-amber-800 dark:text-amber-300 ring-1 ring-amber-500/50'
+                        ? isNothing
+                          ? 'border-zinc-900 dark:border-white bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/40 font-["Space_Mono"]'
+                          : 'border-amber-500 bg-amber-500/10 text-amber-800 dark:text-amber-300 ring-1 ring-amber-500/50'
                         : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-extrabold text-sm">{label}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-amber-500 stroke-[3]" />}
+                      {isSelected && <Check className={`w-3.5 h-3.5 stroke-[3] ${isNothing ? 'text-[#D71921] dark:text-[#D71921]' : 'text-amber-500'}`} />}
                     </div>
                     <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">{sub}</span>
                   </button>
@@ -317,7 +324,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Section 3: Default Units & Spacing */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-zinc-900 dark:text-zinc-100 font-bold text-xs block">
+              <label className={`text-zinc-900 dark:text-zinc-100 font-bold text-xs block ${isNothing ? "font-['Space_Mono'] uppercase tracking-wider" : ''}`}>
                 Default Measurement Units:
               </label>
               <select
@@ -333,7 +340,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-zinc-900 dark:text-zinc-100 font-bold text-xs block">
+              <label className={`text-zinc-900 dark:text-zinc-100 font-bold text-xs block ${isNothing ? "font-['Space_Mono'] uppercase tracking-wider" : ''}`}>
                 Default Station Interval:
               </label>
               <select
@@ -356,8 +363,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Section 4: Mobile Screen Layout */}
           <div className="space-y-2.5">
             <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
-              <Smartphone className="w-4 h-4 text-amber-500" />
-              <span>Mobile Layout Mode</span>
+              <Smartphone className={`w-4 h-4 ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+              <span className={isNothing ? "font-['Space_Mono'] uppercase tracking-wider text-xs sm:text-sm" : ''}>
+                {isNothing ? '[ Mobile Layout Mode ]' : 'Mobile Layout Mode'}
+              </span>
             </div>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
               Choose how the checklist and profile graph are arranged on phones and small screens (screens under 1024px width).
@@ -369,13 +378,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => onChangeMobileLayout?.('bottom_nav')}
                 className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
                   activeMobileLayout === 'bottom_nav'
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
+                    ? isNothing
+                      ? 'border-zinc-900 dark:border-white bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/40 font-["Space_Mono"]'
+                      : 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
                     : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-xs sm:text-sm">Bottom Dock (Thumb Zone)</span>
-                  {activeMobileLayout === 'bottom_nav' && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
+                  {activeMobileLayout === 'bottom_nav' && (
+                    <Check className={`w-4 h-4 stroke-[3] ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                  )}
                 </div>
                 <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
                   Docked bottom navigation with contained station scrolling. UI never scrolls off-screen. (Recommended)
@@ -387,16 +400,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => onChangeMobileLayout?.('tabbed')}
                 className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
                   activeMobileLayout === 'tabbed'
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
+                    ? isNothing
+                      ? 'border-zinc-900 dark:border-white bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/40 font-["Space_Mono"]'
+                      : 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
                     : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-xs sm:text-sm">Top Tabs</span>
-                  {activeMobileLayout === 'tabbed' && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
+                  <span className="font-extrabold text-xs sm:text-sm">Segmented Tabs</span>
+                  {activeMobileLayout === 'tabbed' && (
+                    <Check className={`w-4 h-4 stroke-[3] ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                  )}
                 </div>
                 <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
-                  Sticky top tabs for switching between Checklist and Profile Graph.
+                  Standard top tab buttons switching between Checklist and Profile view.
                 </span>
               </button>
 
@@ -405,16 +422,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => onChangeMobileLayout?.('stacked')}
                 className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
                   activeMobileLayout === 'stacked'
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
+                    ? isNothing
+                      ? 'border-zinc-900 dark:border-white bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/40 font-["Space_Mono"]'
+                      : 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
                     : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-xs sm:text-sm">Stacked View</span>
-                  {activeMobileLayout === 'stacked' && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
+                  <span className="font-extrabold text-xs sm:text-sm">Stacked Page Scroll</span>
+                  {activeMobileLayout === 'stacked' && (
+                    <Check className={`w-4 h-4 stroke-[3] ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                  )}
                 </div>
                 <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
-                  Continuous scroll column. Graph and checklist table all on one page.
+                  Original continuous page scroll. (Graph at top, table below).
                 </span>
               </button>
             </div>
@@ -451,8 +472,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
-                <Vibrate className="w-4 h-4 text-amber-500" />
-                <span>Keypad Haptic Feedback</span>
+                <Vibrate className={`w-4 h-4 ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                <span className={isNothing ? "font-['Space_Mono'] uppercase tracking-wider text-xs sm:text-sm" : ''}>
+                  {isNothing ? '[ Keypad Haptic Feedback ]' : 'Keypad Haptic Feedback'}
+                </span>
               </div>
               <button
                 type="button"
@@ -461,10 +484,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   setTestPulseMsg('Fired! (5ms tick)');
                   setTimeout(() => setTestPulseMsg(null), 1500);
                 }}
-                className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/25 active:scale-95 cursor-pointer"
+                className={`text-[11px] font-bold transition px-2.5 py-1 rounded-lg border active:scale-95 cursor-pointer ${
+                  isNothing
+                    ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 font-["Space_Mono"] uppercase tracking-wider'
+                    : 'text-amber-600 dark:text-amber-400 hover:text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/25'
+                }`}
                 title="Test how the soft keypad micro-tick feels on this device"
               >
-                {testPulseMsg ?? 'Test Tap'}
+                {testPulseMsg
+                  ? isNothing ? `[ ${testPulseMsg} ]` : testPulseMsg
+                  : isNothing ? '[ TEST TAP ]' : 'Test Tap'}
               </button>
             </div>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
@@ -478,15 +507,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   triggerHaptic('selection', true);
                   onChangeHapticsEnabled?.(true);
                 }}
-                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
                   isHapticOn
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
+                    ? isNothing
+                      ? 'border-zinc-900 dark:border-white bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/40 font-["Space_Mono"]'
+                      : 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
                     : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-sm">Enabled (Default)</span>
-                  {isHapticOn && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
+                  {isHapticOn && (
+                    <Check className={`w-4 h-4 stroke-[3] ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                  )}
                 </div>
                 <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
                   Gentle mechanical tick when tapping keys or advancing stations. Checklists and navigation remain silent.
@@ -496,15 +529,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <button
                 type="button"
                 onClick={() => onChangeHapticsEnabled?.(false)}
-                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between ${
+                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
                   !isHapticOn
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
+                    ? isNothing
+                      ? 'border-zinc-900 dark:border-white bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/40 font-["Space_Mono"]'
+                      : 'border-amber-500 bg-amber-500/10 text-amber-900 dark:text-amber-300 ring-1 ring-amber-500/50'
                     : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-sm">Disabled</span>
-                  {!isHapticOn && <Check className="w-4 h-4 text-amber-500 stroke-[3]" />}
+                  {!isHapticOn && (
+                    <Check className={`w-4 h-4 stroke-[3] ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
+                  )}
                 </div>
                 <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
                   Silent operation. Disables all keypad vibration.
@@ -519,12 +556,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Section: Interactive Tutorial */}
           {onStartTutorial && (
-            <div className="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl flex items-center justify-between gap-3">
+            <div className={`p-3.5 rounded-xl flex items-center justify-between gap-3 border ${
+              isNothing
+                ? isDarkMode
+                  ? 'bg-zinc-950/60 border-zinc-800'
+                  : 'bg-zinc-100 border-zinc-300'
+                : 'bg-amber-500/10 border-amber-500/30 rounded-2xl'
+            }`}>
               <div>
-                <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">
-                  Tutorials
+                <h4 className={`font-bold text-xs ${
+                  isNothing
+                    ? 'text-zinc-100 dark:text-white font-["Space_Mono"] uppercase tracking-wider'
+                    : 'text-zinc-900 dark:text-zinc-100'
+                }`}>
+                  {isNothing ? '[ Interactive Tutorials ]' : 'Tutorials'}
                 </h4>
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mt-0.5">
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
                   Walk through benchmarks, rod readings, sags, leveling, and tolerance margins.
                 </p>
               </div>
@@ -534,23 +581,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onClose();
                   onStartTutorial();
                 }}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 text-black font-bold text-xs hover:bg-amber-400 transition shadow-xs whitespace-nowrap active:scale-95 shrink-0"
+                className={`proto-ignore px-3 py-1.5 text-xs font-bold transition shadow-xs whitespace-nowrap active:scale-95 shrink-0 cursor-pointer ${
+                  isNothing
+                    ? 'rounded-lg border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white font-["Space_Mono"] uppercase tracking-wider'
+                    : 'rounded-xl bg-amber-500 text-black hover:bg-amber-400'
+                }`}
               >
-                Start Tutorial
+                {isNothing ? '[ Start Tutorial ]' : 'Start Tutorial'}
               </button>
             </div>
           )}
 
           {/* Section: Field Guide & Handbook */}
           {onOpenGuideModal && (
-            <div className={`p-3.5 rounded-2xl flex items-center justify-between gap-3 border ${
-              prototypeStyle === 'nothing'
-                ? 'bg-zinc-950/40 border-zinc-800'
-                : 'bg-sky-500/10 border-sky-500/30'
+            <div className={`p-3.5 rounded-xl flex items-center justify-between gap-3 border ${
+              isNothing
+                ? isDarkMode
+                  ? 'bg-zinc-950/60 border-zinc-800'
+                  : 'bg-zinc-100 border-zinc-300'
+                : 'bg-sky-500/10 border-sky-500/30 rounded-2xl'
             }`}>
               <div>
-                <h4 className={`font-bold text-xs ${prototypeStyle === 'nothing' ? 'text-zinc-100 font-["Space_Mono"] uppercase' : 'text-zinc-900 dark:text-zinc-100'}`}>
-                  Field Guide & Handbook
+                <h4 className={`font-bold text-xs ${
+                  isNothing
+                    ? 'text-zinc-100 dark:text-white font-["Space_Mono"] uppercase tracking-wider'
+                    : 'text-zinc-900 dark:text-zinc-100'
+                }`}>
+                  {isNothing ? '[ Field Guide & Handbook ]' : 'Field Guide & Handbook'}
                 </h4>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
                   Complete reference manual for laser setup, math, slope modes, and leveling tolerances.
@@ -563,12 +620,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onOpenGuideModal();
                 }}
                 className={`proto-ignore px-3 py-1.5 text-xs font-bold transition shadow-xs whitespace-nowrap active:scale-95 shrink-0 cursor-pointer ${
-                  prototypeStyle === 'nothing'
-                    ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-white hover:border-zinc-500 font-["Space_Mono"] uppercase'
+                  isNothing
+                    ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-white hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider'
                     : 'rounded-xl bg-sky-500 text-white hover:bg-sky-400'
                 }`}
               >
-                Open Guide
+                {isNothing ? '[ Open Guide ]' : 'Open Guide'}
               </button>
             </div>
           )}
@@ -667,11 +724,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">
+                <ShieldCheck className={`w-4 h-4 ${isNothing ? 'text-[#4A9E5C]' : 'text-emerald-500'}`} />
+                <span className={`font-bold text-xs ${isNothing ? 'font-["Space_Mono"] text-zinc-900 dark:text-zinc-100' : 'text-zinc-900 dark:text-zinc-100'}`}>
                   Track Level Companion
                 </span>
-                <span className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-400 font-extrabold px-1.5 py-0.5 rounded border border-amber-500/30">
+                <span
+                  className={
+                    isNothing
+                      ? 'text-[9px] font-["Space_Mono"] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700'
+                      : 'text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-400 font-extrabold px-1.5 py-0.5 rounded border border-amber-500/30'
+                  }
+                >
                   {APP_VERSION_LABEL}
                 </span>
               </div>
@@ -681,15 +744,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   e.stopPropagation();
                   handleCheckUpdates();
                 }}
-                className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition flex items-center gap-1 cursor-pointer"
+                className={
+                  isNothing
+                    ? 'text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider text-zinc-500 dark:text-zinc-400 hover:text-[#D71921] transition flex items-center gap-1 cursor-pointer'
+                    : 'text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition flex items-center gap-1 cursor-pointer'
+                }
               >
-                <RefreshCw className={`w-3 h-3 ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3 h-3 ${isNothing ? 'text-[#D71921]' : ''} ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
                 <span>
                   {updateStatus === 'checking'
-                    ? 'Checking...'
+                    ? (isNothing ? '[ CHECKING... ]' : 'Checking...')
                     : updateStatus === 'updated'
-                    ? 'Up to Date ✓'
-                    : 'Check for Updates'}
+                    ? (isNothing ? '[ UP TO DATE ✓ ]' : 'Up to Date ✓')
+                    : (isNothing ? '[ CHECK FOR UPDATES ]' : 'Check for Updates')}
                 </span>
               </button>
             </div>

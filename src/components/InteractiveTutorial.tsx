@@ -189,9 +189,9 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
           <button
             type="button"
             onClick={handleNext}
-            className="px-2.5 py-1 text-[10px] font-black bg-[#D71921] text-white rounded-full uppercase tracking-wider shrink-0 active:scale-95"
+            className="px-2.5 py-1 text-[10px] font-bold font-['Space_Mono'] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-lg uppercase tracking-wider shrink-0 active:scale-95 cursor-pointer"
           >
-            {isLastStep ? 'Done' : 'Next'}
+            {isLastStep ? '[ Done ]' : '[ Next ]'}
           </button>
         )}
       </div>

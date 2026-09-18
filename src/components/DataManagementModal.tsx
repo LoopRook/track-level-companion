@@ -52,7 +52,7 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   currentProject,
   calculatedStations,
   prototypeStyle = 'nothing',
-  isDarkMode: _isDarkMode = true,
+  isDarkMode = true,
   onLoadProject,
   onResetProject,
   onLoadDemoTrack,
@@ -948,24 +948,32 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                 setModalUpdateStatus('idle');
               }
             }}
-            className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition flex items-center gap-1.5 cursor-pointer"
+            className={`text-[11px] transition flex items-center gap-1.5 cursor-pointer ${
+              prototypeStyle === 'nothing'
+                ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+            }`}
             title="Check for application updates"
           >
-            <RefreshCw className={`w-3 h-3 text-amber-500 ${modalUpdateStatus === 'checking' ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3 h-3 ${prototypeStyle === 'nothing' ? 'text-[#D71921]' : 'text-amber-500'} ${modalUpdateStatus === 'checking' ? 'animate-spin' : ''}`} />
             <span>
               {modalUpdateStatus === 'checking'
-                ? 'Checking for updates...'
+                ? (prototypeStyle === 'nothing' ? '[ CHECKING FOR UPDATES... ]' : 'Checking for updates...')
                 : modalUpdateStatus === 'updated'
-                ? 'App is up to date ✓'
-                : `Track Level Companion ${APP_VERSION_LABEL} • Check for Updates`}
+                ? (prototypeStyle === 'nothing' ? '[ APP IS UP TO DATE ✓ ]' : 'App is up to date ✓')
+                : (prototypeStyle === 'nothing' ? `[ TLC ${APP_VERSION_LABEL} • CHECK FOR UPDATES ]` : `Track Level Companion ${APP_VERSION_LABEL} • Check for Updates`)}
             </span>
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold text-xs hover:bg-zinc-300 dark:hover:bg-zinc-800 transition ml-auto"
+            className={
+              prototypeStyle === 'nothing'
+                ? 'px-4 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold text-xs hover:text-black dark:hover:text-white hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider transition ml-auto cursor-pointer active:scale-95'
+                : 'px-4 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold text-xs hover:bg-zinc-300 dark:hover:bg-zinc-800 transition ml-auto'
+            }
           >
-            Close
+            {prototypeStyle === 'nothing' ? '[ Close ]' : 'Close'}
           </button>
         </div>
 
@@ -974,6 +982,8 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
           isOpen={isQrModalOpen}
           onClose={() => setIsQrModalOpen(false)}
           project={currentProject}
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
         />
       </div>
     </div>
