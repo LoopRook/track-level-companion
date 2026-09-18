@@ -65,10 +65,9 @@ describe('TutorialsModal Component', () => {
       />
     );
 
-    expect(html).toContain('[ Interactive Tutorials ]');
+    expect(html).toContain('[ INTERACTIVE TUTORIALS ]');
     expect(html).toContain('Space_Mono');
     expect(html).toContain('#D71921');
-    expect(html).toContain('rounded-full');
   });
 
   it('has 4 registered tutorials in ALL_TUTORIALS registry', () => {

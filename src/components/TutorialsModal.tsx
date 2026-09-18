@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import {
-  X,
   Play,
   Clock,
   Compass,
@@ -62,88 +61,76 @@ export const TutorialsModal: React.FC<TutorialsModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className={`px-4 sm:px-6 py-4 border-b flex items-center justify-between shrink-0 ${
+        <div className={`px-4 sm:px-6 py-3.5 sm:py-4 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 ${
           isNothing
             ? isDarkMode
               ? 'bg-zinc-950 border-zinc-800'
               : 'bg-zinc-50 border-zinc-200'
             : 'bg-zinc-50 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'
         }`}>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className={`w-9 h-9 flex items-center justify-center font-black shrink-0 ${
               isNothing
-                ? 'rounded-full border border-zinc-700 bg-zinc-900 text-[#D71921]'
+                ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-[#D71921]'
                 : 'rounded-xl bg-amber-500 text-black shadow-sm'
             }`}>
               <Compass className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h2
                 id="tutorials-modal-title"
-                className={`text-base sm:text-lg font-black leading-tight ${
+                className={`text-sm sm:text-base font-black leading-tight ${
                   isNothing ? 'uppercase tracking-wide' : 'text-zinc-900 dark:text-white'
                 }`}
               >
-                {isNothing ? '[ Interactive Tutorials ]' : 'Interactive Tutorials'}
+                {isNothing ? (
+                  <span className="inline-block whitespace-nowrap">[ INTERACTIVE TUTORIALS ]</span>
+                ) : (
+                  'Interactive Tutorials'
+                )}
               </h2>
-              <p className={`text-xs font-medium ${
+              <p className={`text-xs font-medium truncate sm:whitespace-normal ${
                 isNothing ? 'uppercase text-[11px] tracking-wider text-zinc-400' : 'text-zinc-500 dark:text-zinc-400'
               }`}>
-                {isNothing ? 'Hands-on field workflows to master track leveling & laser' : 'Hands-on field workflows to master track leveling, slopes, and laser relocation.'}
+                {isNothing ? 'Hands-on field workflows to master leveling' : 'Hands-on field workflows to master track leveling, slopes, and laser relocation.'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {onOpenGuide && (
-              <div className={`inline-flex p-0.5 rounded-lg border ${
-                isNothing
-                  ? isDarkMode ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-200 border-zinc-300'
-                  : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
-              }`}>
-                <button
-                  type="button"
-                  className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md ${
-                    isNothing
-                      ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase'
-                      : 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
-                  }`}
-                  disabled
-                >
-                  Tutorials
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenGuide();
-                  }}
-                  className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md cursor-pointer transition ${
-                    isNothing
-                      ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
-                      : 'text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white'
-                  }`}
-                  title="Switch to Field Guide & Handbook"
-                >
-                  Field Guide
-                </button>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={onClose}
-              className={`proto-ignore p-1.5 transition shrink-0 cursor-pointer rounded-lg ${
-                isNothing
-                  ? 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-                  : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
-              }`}
-              title="Close Tutorials"
-              aria-label="Close Tutorials"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          {onOpenGuide && (
+            <div className={`inline-flex p-0.5 rounded-lg border self-start sm:self-center shrink-0 ${
+              isNothing
+                ? isDarkMode ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-200 border-zinc-300'
+                : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
+            }`}>
+              <button
+                type="button"
+                className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md ${
+                  isNothing
+                    ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase shadow-xs'
+                    : 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
+                }`}
+                disabled
+              >
+                Tutorials
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenGuide();
+                }}
+                className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md cursor-pointer transition ${
+                  isNothing
+                    ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
+                    : 'text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white'
+                }`}
+                title="Switch to Field Guide & Handbook"
+              >
+                Field Guide
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Scrollable Tutorial Cards List */}

@@ -3,7 +3,7 @@ import { TrackProject, UnitFormat, PrototypeStyle } from '../core/types';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 import { triggerAppUpdateCheck } from './UpdatePrompt';
 import { APP_VERSION_LABEL } from '../core/version';
-import { Settings, X, Check, RefreshCw, Sliders, Hash, ShieldCheck, Smartphone, Vibrate, Palette, Moon, Sun, FlaskConical } from 'lucide-react';
+import { Settings, Check, RefreshCw, Sliders, Hash, ShieldCheck, Smartphone, Vibrate, Palette, Moon, Sun, FlaskConical } from 'lucide-react';
 import { triggerHaptic } from '../core/haptics';
 import { STYLES_META } from './PrototypeLabBar';
 
@@ -66,6 +66,54 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     project.toleranceInches ? project.toleranceInches.toString() : '0.0625'
   );
 
+  // Android-style 9-tap Developer Options trigger
+  const [devModeUnlocked, setDevModeUnlocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('tlc_dev_mode_unlocked') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [, setDevTapCount] = useState<number>(0);
+  const [devToast, setDevToast] = useState<string | null>(null);
+
+  const handleVersionTap = () => {
+    if (devModeUnlocked) {
+      setDevToast('Developer options already active.');
+      setTimeout(() => setDevToast(null), 2500);
+      return;
+    }
+    triggerHaptic('selection', true);
+    setDevTapCount(prev => {
+      const nextCount = prev + 1;
+      if (nextCount >= 9) {
+        setDevModeUnlocked(true);
+        try {
+          localStorage.setItem('tlc_dev_mode_unlocked', 'true');
+        } catch {}
+        setDevToast('You are now a developer! 🛠️');
+        setTimeout(() => setDevToast(null), 3500);
+      } else if (nextCount >= 5) {
+        const remaining = 9 - nextCount;
+        setDevToast(`You are now ${remaining} step${remaining === 1 ? '' : 's'} away from being a developer.`);
+        setTimeout(() => setDevToast(null), 2000);
+      }
+      return nextCount;
+    });
+  };
+
+  const handleLockDevOptions = () => {
+    setDevModeUnlocked(false);
+    setDevTapCount(0);
+    try {
+      localStorage.removeItem('tlc_dev_mode_unlocked');
+    } catch {}
+    onChangeShowPrototypeBar?.(false);
+    onChangePrototypeStyle?.('nothing');
+    setDevToast('Developer options locked and hidden.');
+    setTimeout(() => setDevToast(null), 2500);
+  };
+
   if (!isOpen) return null;
 
   const handleCheckUpdates = async () => {
@@ -98,33 +146,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Header */}
         <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-amber-500" />
-            <h2 className="text-base sm:text-lg font-bold">Leveling & App Settings</h2>
+            <Settings className="w-5 h-5 text-[#D71921]" />
+            <h2 className="text-sm sm:text-base font-bold font-['Space_Mono'] uppercase tracking-wider">
+              [ Leveling & App Settings ]
+            </h2>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-900 transition"
+            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-500 font-['Space_Mono'] uppercase tracking-wider text-[11px] font-bold transition cursor-pointer"
             aria-label="Close Settings"
           >
-            <X className="w-5 h-5" />
+            [ Close ]
           </button>
         </div>
 
         {/* Modal Body */}
         <div className="p-4 sm:p-5 space-y-6 overflow-y-auto modal-scroll-container text-xs">
           
-          {/* Section: Appearance & Design System */}
+          {/* Section: Appearance */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
                 <Palette className="w-4 h-4 text-amber-500" />
-                <span>Appearance & Design System</span>
+                <span>Appearance & Theme</span>
               </div>
               {onToggleDarkMode && (
                 <button
                   type="button"
                   onClick={onToggleDarkMode}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-[11px] font-bold transition hover:border-zinc-400 dark:hover:border-zinc-600 active:scale-95 cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs font-['Space_Mono'] uppercase tracking-wider transition hover:border-zinc-400 dark:hover:border-zinc-500 active:scale-95 cursor-pointer"
                 >
                   {isDarkMode ? (
                     <>
@@ -141,53 +192,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               )}
             </div>
 
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Select your interface aesthetic. <strong>Nothing OS</strong> provides the official hardware-inspired dark/light system with dot-matrix typography and high-contrast telemetry.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {STYLES_META.map((style) => {
-                const isSelected = prototypeStyle === style.id;
-                const IconComponent = style.icon;
-                return (
-                  <button
-                    key={style.id}
-                    type="button"
-                    onClick={() => {
-                      triggerHaptic('selection', true);
-                      onChangePrototypeStyle?.(style.id);
-                    }}
-                    className={`p-2.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
-                      isSelected
-                        ? 'border-amber-500 bg-amber-500/10 text-zinc-900 dark:text-white ring-1 ring-amber-500/50'
-                        : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <IconComponent className={`w-4 h-4 ${isSelected ? 'text-amber-500' : 'text-zinc-500'}`} />
-                        <span className="font-extrabold text-xs">{style.label}</span>
-                        {style.id === 'nothing' && (
-                          <span className="text-[9px] bg-red-500/20 text-red-500 font-bold px-1.5 py-0.2 rounded-full border border-red-500/30">
-                            NEW
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="flex items-center gap-0.5">
-                          <span className="w-2 h-2 rounded-full border border-zinc-700 inline-block" style={{ backgroundColor: style.palette.dark }} />
-                          <span className="w-2 h-2 rounded-full border border-zinc-300 inline-block" style={{ backgroundColor: style.palette.light }} />
-                          <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: style.palette.accent }} />
-                        </div>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-amber-500 stroke-[3]" />}
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
-                      {style.inspiration}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="p-3 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                  <span>Nothing OS</span>
+                  <span className="text-[9px] bg-red-500/20 text-[#D71921] font-bold px-1.5 py-0.2 rounded border border-red-500/30 font-['Space_Mono'] uppercase tracking-wider">
+                    Production Active
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                  Official hardware-inspired telemetry design with Space Grotesk/Mono typography, dot-matrix grid, and high-contrast rail leveling readouts.
+                </p>
+              </div>
             </div>
           </div>
 
@@ -557,48 +573,98 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          <hr className="border-zinc-200 dark:border-zinc-800" />
+          {/* Section: Developer & Experimental Tools (Hidden unless unlocked via 9 taps on Version) */}
+          {devModeUnlocked && (
+            <>
+              <hr className="border-zinc-200 dark:border-zinc-800" />
+              <div className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-2xl border border-amber-500/40 dark:border-amber-500/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FlaskConical className="w-4 h-4 text-amber-500" />
+                    <span className="font-bold text-zinc-900 dark:text-zinc-100 text-xs font-['Space_Mono'] uppercase tracking-wider">
+                      Developer & Experimental Options
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLockDevOptions}
+                    className="text-[10px] font-['Space_Mono'] uppercase tracking-wider text-zinc-500 hover:text-red-500 transition border border-zinc-300 dark:border-zinc-800 px-2 py-0.5 rounded cursor-pointer"
+                  >
+                    Lock & Hide
+                  </button>
+                </div>
 
-          {/* Section: Developer & Experimental Tools */}
-          <div className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FlaskConical className="w-4 h-4 text-purple-500" />
-                <span className="font-bold text-zinc-900 dark:text-zinc-100 text-xs">
-                  Developer & Experimental Tools
-                </span>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                    Show Prototype Lab Bar (Top Banner)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic('selection', true);
+                      onChangeShowPrototypeBar?.(!showPrototypeBar);
+                    }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                      showPrototypeBar ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-700'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-xs ${
+                        showPrototypeBar ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="pt-1">
+                  <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 block mb-2 font-['Space_Mono'] uppercase tracking-wider">
+                    Archived Prototype Styles:
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {STYLES_META.map((style) => {
+                      const isSelected = prototypeStyle === style.id;
+                      const IconComponent = style.icon;
+                      return (
+                        <button
+                          key={style.id}
+                          type="button"
+                          onClick={() => {
+                            triggerHaptic('selection', true);
+                            onChangePrototypeStyle?.(style.id);
+                          }}
+                          className={`p-2.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                            isSelected
+                              ? 'border-amber-500 bg-amber-500/10 text-zinc-900 dark:text-white ring-1 ring-amber-500/50'
+                              : 'border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <IconComponent className={`w-4 h-4 ${isSelected ? 'text-amber-500' : 'text-zinc-500'}`} />
+                              <span className="font-extrabold text-xs">{style.label}</span>
+                            </div>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-amber-500 stroke-[3]" />}
+                          </div>
+                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-1">
+                            {style.inspiration}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Show the top Prototype Lab toolbar for instant theme comparison. Keep disabled for a clean, full-height production viewport.
-            </p>
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
-                Show Prototype Lab Bar (Top Banner)
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  triggerHaptic('selection', true);
-                  onChangeShowPrototypeBar?.(!showPrototypeBar);
-                }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                  showPrototypeBar ? 'bg-amber-500' : 'bg-zinc-300 dark:bg-zinc-700'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-xs ${
-                    showPrototypeBar ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
+            </>
+          )}
 
           <hr className="border-zinc-200 dark:border-zinc-800" />
 
-          {/* Section 6: App Version & PWA Offline Information */}
-          <div className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+          {/* Section 6: App Version & PWA Offline Information (Tap 9 times to unlock dev options) */}
+          <div
+            onClick={handleVersionTap}
+            className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 transition select-none"
+            title={devModeUnlocked ? 'Developer options active' : 'Tap 9 times to unlock Developer Options'}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
@@ -611,7 +677,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
               <button
                 type="button"
-                onClick={handleCheckUpdates}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCheckUpdates();
+                }}
                 className="text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition flex items-center gap-1 cursor-pointer"
               >
                 <RefreshCw className={`w-3 h-3 ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
@@ -631,14 +700,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         </div>
 
+        {/* Android-style Developer Toast */}
+        {devToast && (
+          <div className="px-4 py-2 bg-black/95 border-t border-b border-amber-500/60 text-amber-400 text-xs font-['Space_Mono'] uppercase tracking-wider text-center animate-in fade-in duration-150 shadow-xl shrink-0">
+            {devToast}
+          </div>
+        )}
+
         {/* Footer */}
-        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
+        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex justify-end shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition shadow-sm active:scale-95"
+            className="px-5 py-2 rounded-lg border border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800 hover:border-zinc-500 font-['Space_Mono'] uppercase tracking-wider text-xs font-bold transition shadow-sm active:scale-95 cursor-pointer"
           >
-            Done
+            [ Close ]
           </button>
         </div>
       </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  X, 
   Plus, 
   FolderOpen, 
   Play, 
@@ -165,10 +164,10 @@ export const MobileToolsModal: React.FC<MobileToolsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider transition cursor-pointer"
             aria-label="Close tools menu"
           >
-            <X className="w-5 h-5" />
+            [ Close ]
           </button>
         </div>
 
@@ -225,11 +224,20 @@ export const MobileToolsModal: React.FC<MobileToolsModalProps> = ({
           })}
         </div>
 
-        {/* Footer info */}
-        <div className={`p-3 border-t text-center text-[10px] text-zinc-500 ${
-          prototypeStyle === 'nothing' ? 'font-["Space_Mono"] uppercase tracking-wider border-zinc-800 bg-zinc-950' : 'border-zinc-200 dark:border-zinc-800'
+        {/* Footer info & Close */}
+        <div className={`p-3 border-t flex flex-col gap-2 ${
+          prototypeStyle === 'nothing' ? 'font-["Space_Mono"] uppercase tracking-wider border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950' : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900'
         }`}>
-          <span>TRACK LEVEL COMPANION • FIELD EDITION</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-200 dark:bg-zinc-900 text-zinc-900 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-800 text-xs font-bold font-['Space_Mono'] uppercase tracking-wider transition active:scale-[0.99] cursor-pointer"
+          >
+            [ Close Tools Menu ]
+          </button>
+          <div className="text-center text-[10px] text-zinc-500">
+            <span>TRACK LEVEL COMPANION • FIELD EDITION</span>
+          </div>
         </div>
       </div>
     </div>

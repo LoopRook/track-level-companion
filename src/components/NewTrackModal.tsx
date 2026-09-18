@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { TrackProject } from '../core/types';
 import {
-  X,
   Compass,
   Layers,
   RotateCcw,
@@ -65,24 +64,25 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
         {/* Modal Header */}
         <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-black text-white dark:bg-white dark:text-black border border-zinc-300 dark:border-zinc-700 flex items-center justify-center shrink-0">
               <Plus className="w-4 h-4 stroke-[3]" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-extrabold text-zinc-900 dark:text-white">
-                Start New Track Survey
+              <h2 className="text-sm sm:text-base font-bold font-['Space_Mono'] uppercase tracking-wider text-zinc-900 dark:text-white">
+                [ START NEW TRACK ]
               </h2>
-              <p className="text-[11px] text-zinc-500">
-                Clear current data and start fresh in the field
+              <p className="text-[10px] text-zinc-500 font-['Space_Mono'] uppercase tracking-wider">
+                Clear current data or initialize new section
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition"
+            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-500 font-['Space_Mono'] uppercase tracking-wider text-[11px] font-bold transition cursor-pointer"
+            aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            [ Close ]
           </button>
         </div>
 
@@ -90,7 +90,7 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
         <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 modal-scroll-container flex-1 min-h-0">
           {/* Project Name Field */}
           <div>
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+            <label className="block text-xs font-bold font-['Space_Mono'] uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
               Project / Section Name
             </label>
             <input
@@ -99,13 +99,13 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. South Curve Section 1"
               required
-              className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-xl text-sm font-semibold text-zinc-900 dark:text-white outline-none focus:border-amber-500 transition"
+              className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-lg text-sm font-semibold text-zinc-900 dark:text-white outline-none focus:border-zinc-900 dark:focus:border-white transition"
             />
           </div>
 
           {/* Setup Mode Selection */}
           <div className="space-y-2">
-            <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300">
+            <label className="block text-xs font-bold font-['Space_Mono'] uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
               Select Starting Setup
             </label>
 
@@ -114,19 +114,19 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
               onClick={() => setMode('blank_zero')}
               className={`p-3 rounded-xl border cursor-pointer transition flex items-start gap-3 ${
                 mode === 'blank_zero'
-                  ? 'bg-amber-500/10 border-amber-500 text-zinc-900 dark:text-white ring-1 ring-amber-500/50'
-                  : 'bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                  ? 'bg-zinc-100 dark:bg-zinc-900 border-zinc-900 dark:border-white text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/30'
+                  : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700'
               }`}
             >
-              <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${mode === 'blank_zero' ? 'bg-amber-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'}`}>
+              <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${mode === 'blank_zero' ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'}`}>
                 <Compass className="w-4 h-4" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-extrabold">
+                  <h4 className="text-xs font-extrabold font-['Space_Mono'] uppercase tracking-wider">
                     Blank Track (Station 0 Only)
                   </h4>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                  <span className="text-[9px] px-1.5 py-0.5 rounded font-bold font-['Space_Mono'] uppercase tracking-wider bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700">
                     Recommended
                   </span>
                 </div>
@@ -141,16 +141,16 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
               onClick={() => setMode('empty_grid')}
               className={`p-3 rounded-xl border cursor-pointer transition flex flex-col gap-2.5 ${
                 mode === 'empty_grid'
-                  ? 'bg-amber-500/10 border-amber-500 text-zinc-900 dark:text-white ring-1 ring-amber-500/50'
-                  : 'bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                  ? 'bg-zinc-100 dark:bg-zinc-900 border-zinc-900 dark:border-white text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/30'
+                  : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700'
               }`}
             >
               <div className="flex items-start gap-3">
-                <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${mode === 'empty_grid' ? 'bg-amber-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'}`}>
+                <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${mode === 'empty_grid' ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'}`}>
                   <Layers className="w-4 h-4" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-xs font-extrabold">
+                  <h4 className="text-xs font-extrabold font-['Space_Mono'] uppercase tracking-wider">
                     Pre-Generate Empty Grid ({lengthFt} ft @ {intervalFt}' intervals)
                   </h4>
                   <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
@@ -163,7 +163,7 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
               {mode === 'empty_grid' && (
                 <div className="pl-11 pt-1 space-y-2 border-t border-zinc-200 dark:border-zinc-800/80">
                   <div>
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">
+                    <span className="text-[10px] font-bold text-zinc-500 font-['Space_Mono'] uppercase tracking-wider block mb-1">
                       Section Length:
                     </span>
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -172,9 +172,9 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
                           key={len}
                           type="button"
                           onClick={() => setLengthFt(len)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono transition ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold font-['Space_Mono'] transition ${
                             lengthFt === len
-                              ? 'bg-amber-500 text-black shadow-xs'
+                              ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
                               : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700'
                           }`}
                         >
@@ -185,7 +185,7 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-1">
+                    <span className="text-[10px] font-bold text-zinc-500 font-['Space_Mono'] uppercase tracking-wider block mb-1">
                       Tie Interval:
                     </span>
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -194,9 +194,9 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
                           key={int}
                           type="button"
                           onClick={() => setIntervalFt(int)}
-                          className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono transition ${
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold font-['Space_Mono'] transition ${
                             intervalFt === int
-                              ? 'bg-amber-500 text-black shadow-xs'
+                              ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
                               : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700'
                           }`}
                         >
@@ -214,15 +214,15 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
               onClick={() => setMode('clear_readings')}
               className={`p-3 rounded-xl border cursor-pointer transition flex items-start gap-3 ${
                 mode === 'clear_readings'
-                  ? 'bg-amber-500/10 border-amber-500 text-zinc-900 dark:text-white ring-1 ring-amber-500/50'
-                  : 'bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                  ? 'bg-zinc-100 dark:bg-zinc-900 border-zinc-900 dark:border-white text-zinc-900 dark:text-white ring-1 ring-zinc-900/30 dark:ring-white/30'
+                  : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700'
               }`}
             >
-              <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${mode === 'clear_readings' ? 'bg-amber-500 text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'}`}>
+              <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${mode === 'clear_readings' ? 'bg-black text-white dark:bg-white dark:text-black' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-500'}`}>
                 <RotateCcw className="w-4 h-4" />
               </div>
               <div className="flex-1">
-                <h4 className="text-xs font-extrabold">
+                <h4 className="text-xs font-extrabold font-['Space_Mono'] uppercase tracking-wider">
                   Clear Readings Only (Keep Stations)
                 </h4>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
@@ -240,10 +240,10 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
                 id="saveCurrentFirst"
                 checked={saveCurrentFirst}
                 onChange={(e) => setSaveCurrentFirst(e.target.checked)}
-                className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer"
+                className="w-4 h-4 rounded text-[#D71921] focus:ring-[#D71921] border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer"
               />
               <label htmlFor="saveCurrentFirst" className="text-xs text-zinc-700 dark:text-zinc-300 font-medium cursor-pointer flex items-center gap-1.5">
-                <Bookmark className="w-3.5 h-3.5 text-amber-500" />
+                <Bookmark className="w-3.5 h-3.5 text-[#D71921]" />
                 <span>Save current track <strong>"{currentProject.name}"</strong> to Saved Tracks first</span>
               </label>
             </div>
@@ -254,17 +254,17 @@ export const NewTrackModal: React.FC<NewTrackModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition"
+              className="px-4 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-500 font-['Space_Mono'] uppercase text-xs font-bold transition active:scale-95 cursor-pointer"
             >
-              Cancel
+              [ Cancel ]
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition shadow-sm active:scale-95 flex items-center gap-1.5"
+              className="px-4 py-2 rounded-lg bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-['Space_Mono'] uppercase text-xs font-bold transition shadow-sm active:scale-95 flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>
-                {mode === 'clear_readings' ? 'Clear All Readings' : 'Start New Track'}
+                {mode === 'clear_readings' ? '[ Clear All Readings ]' : '[ Start New Track ]'}
               </span>
             </button>
           </div>

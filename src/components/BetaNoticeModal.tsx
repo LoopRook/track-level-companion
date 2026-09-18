@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, X, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 import { APP_VERSION_LABEL } from '../core/version';
 
@@ -35,21 +35,21 @@ export const BetaNoticeModal: React.FC<BetaNoticeModalProps> = ({ isOpen, onClos
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-amber-500/10 dark:bg-amber-500/10 px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-amber-500/20 shrink-0">
+        <div className="bg-zinc-100 dark:bg-black px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-4 h-4 stroke-[2.2]" />
+            <div className="w-8 h-8 rounded-lg bg-black text-white dark:bg-white dark:text-black border border-zinc-300 dark:border-zinc-700 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4 stroke-[2.2] text-[#D71921]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-black text-sm text-zinc-900 dark:text-zinc-100">
-                  Beta Software Notice
+                <h3 className="font-bold text-sm text-zinc-900 dark:text-white font-['Space_Mono'] uppercase tracking-wider">
+                  [ Beta Software Notice ]
                 </h3>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                <span className="text-[9px] font-['Space_Mono'] uppercase tracking-wider font-bold px-1.5 py-0.2 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700">
                   {APP_VERSION_LABEL}
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500">
+              <p className="text-[10px] text-zinc-500 font-['Space_Mono'] uppercase tracking-wider">
                 Track Level Companion field testing
               </p>
             </div>
@@ -57,10 +57,10 @@ export const BetaNoticeModal: React.FC<BetaNoticeModalProps> = ({ isOpen, onClos
           <button
             type="button"
             onClick={handleDismiss}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition"
+            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider transition cursor-pointer"
             aria-label="Close"
           >
-            <X className="w-4 h-4" />
+            [ Close ]
           </button>
         </div>
 
@@ -72,19 +72,19 @@ export const BetaNoticeModal: React.FC<BetaNoticeModalProps> = ({ isOpen, onClos
             </p>
             <div className="p-3 bg-zinc-50 dark:bg-zinc-900/80 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-2 text-[11px]">
               <div className="flex items-start gap-2">
-                <span className="text-amber-500 font-bold">•</span>
+                <span className="text-[#D71921] font-bold">•</span>
                 <span>
                   <strong>Field Verification:</strong> Always cross-check detector rod readings, laser heights, and target elevations against your physical track conditions before making permanent track or ballast adjustments.
                 </span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-amber-500 font-bold">•</span>
+                <span className="text-[#D71921] font-bold">•</span>
                 <span>
                   <strong>Data Storage:</strong> Survey data is stored locally in your browser cache. Use the <strong>Files / Export</strong> menu to save or export CSV backups regularly.
                 </span>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-amber-500 font-bold">•</span>
+                <span className="text-[#D71921] font-bold">•</span>
                 <span>
                   <strong>Feedback & Bug Reports:</strong> Please report any calculation discrepancies, display issues, or workflow suggestions.
                 </span>
@@ -99,7 +99,7 @@ export const BetaNoticeModal: React.FC<BetaNoticeModalProps> = ({ isOpen, onClos
               id="dontShowBetaAgain"
               checked={dontShowAgain}
               onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer"
+              className="w-4 h-4 rounded text-[#D71921] focus:ring-[#D71921] border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 cursor-pointer"
             />
             <label htmlFor="dontShowBetaAgain" className="text-[11px] text-zinc-500 cursor-pointer select-none">
               Don't show this notice on launch
@@ -108,14 +108,14 @@ export const BetaNoticeModal: React.FC<BetaNoticeModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Footer */}
-        <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
+        <div className="p-3 bg-zinc-100 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
           <button
             type="button"
             onClick={handleDismiss}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-xl text-xs transition active:scale-95 shadow-sm flex items-center gap-1.5"
+            className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-bold font-['Space_Mono'] uppercase tracking-wider rounded-lg text-xs transition active:scale-95 shadow-sm flex items-center gap-1.5 cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
-            <span>Continue to App</span>
+            <span>[ Continue to App ]</span>
           </button>
         </div>
       </div>

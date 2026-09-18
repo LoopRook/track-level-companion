@@ -19,6 +19,7 @@ import { TutorialsModal } from './components/TutorialsModal';
 import { getTutorialById } from './core/tutorials';
 import { MobileSimulator } from './components/MobileSimulator';
 import { MobileToolsModal } from './components/MobileToolsModal';
+import { CustomPointModal } from './components/CustomPointModal';
 
 const isEmbedded = typeof window !== 'undefined' && (
   window.location.search.includes('embedded_mobile') || window.self !== window.top
@@ -33,7 +34,7 @@ const UserGuideModal = React.lazy(() =>
 );
 import { useBodyScrollLock } from './core/useBodyScrollLock';
 import { getHapticPreference, setHapticPreference } from './core/haptics';
-import { ListTodo, TrendingUp, Plus, Sliders, Flag, Layers, HelpCircle, CheckSquare } from 'lucide-react';
+import { ListTodo, TrendingUp, Plus, Sliders, Flag, Layers, HelpCircle, CheckSquare, Smartphone } from 'lucide-react';
 
 const INITIAL_STATIONS: StationPoint[] = [
   { id: 'st-0', distanceFt: 0, readingInches: 6.28 },
@@ -245,6 +246,24 @@ export const App: React.FC = () => {
 
   const [isMobileExtendOpen, setIsMobileExtendOpen] = useState(false);
   const [isMobileMoveLaserOpen, setIsMobileMoveLaserOpen] = useState(false);
+  const [isCustomPointModalOpen, setIsCustomPointModalOpen] = useState(false);
+  const [isCompactLandscape, setIsCompactLandscape] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerHeight < 550 && window.innerWidth >= 600;
+  });
+  const [dismissedLandscapeAdvising, setDismissedLandscapeAdvising] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsCompactLandscape(window.innerHeight < 550 && window.innerWidth >= 600);
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   const handleSetMobileLayout = (layout: 'bottom_nav' | 'tabbed' | 'stacked') => {
     setMobileLayout(layout);
@@ -706,14 +725,10 @@ export const App: React.FC = () => {
 
   // Insert intermediate custom station (e.g. at bridge abutment or switch point)
   const handleInsertCustomStation = () => {
-    const input = prompt('Enter station distance along track (in feet, e.g. -5, -10, 12.5):', '12.5');
-    if (!input) return;
-    const dist = parseFloat(input);
-    if (isNaN(dist)) {
-      alert('Please enter a valid number for distance.');
-      return;
-    }
+    setIsCustomPointModalOpen(true);
+  };
 
+  const handleConfirmInsertCustomPoint = (dist: number) => {
     const newStation: StationPoint = {
       id: `station-${Date.now()}`,
       distanceFt: dist,
@@ -1298,7 +1313,7 @@ export const App: React.FC = () => {
               (mobileLayout === 'tabbed' || mobileLayout === 'bottom_nav') && mobileTab !== 'graph'
                 ? 'hidden md:flex'
                 : 'flex'
-            } ${mobileLayout === 'bottom_nav' ? 'pb-36 md:pb-0' : ''}`}
+            } ${mobileLayout === 'bottom_nav' ? (mobileTab === 'graph' ? 'pb-24 md:pb-0' : 'pb-36 md:pb-0') : ''}`}
           >
             {/* Mobile-only Profile Graph (Housed inside the scrollable column so the whole Profile tab scrolls as one cohesive view on phones) */}
             <div className="block md:hidden shrink-0">
@@ -1513,6 +1528,46 @@ export const App: React.FC = () => {
           isDarkMode={isDarkMode}
         />
 
+        {/* Insert Custom Point Modal */}
+        <CustomPointModal
+          isOpen={isCustomPointModalOpen}
+          onClose={() => setIsCustomPointModalOpen(false)}
+          onInsert={handleConfirmInsertCustomPoint}
+          existingDistances={project.stations.map(s => s.distanceFt)}
+          defaultDistance={(() => {
+            const last = project.stations[project.stations.length - 1];
+            return last ? Math.round((last.distanceFt + (project.stationIntervalFt || 5) / 2) * 10) / 10 : 12.5;
+          })()}
+          prototypeStyle={prototypeStyle}
+          isDarkMode={isDarkMode}
+        />
+
+        {/* Mobile Landscape Orientation Advisory */}
+        {isCompactLandscape && !dismissedLandscapeAdvising && (
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center font-['Space_Mono'] animate-in fade-in duration-200"
+          >
+            <div className="w-12 h-12 rounded-xl border border-zinc-800 bg-zinc-900 flex items-center justify-center text-[#D71921] mb-3 animate-pulse">
+              <Smartphone className="w-6 h-6 rotate-90" />
+            </div>
+            <h3 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider mb-2">
+              [ PORTRAIT ORIENTATION RECOMMENDED ]
+            </h3>
+            <p className="text-[11px] sm:text-xs text-zinc-400 max-w-md leading-relaxed mb-5">
+              Track Level Companion is precision-engineered for handheld vertical field use. Rotate your device upright for optimal rod reading and station checklist ergonomics.
+            </p>
+            <button
+              type="button"
+              onClick={() => setDismissedLandscapeAdvising(true)}
+              className="proto-ignore px-4 py-2 text-xs font-bold uppercase rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white active:scale-95 transition cursor-pointer"
+            >
+              Continue in Landscape
+            </button>
+          </div>
+        )}
+
         {/* First Launch Beta Notice Modal */}
         <BetaNoticeModal
           isOpen={isBetaNoticeOpen}
@@ -1608,129 +1663,131 @@ export const App: React.FC = () => {
                 : 'bg-white/95 border-zinc-200 text-zinc-700 backdrop-blur-lg shadow-2xl'
             }`}
           >
-            {/* TIER 1: Field Action Strip (Display toggle & immediate field operations) */}
-            <div
-              className={`px-2.5 sm:px-3 py-1.5 border-b flex items-center justify-between gap-1.5 max-w-md mx-auto ${
-                prototypeStyle === 'nothing'
-                  ? isDarkMode ? 'border-zinc-800/80 bg-zinc-950/60' : 'border-zinc-300/80 bg-zinc-100/60'
-                  : isDarkMode ? 'border-zinc-800/60 bg-zinc-900/40' : 'border-zinc-200/60 bg-zinc-50/40'
-              }`}
-            >
-              {/* Left: Display Mode 3-Way Segmented Control */}
-              <div className="flex items-center gap-1 min-w-0">
-                <span
-                  className={`text-[9px] uppercase tracking-wider font-bold shrink-0 ${
-                    prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-zinc-500' : 'text-zinc-500 font-mono'
-                  }`}
-                >
-                  View:
-                </span>
-                <div
-                  className={`inline-flex rounded-lg p-0.5 border ${
-                    prototypeStyle === 'nothing'
-                      ? isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-200/70 border-zinc-300'
-                      : isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-200 border-zinc-300'
-                  }`}
-                >
+            {/* TIER 1: Field Action Strip (Display toggle & immediate field operations - Checklist mode only) */}
+            {mobileTab === 'checklist' && (
+              <div
+                className={`px-2.5 sm:px-3 py-1.5 border-b flex items-center justify-between gap-1.5 max-w-md mx-auto ${
+                  prototypeStyle === 'nothing'
+                    ? isDarkMode ? 'border-zinc-800/80 bg-zinc-950/60' : 'border-zinc-300/80 bg-zinc-100/60'
+                    : isDarkMode ? 'border-zinc-800/60 bg-zinc-900/40' : 'border-zinc-200/60 bg-zinc-50/40'
+                }`}
+              >
+                {/* Left: Display Mode 3-Way Segmented Control */}
+                <div className="flex items-center gap-1 min-w-0">
+                  <span
+                    className={`text-[9px] uppercase tracking-wider font-bold shrink-0 ${
+                      prototypeStyle === 'nothing' ? 'font-["Space_Mono"] text-zinc-500' : 'text-zinc-500 font-mono'
+                    }`}
+                  >
+                    View:
+                  </span>
+                  <div
+                    className={`inline-flex rounded-lg p-0.5 border ${
+                      prototypeStyle === 'nothing'
+                        ? isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-200/70 border-zinc-300'
+                        : isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-200 border-zinc-300'
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setTableDisplayMode('target_reading')}
+                      className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
+                        tableDisplayMode === 'target_reading'
+                          ? prototypeStyle === 'nothing'
+                            ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
+                            : 'bg-amber-500 text-black shadow-xs'
+                          : 'text-zinc-400 hover:text-zinc-200'
+                      }`}
+                      title="Display Target Rod column"
+                    >
+                      ROD
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTableDisplayMode('relative_elev')}
+                      className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
+                        tableDisplayMode === 'relative_elev'
+                          ? prototypeStyle === 'nothing'
+                            ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
+                            : 'bg-amber-500 text-black shadow-xs'
+                          : 'text-zinc-400 hover:text-zinc-200'
+                      }`}
+                      title="Display Relative Elevation column"
+                    >
+                      ELEV
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTableDisplayMode('both')}
+                      className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
+                        tableDisplayMode === 'both'
+                          ? prototypeStyle === 'nothing'
+                            ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
+                            : 'bg-amber-500 text-black shadow-xs'
+                          : 'text-zinc-400 hover:text-zinc-200'
+                      }`}
+                      title="Display Both Rod and Elevation"
+                    >
+                      BOTH
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right: Secondary Action Triggers */}
+                <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setTableDisplayMode('target_reading')}
-                    className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
-                      tableDisplayMode === 'target_reading'
-                        ? prototypeStyle === 'nothing'
-                          ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
-                          : 'bg-amber-500 text-black shadow-xs'
-                        : 'text-zinc-400 hover:text-zinc-200'
+                    data-tutorial="move-laser-btn"
+                    onClick={() => setIsMobileMoveLaserOpen(true)}
+                    className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
+                      prototypeStyle === 'nothing'
+                        ? isDarkMode
+                          ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
+                          : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
+                        : 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
                     }`}
-                    title="Display Target Rod column"
+                    title="Relocate Rotary Laser (Turning Point)"
                   >
-                    ROD
+                    <Flag className="w-3 h-3 text-[#D71921]" />
+                    <span>Laser</span>
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => setTableDisplayMode('relative_elev')}
-                    className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
-                      tableDisplayMode === 'relative_elev'
-                        ? prototypeStyle === 'nothing'
-                          ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
-                          : 'bg-amber-500 text-black shadow-xs'
-                        : 'text-zinc-400 hover:text-zinc-200'
+                    data-tutorial="extend-track-btn"
+                    onClick={() => setIsMobileExtendOpen(true)}
+                    className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
+                      prototypeStyle === 'nothing'
+                        ? isDarkMode
+                          ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
+                          : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
+                        : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                     }`}
-                    title="Display Relative Elevation column"
+                    title="Extend Track (Batch add ties)"
                   >
-                    ELEV
+                    <Layers className="w-3 h-3 text-amber-500" />
+                    <span>+ Ext</span>
                   </button>
+
                   <button
                     type="button"
-                    onClick={() => setTableDisplayMode('both')}
-                    className={`px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold uppercase transition cursor-pointer ${
-                      tableDisplayMode === 'both'
-                        ? prototypeStyle === 'nothing'
-                          ? isDarkMode ? 'bg-white text-black font-["Space_Mono"]' : 'bg-black text-white font-["Space_Mono"]'
-                          : 'bg-amber-500 text-black shadow-xs'
-                        : 'text-zinc-400 hover:text-zinc-200'
+                    data-tutorial="insert-custom-btn"
+                    onClick={handleInsertCustomStation}
+                    className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-0.5 transition shrink-0 cursor-pointer ${
+                      prototypeStyle === 'nothing'
+                        ? isDarkMode
+                          ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
+                          : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
+                        : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                     }`}
-                    title="Display Both Rod and Elevation"
+                    title="Insert Custom Station Point"
                   >
-                    BOTH
+                    <Plus className="w-3 h-3" />
+                    <span>Pt</span>
                   </button>
                 </div>
               </div>
-
-              {/* Right: Secondary Action Triggers */}
-              <div className="flex items-center gap-1 shrink-0">
-                <button
-                  type="button"
-                  data-tutorial="move-laser-btn"
-                  onClick={() => setIsMobileMoveLaserOpen(true)}
-                  className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
-                    prototypeStyle === 'nothing'
-                      ? isDarkMode
-                        ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
-                        : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
-                      : 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
-                  }`}
-                  title="Relocate Rotary Laser (Turning Point)"
-                >
-                  <Flag className="w-3 h-3 text-[#D71921]" />
-                  <span>Laser</span>
-                </button>
-
-                <button
-                  type="button"
-                  data-tutorial="extend-track-btn"
-                  onClick={() => setIsMobileExtendOpen(true)}
-                  className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-1 transition shrink-0 cursor-pointer ${
-                    prototypeStyle === 'nothing'
-                      ? isDarkMode
-                        ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
-                        : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
-                      : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
-                  }`}
-                  title="Extend Track (Batch add ties)"
-                >
-                  <Layers className="w-3 h-3 text-amber-500" />
-                  <span>+ Ext</span>
-                </button>
-
-                <button
-                  type="button"
-                  data-tutorial="insert-custom-btn"
-                  onClick={handleInsertCustomStation}
-                  className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase flex items-center gap-0.5 transition shrink-0 cursor-pointer ${
-                    prototypeStyle === 'nothing'
-                      ? isDarkMode
-                        ? 'border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:border-zinc-500 font-["Space_Mono"]'
-                        : 'border-zinc-300 bg-transparent text-zinc-700 hover:text-black hover:border-zinc-400 font-["Space_Mono"]'
-                      : 'border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
-                  }`}
-                  title="Insert Custom Station Point"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>Pt</span>
-                </button>
-              </div>
-            </div>
+            )}
 
             {/* TIER 2: Primary Transport & Hero Red Keypad Bar (Option A: Segmented Rail + Hardware Key) */}
             <div className="flex items-center justify-between gap-1.5 sm:gap-2 max-w-md mx-auto px-2 sm:px-3 pt-1.5 pb-[max(0.75rem,env(safe-area-inset-bottom))]">

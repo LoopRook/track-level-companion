@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CalculatedStation, UnitFormat, PrototypeStyle } from '../core/types';
 import { formatMeasurement, parseMeasurement } from '../core/units';
-import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock, X } from 'lucide-react';
+import { CheckCircle2, Circle, Edit3, Trash2, Plus, ArrowUpCircle, ArrowDownCircle, Layers, Flag, Lock, Unlock } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
 
 export interface ActionTableProps {
@@ -164,9 +164,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           <button
             onClick={onAddNextStation}
             data-tutorial="add-next-btn"
-            className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center gap-1 active:scale-95 whitespace-nowrap ${
+            className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center gap-1 active:scale-95 whitespace-nowrap cursor-pointer ${
               prototypeStyle === 'nothing'
-                ? 'rounded-full bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-["Space_Mono"] uppercase tracking-wider text-xs font-bold shadow-none'
+                ? 'rounded-lg bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 font-["Space_Mono"] uppercase tracking-wider text-xs font-bold shadow-none'
                 : 'rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs shadow-sm'
             }`}
           >
@@ -176,9 +176,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           {onExtendTrack && (
             <button
               onClick={() => setLocalExtendModalOpen(true)}
-              className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center gap-1 whitespace-nowrap ${
+              className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer active:scale-95 ${
                 prototypeStyle === 'nothing'
-                  ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider text-xs shadow-none'
+                  ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider text-xs shadow-none'
                   : 'rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold text-xs'
               }`}
               title="Add a 50ft or 100ft section of stations in one click"
@@ -200,9 +200,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                   onOpenMoveLaser?.();
                 }
               }}
-              className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center gap-1 whitespace-nowrap ${
+              className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer active:scale-95 ${
                 prototypeStyle === 'nothing'
-                  ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider text-xs shadow-none'
+                  ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider text-xs shadow-none'
                   : 'rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 font-semibold text-xs'
               }`}
               title="Pick up rotary laser and relocate forward: set turning point benchmark"
@@ -213,13 +213,15 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           )}
           <button
             onClick={onInsertCustomStation}
-            className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center whitespace-nowrap ${
+            className={`h-8 px-2 sm:px-2.5 transition flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer active:scale-95 ${
               prototypeStyle === 'nothing'
-                ? 'rounded-full bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider text-xs shadow-none'
+                ? 'rounded-lg bg-transparent border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-900 dark:hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider text-xs shadow-none'
                 : 'rounded-lg border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold text-xs'
             }`}
+            title="Insert Custom Station Point (e.g. Switch or Bridge Abutment)"
           >
-            + Custom Pt
+            <Plus className="w-3.5 h-3.5 text-current" />
+            <span>Pt</span>
           </button>
         </div>
       </div>
@@ -397,7 +399,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     <span
                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 whitespace-nowrap shrink-0 ${
                         prototypeStyle === 'nothing'
-                          ? 'font-["Space_Mono"] uppercase tracking-wider text-[9px] border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 bg-transparent rounded-full'
+                          ? 'font-["Space_Mono"] uppercase tracking-wider text-[9px] border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 bg-transparent rounded-md'
                           : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
                       }`}
                       title="Locked Tie / Control Point"
@@ -411,7 +413,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     <span
                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 whitespace-nowrap shrink-0 ${
                         prototypeStyle === 'nothing'
-                          ? 'font-["Space_Mono"] uppercase tracking-wider text-[9px] border border-[#D71921] text-[#D71921] bg-transparent rounded-full'
+                          ? 'font-["Space_Mono"] uppercase tracking-wider text-[9px] border border-[#D71921] text-[#D71921] bg-transparent rounded-md'
                           : 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30'
                       }`}
                       title="Laser Relocation Benchmark (Turning Point)"
@@ -432,8 +434,8 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       className={`w-8 h-8 flex items-center justify-center rounded-lg border transition ${
                         prototypeStyle === 'nothing'
                           ? isLocked
-                            ? 'text-zinc-900 dark:text-white border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800 rounded-full'
-                            : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent rounded-full'
+                            ? 'text-zinc-900 dark:text-white border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800'
+                            : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent'
                           : isLocked
                           ? 'text-amber-500 bg-amber-500/15 border-amber-500/40'
                           : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -455,8 +457,8 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                       className={`w-8 h-8 flex items-center justify-center rounded-lg border transition ${
                         prototypeStyle === 'nothing'
                           ? s.isTurningPoint
-                            ? 'text-[#D71921] border-[#D71921] bg-transparent rounded-full'
-                            : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent rounded-full'
+                            ? 'text-[#D71921] border-[#D71921] bg-transparent'
+                            : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent'
                           : s.isTurningPoint
                           ? 'text-purple-500 bg-purple-500/15 border-purple-500/40'
                           : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-purple-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -472,7 +474,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     onClick={() => onEditStation(s)}
                     className={`w-8 h-8 flex items-center justify-center rounded-lg border transition ${
                       prototypeStyle === 'nothing'
-                        ? 'border-zinc-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent rounded-full'
+                        ? 'border-zinc-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent'
                         : 'border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                     }`}
                     title="Edit measurement"
@@ -485,7 +487,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     onClick={() => onDeleteStation(s.id)}
                     className={`w-8 h-8 flex items-center justify-center rounded-lg border transition ${
                       prototypeStyle === 'nothing'
-                        ? 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-[#D71921] hover:border-[#D71921]/50 bg-transparent rounded-full'
+                        ? 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-[#D71921] hover:border-[#D71921]/50 bg-transparent'
                         : 'border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                     }`}
                     title="Delete station"
@@ -821,7 +823,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         <span
                           className={`text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
                             prototypeStyle === 'nothing'
-                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[8px] border border-zinc-700 text-zinc-400 bg-transparent rounded-full'
+                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[8px] border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 bg-transparent rounded-md'
                               : 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30'
                           }`}
                           title="Locked Tie / Control Point"
@@ -834,7 +836,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         <span
                           className={`text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 ${
                             prototypeStyle === 'nothing'
-                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[8px] border border-[#D71921] text-[#D71921] bg-transparent rounded-full'
+                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[8px] border border-[#D71921] text-[#D71921] bg-transparent rounded-md'
                               : 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30'
                           }`}
                           title="Laser Relocation Benchmark (Turning Point)"
@@ -943,10 +945,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     data-tutorial={s.distanceFt === 5 ? 'station-action-5' : undefined}
                   >
                     {isCompleted ? (
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap shrink-0 ${
                         prototypeStyle === 'nothing'
-                          ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-[#4A9E5C] text-[#4A9E5C] bg-transparent'
-                          : 'bg-zinc-200/50 dark:bg-zinc-800/60 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30'
+                          ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-[#4A9E5C] text-[#4A9E5C] bg-transparent rounded-md'
+                          : 'bg-zinc-200/50 dark:bg-zinc-800/60 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 rounded-full'
                       }`}>
                         <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${prototypeStyle === 'nothing' ? 'text-[#4A9E5C]' : 'text-emerald-500'}`} />
                         <span>LEVELED</span>
@@ -957,10 +959,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         )}
                       </span>
                     ) : isLocked ? (
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap shrink-0 ${
                         prototypeStyle === 'nothing'
-                          ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 bg-transparent'
-                          : 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                          ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 bg-transparent rounded-md'
+                          : 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 rounded-full'
                       }`}>
                         <Lock className={`w-3.5 h-3.5 ${prototypeStyle === 'nothing' ? 'text-zinc-600 dark:text-zinc-400' : 'text-zinc-400'} shrink-0`} />
                         <span>LOCKED</span>
@@ -968,30 +970,30 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                     ) : (
                       <>
                         {s.action === 'ok' && (
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap shrink-0 ${
                             prototypeStyle === 'nothing'
-                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-[#4A9E5C] text-[#4A9E5C] bg-transparent'
-                              : 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
+                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-[#4A9E5C] text-[#4A9E5C] bg-transparent rounded-md'
+                              : 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 rounded-full'
                           }`}>
                             <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${prototypeStyle === 'nothing' ? 'text-[#4A9E5C]' : 'text-emerald-500'}`} />
                             <span>{s.actionText}</span>
                           </span>
                         )}
                         {s.action === 'lift' && (
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap shrink-0 ${
                             prototypeStyle === 'nothing'
-                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-[#5B9BF6] text-[#5B9BF6] bg-transparent'
-                              : 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30'
+                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-[#5B9BF6] text-[#5B9BF6] bg-transparent rounded-md'
+                              : 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30 rounded-full'
                           }`}>
                             <ArrowUpCircle className={`w-3.5 h-3.5 shrink-0 ${prototypeStyle === 'nothing' ? 'text-[#5B9BF6]' : 'text-sky-500 dark:text-sky-400'}`} />
                             <span>{s.actionText}</span>
                           </span>
                         )}
                         {s.action === 'lower' && (
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 ${
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap shrink-0 ${
                             prototypeStyle === 'nothing'
-                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-[#D4A843] text-[#D4A843] bg-transparent'
-                              : 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30'
+                              ? 'font-["Space_Mono"] uppercase tracking-wider text-[10px] border border-[#D4A843] text-[#D4A843] bg-transparent rounded-md'
+                              : 'bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30 rounded-full'
                           }`}>
                             <ArrowDownCircle className={`w-3.5 h-3.5 shrink-0 ${prototypeStyle === 'nothing' ? 'text-[#D4A843]' : 'text-amber-500 dark:text-amber-400'}`} />
                             <span>{s.actionText}</span>
@@ -1019,8 +1021,8 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                           className={`w-7 h-7 flex items-center justify-center rounded-lg border transition shrink-0 ${
                             prototypeStyle === 'nothing'
                               ? isLocked
-                                ? 'text-zinc-900 dark:text-white border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800 rounded-full'
-                                : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent rounded-full'
+                                ? 'text-zinc-900 dark:text-white border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-800'
+                                : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent'
                               : isLocked
                               ? 'text-amber-500 bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/40'
                               : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -1040,8 +1042,8 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                           className={`w-7 h-7 flex items-center justify-center rounded-lg border transition shrink-0 ${
                             prototypeStyle === 'nothing'
                               ? s.isTurningPoint
-                                ? 'text-[#D71921] border-[#D71921] bg-transparent rounded-full'
-                                : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent rounded-full'
+                                ? 'text-[#D71921] border-[#D71921] bg-transparent'
+                                : 'text-zinc-600 dark:text-zinc-400 border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent'
                               : s.isTurningPoint
                               ? 'text-purple-500 bg-purple-500/15 hover:bg-purple-500/25 border-purple-500/40'
                               : 'text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:text-purple-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -1055,7 +1057,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         onClick={() => onEditStation(s)}
                         className={`w-7 h-7 flex items-center justify-center rounded-lg border transition shrink-0 ${
                           prototypeStyle === 'nothing'
-                            ? 'border-zinc-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent rounded-full'
+                            ? 'border-zinc-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:border-zinc-500 dark:hover:border-zinc-700 bg-transparent'
                             : 'border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                         }`}
                         title="Edit measurement"
@@ -1066,7 +1068,7 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                         onClick={() => onDeleteStation(s.id)}
                         className={`w-7 h-7 flex items-center justify-center rounded-lg border transition shrink-0 ${
                           prototypeStyle === 'nothing'
-                            ? 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-[#D71921] hover:border-[#D71921]/50 bg-transparent rounded-full'
+                            ? 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:text-[#D71921] hover:border-[#D71921]/50 bg-transparent'
                             : 'border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-red-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                         }`}
                         title="Delete station"
@@ -1098,10 +1100,20 @@ export const ActionTable: React.FC<ActionTableProps> = ({
             className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 max-w-sm w-full space-y-3 sm:space-y-4 shadow-2xl max-h-[calc(100dvh-1.5rem)] overflow-y-auto modal-scroll-container overscroll-contain touch-auto my-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-amber-500" />
-              <span>Extend Track Profile</span>
-            </h4>
+            <div className="flex items-start justify-between gap-3">
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2 font-['Space_Mono'] uppercase tracking-wider">
+                <Layers className="w-4 h-4 text-[#D71921]" />
+                <span>[ Extend Track Profile ]</span>
+              </h4>
+              <button
+                type="button"
+                onClick={handleCloseExtendModal}
+                className="px-2 py-0.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider transition cursor-pointer"
+                aria-label="Close"
+              >
+                [ Close ]
+              </button>
+            </div>
             <div className="space-y-3">
               <div>
                 <div className="flex items-center justify-between mb-1">
@@ -1213,23 +1225,29 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 )}
               </p>
             </div>
-            <div className="flex gap-2 justify-end pt-2">
+            <div className="flex gap-2 justify-end pt-2 border-t border-zinc-200 dark:border-zinc-800">
               <button
+                type="button"
                 onClick={handleCloseExtendModal}
-                className="px-3 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                className="px-3.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-500 text-xs font-bold font-['Space_Mono'] uppercase transition active:scale-95 cursor-pointer"
               >
-                Cancel
+                [ Cancel ]
               </button>
               <button
+                type="button"
                 disabled={!extendLength || extendLength <= 0}
                 onClick={() => {
                   if (!extendLength || extendLength <= 0) return;
                   onExtendTrack?.(extendLength, extendInterval, extendDirection);
                   handleCloseExtendModal();
                 }}
-                className="px-4 py-1.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-extrabold text-xs rounded-xl shadow-sm transition"
+                className={`px-4 py-1.5 font-bold font-['Space_Mono'] uppercase text-xs rounded-lg shadow-sm transition active:scale-95 cursor-pointer ${
+                  prototypeStyle === 'nothing'
+                    ? 'bg-black text-white dark:bg-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50'
+                    : 'bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-extrabold'
+                }`}
               >
-                Add {extendLength} Feet {extendDirection === 'forward' ? 'Ahead' : 'Before 0'}
+                [ Add {extendLength} Ft {extendDirection === 'forward' ? 'Ahead' : 'Before 0'} ]
               </button>
             </div>
           </div>
@@ -1248,9 +1266,9 @@ export const ActionTable: React.FC<ActionTableProps> = ({
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 flex items-center gap-2 font-['Space_Mono'] uppercase tracking-wider">
                   <Flag className="w-4 h-4 text-[#D71921] shrink-0" />
-                  <span>Relocate Laser (Datum Shift)</span>
+                  <span>[ Relocate Laser (Datum Shift) ]</span>
                 </h4>
                 <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 leading-tight sm:leading-relaxed mt-0.5 sm:mt-1">
                   When moving the rotary laser forward, take one reading on this benchmark tie with your{' '}
@@ -1260,10 +1278,10 @@ export const ActionTable: React.FC<ActionTableProps> = ({
               <button
                 type="button"
                 onClick={handleCloseTurningPoint}
-                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shrink-0"
+                className="px-2 py-0.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider transition shrink-0 cursor-pointer"
                 aria-label="Close"
               >
-                <X className="w-4 h-4" />
+                [ Close ]
               </button>
             </div>
 
@@ -1359,26 +1377,26 @@ export const ActionTable: React.FC<ActionTableProps> = ({
                 );
               })()}
             </div>
-            <div className="flex gap-2 justify-end pt-1">
+            <div className="flex gap-2 justify-end pt-2 border-t border-zinc-200 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={handleCloseTurningPoint}
-                className="px-3 py-1.5 text-xs font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                className="px-3.5 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:border-zinc-500 text-xs font-bold font-['Space_Mono'] uppercase transition active:scale-95 cursor-pointer"
               >
-                Cancel
+                [ Cancel ]
               </button>
               <button
                 type="button"
                 data-tutorial="tp-apply-btn"
                 disabled={turningPointStation.readingInches === null}
                 onClick={handleApplyTurningPoint}
-                className={`px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed font-extrabold text-xs transition active:scale-95 ${
+                className={`px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs transition active:scale-95 cursor-pointer ${
                   prototypeStyle === 'nothing'
                     ? 'rounded-lg bg-[#D71921] hover:bg-[#b01319] text-white font-["Space_Mono"] uppercase tracking-wider'
-                    : 'rounded-xl bg-purple-600 hover:bg-purple-500 text-white shadow-sm'
+                    : 'rounded-xl bg-purple-600 hover:bg-purple-500 text-white shadow-sm font-extrabold'
                 }`}
               >
-                Apply Laser Relocation
+                [ Apply Laser Relocation ]
               </button>
             </div>
           </div>

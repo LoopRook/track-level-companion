@@ -362,10 +362,10 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
               <button
                 type="button"
                 onClick={onExitTutorial}
-                className={`p-1.5 rounded-lg transition shrink-0 ${
+                className={`p-1.5 transition shrink-0 ${
                   isNothing
-                    ? 'text-zinc-400 hover:text-white rounded-full'
-                    : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                    ? 'text-zinc-400 hover:text-white rounded-lg'
+                    : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg'
                 }`}
                 title="Exit Tutorial"
                 aria-label="Exit Tutorial"
@@ -448,7 +448,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 className={`text-xs font-semibold px-2 py-1.5 rounded-lg transition ${
                   isNothing
                     ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-500 hover:text-white'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                 }`}
               >
                 Exit Tutorial
@@ -461,7 +461,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                     onClick={onPrevStep}
                     className={`px-3 py-2 text-xs font-bold transition flex items-center gap-1 ${
                       isNothing
-                        ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-full font-["Space_Mono"] uppercase'
+                        ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-lg font-["Space_Mono"] uppercase'
                         : 'rounded-xl text-zinc-700 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700'
                     }`}
                   >
@@ -475,7 +475,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   onClick={handleNext}
                   className={`px-4 py-2 text-xs font-black active:scale-95 transition shadow-sm flex items-center gap-1.5 ${
                     isNothing
-                      ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-full font-["Space_Mono"] uppercase tracking-wider'
+                      ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-lg font-["Space_Mono"] uppercase tracking-wider'
                       : 'rounded-xl text-black bg-amber-500 hover:bg-amber-400'
                   }`}
                 >
@@ -523,7 +523,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   data-testid="tutorial-flip-btn"
                   className={`px-2 py-0.5 text-[10px] font-bold border transition flex items-center gap-1 ${
                     isNothing
-                      ? 'rounded-full border-zinc-700 bg-zinc-900/80 text-zinc-300 hover:text-white'
+                      ? 'rounded-md border-zinc-700 bg-zinc-900/80 text-zinc-300 hover:text-white'
                       : 'rounded-lg border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300'
                   }`}
                   title={currentCardPos === 'top' ? 'Move card to bottom' : 'Move card to top'}
@@ -539,8 +539,8 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   data-testid="tutorial-details-toggle"
                   className={`p-1 text-xs border transition ${
                     showDetails
-                      ? isNothing ? 'border-[#D71921] text-[#D71921] rounded-full' : 'bg-amber-500/20 text-amber-500 rounded-lg'
-                      : isNothing ? 'border-zinc-700 text-zinc-400 hover:text-white rounded-full' : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 rounded-lg'
+                      ? isNothing ? 'border-[#D71921] text-[#D71921] rounded-md' : 'bg-amber-500/20 text-amber-500 rounded-lg'
+                      : isNothing ? 'border-zinc-700 text-zinc-400 hover:text-white rounded-md' : 'border-zinc-300 dark:border-zinc-700 text-zinc-500 rounded-lg'
                   }`}
                   title={showDetails ? 'Hide details' : 'Show background details'}
                 >
@@ -551,9 +551,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 <button
                   type="button"
                   onClick={onExitTutorial}
-                  className={`p-1 text-zinc-400 hover:text-white transition ${
-                    isNothing ? 'rounded-full' : 'rounded-lg'
-                  }`}
+                  className={`p-1 text-zinc-400 hover:text-white transition rounded-md`}
                   title="Exit Tutorial"
                   aria-label="Exit Tutorial"
                 >
@@ -603,7 +601,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                   onClick={onPrevStep}
                   className={`px-2.5 py-1 text-[10px] font-bold transition flex items-center gap-1 ${
                     isNothing
-                      ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-full uppercase'
+                      ? 'border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white rounded-md uppercase font-["Space_Mono"]'
                       : 'rounded-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
                   }`}
                 >
@@ -640,7 +638,7 @@ export const InteractiveTutorial: React.FC<InteractiveTutorialProps> = ({
                 onClick={handleNext}
                 className={`px-3 py-1.5 text-xs font-black transition active:scale-95 flex items-center gap-1 shadow-sm ${
                   isNothing
-                    ? 'border border-[#D71921] bg-[#D71921] text-white rounded-full uppercase text-[10px] tracking-wider'
+                    ? 'border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white rounded-md uppercase text-[10px] tracking-wider font-["Space_Mono"]'
                     : 'rounded-xl text-black bg-amber-500 hover:bg-amber-400 text-xs'
                 }`}
               >

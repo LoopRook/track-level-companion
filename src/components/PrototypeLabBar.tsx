@@ -44,7 +44,7 @@ export const STYLES_META: StyleMeta[] = [
   },
   {
     id: 'glass',
-    label: 'Liquid Glass',
+    label: 'Liquid Glass (Archived)',
     tagline: 'Spatial translucency with frosted glassmorphism & fluid blurs (original preserved)',
     icon: Layers,
     inspiration: 'Apple VisionOS & macOS Sequoia glassmorphism',
@@ -53,7 +53,7 @@ export const STYLES_META: StyleMeta[] = [
   },
   {
     id: 'swiss',
-    label: 'Swiss Typographic',
+    label: 'Swiss Typographic (Archived)',
     tagline: 'Die Neue Graphik: pure grid discipline, massive typographic contrast & SBB vermilion',
     icon: Type,
     inspiration: 'Josef Müller-Brockmann, Armin Hofmann, Max Bill & Zürich Kunstgewerbeschule',
@@ -62,7 +62,7 @@ export const STYLES_META: StyleMeta[] = [
   },
   {
     id: 'claymorphism',
-    label: 'Tactile Claymorphism',
+    label: 'Tactile Claymorphism (Archived)',
     tagline: 'Puffy 3D volumetric plasticine tablets, dual inner-rim lighting & friendly pill shapes',
     icon: Boxes,
     inspiration: 'Modern 3D Clay & Plasticine UI, Apple Spatial Clay & Volumetric Design',
@@ -71,7 +71,7 @@ export const STYLES_META: StyleMeta[] = [
   },
   {
     id: 'cockpit',
-    label: 'Tactile Cockpit',
+    label: 'Tactile Cockpit (Archived)',
     tagline: 'Heavy equipment MOW cab avionics, physical 3D bevels & phosphor HUD',
     icon: Cpu,
     inspiration: 'Railroad tamper cab consoles, Teenage Engineering & NASA HUD',
@@ -80,7 +80,7 @@ export const STYLES_META: StyleMeta[] = [
   },
   {
     id: 'original',
-    label: 'Original System',
+    label: 'Original System (Archived)',
     tagline: 'Standard high-contrast field leveling system',
     icon: Sparkles,
     inspiration: 'Track Level Companion Core Baseline',

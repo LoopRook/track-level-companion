@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  X,
   BookOpen,
   ChevronRight,
   ChevronLeft,
@@ -100,14 +99,14 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
       >
         
         {/* Modal Header */}
-        <div className={`px-4 sm:px-5 py-3 flex items-center justify-between border-b shrink-0 ${
+        <div className={`px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b shrink-0 ${
           isNothing
             ? isDarkMode
               ? 'bg-black border-zinc-800'
               : 'bg-zinc-100 border-zinc-200'
             : 'bg-zinc-100 dark:bg-black border-zinc-200 dark:border-zinc-800'
         }`}>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
             <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${
               isNothing
                 ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-[#D71921]'
@@ -115,13 +114,17 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
             }`}>
               <BookOpen className="w-4 h-4" />
             </div>
-            <div>
-              <h2 className={`text-sm sm:text-base font-black ${
+            <div className="min-w-0">
+              <h2 className={`text-xs sm:text-sm font-black ${
                 isNothing ? 'uppercase font-["Space_Mono"]' : 'font-extrabold text-zinc-900 dark:text-white'
               }`}>
-                {isNothing ? '[ Field Guide & Handbook ]' : 'Track Level Field Guide & Tutorial'}
+                {isNothing ? (
+                  <span className="inline-block whitespace-nowrap">[ FIELD GUIDE &amp; HANDBOOK ]</span>
+                ) : (
+                  'Track Level Field Guide &amp; Tutorial'
+                )}
               </h2>
-              <p className={`text-[11px] ${
+              <p className={`text-[10px] sm:text-[11px] truncate sm:whitespace-normal ${
                 isNothing ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-400' : 'text-zinc-500'
               }`}>
                 Step {currentStep + 1} of {steps.length}: {steps[currentStep].shortTitle}
@@ -129,55 +132,40 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {onStartTutorial && (
-              <div className={`inline-flex p-0.5 rounded-lg border ${
-                isNothing
-                  ? isDarkMode ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-200 border-zinc-300'
-                  : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
-              }`}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onStartTutorial();
-                  }}
-                  className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md cursor-pointer transition ${
-                    isNothing
-                      ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
-                      : 'text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white'
-                  }`}
-                  title="Switch to Interactive Tutorials"
-                >
-                  Tutorials
-                </button>
-                <button
-                  type="button"
-                  className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md ${
-                    isNothing
-                      ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase'
-                      : 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
-                  }`}
-                  disabled
-                >
-                  Field Guide
-                </button>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={onClose}
-              className={`proto-ignore p-1.5 transition shrink-0 cursor-pointer rounded-lg ${
-                isNothing
-                  ? 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-                  : 'text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800'
-              }`}
-              aria-label="Close"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          {onStartTutorial && (
+            <div className={`inline-flex p-0.5 rounded-lg border self-start sm:self-center shrink-0 ${
+              isNothing
+                ? isDarkMode ? 'bg-zinc-950 border-zinc-800' : 'bg-zinc-200 border-zinc-300'
+                : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700'
+            }`}>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onStartTutorial();
+                }}
+                className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md cursor-pointer transition ${
+                  isNothing
+                    ? 'text-zinc-400 hover:text-white font-["Space_Mono"] uppercase'
+                    : 'text-zinc-600 dark:text-zinc-300 hover:text-black dark:hover:text-white'
+                }`}
+                title="Switch to Interactive Tutorials"
+              >
+                Tutorials
+              </button>
+              <button
+                type="button"
+                className={`proto-ignore px-2.5 py-1 text-[11px] font-bold rounded-md ${
+                  isNothing
+                    ? 'bg-zinc-900 border border-zinc-700 text-white font-["Space_Mono"] uppercase shadow-xs'
+                    : 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
+                }`}
+                disabled
+              >
+                Field Guide
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Step Tabs Navigation - Desktop (sm and up) */}
@@ -927,26 +915,41 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
         </div>
 
         {/* Modal Footer Navigation */}
-        <div className={`px-4 sm:px-5 py-3 border-t flex items-center justify-between shrink-0 ${
+        <div className={`px-4 sm:px-5 py-3 border-t flex items-center justify-between gap-2 shrink-0 ${
           isNothing
             ? isDarkMode
               ? 'bg-black border-zinc-800 font-["Space_Mono"]'
               : 'bg-zinc-100 border-zinc-200 font-["Space_Mono"]'
             : 'bg-zinc-100 dark:bg-black border-zinc-200 dark:border-zinc-800'
         }`}>
-          <button
-            type="button"
-            disabled={currentStep === 0}
-            onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
-            className={`proto-ignore px-3 py-1.5 text-xs font-bold transition flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none cursor-pointer ${
-              isNothing
-                ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white uppercase font-["Space_Mono"]'
-                : 'rounded-xl border border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'
-            }`}
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Previous</span>
-          </button>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className={`proto-ignore px-2.5 sm:px-3 py-1.5 text-xs font-bold transition rounded-lg cursor-pointer ${
+                isNothing
+                  ? isDarkMode
+                    ? 'border border-zinc-800 bg-transparent text-zinc-400 hover:text-white hover:border-zinc-700 uppercase font-["Space_Mono"]'
+                    : 'border border-zinc-300 bg-transparent text-zinc-600 hover:text-black hover:border-zinc-400 uppercase font-["Space_Mono"]'
+                  : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+              }`}
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              disabled={currentStep === 0}
+              onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+              className={`proto-ignore px-2.5 sm:px-3 py-1.5 text-xs font-bold transition flex items-center gap-1 disabled:opacity-30 disabled:pointer-events-none cursor-pointer ${
+                isNothing
+                  ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white uppercase font-["Space_Mono"]'
+                  : 'rounded-xl border border-zinc-300 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-900'
+              }`}
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Previous</span>
+            </button>
+          </div>
 
           <div className="flex items-center gap-1.5">
             {steps.map((_, idx) => (
@@ -984,11 +987,11 @@ export const UserGuideModal: React.FC<UserGuideModalProps> = ({
               onClick={onClose}
               className={`proto-ignore px-4 py-1.5 text-xs font-extrabold transition shadow-sm active:scale-95 cursor-pointer ${
                 isNothing
-                  ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-200 hover:text-white uppercase font-["Space_Mono"]'
+                  ? 'rounded-lg border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white uppercase font-["Space_Mono"]'
                   : 'rounded-xl bg-zinc-800 hover:bg-zinc-700 dark:bg-zinc-200 dark:hover:bg-white text-white dark:text-black'
               }`}
             >
-              Close
+              Finish
             </button>
           )}
         </div>
