@@ -180,7 +180,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-500 font-['Space_Mono'] uppercase tracking-wider text-[11px] font-bold transition cursor-pointer whitespace-nowrap shrink-0"
+            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-500 font-['Space_Mono'] uppercase tracking-wider text-[11px] font-bold transition cursor-pointer whitespace-nowrap shrink-0 inline-flex items-center justify-center select-none"
             aria-label="Close Settings"
           >
             [ Close ]

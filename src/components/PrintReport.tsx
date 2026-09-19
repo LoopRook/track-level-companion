@@ -104,7 +104,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#D71921] inline-block shrink-0" />
+              <span className="w-2.5 h-2.5 rounded-full bg-black inline-block shrink-0" />
               <span className="text-[10px] font-bold text-zinc-600 tracking-wider uppercase">
                 [ TRACK LEVEL COMPANION • FIELD REPORT ]
               </span>
@@ -116,7 +116,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
               TRACK VERTICAL PROFILE & FIELD LEVELING TELEMETRY • {APP_VERSION_LABEL}
             </p>
           </div>
-          <div className="text-right font-mono text-[9px] text-zinc-800 leading-tight border border-zinc-400 rounded px-2.5 py-1 bg-transparent">
+          <div className="text-right font-mono text-[9px] text-black leading-tight border border-black rounded px-2.5 py-1 bg-transparent">
             <div><strong>DATE:</strong> {project.date || new Date().toISOString().split('T')[0]}</div>
             <div><strong>DATUM:</strong> {project.laserDatumMode === 'relative_to_first' ? 'STATION 0 (REF)' : 'BENCHMARK'}</div>
             <div><strong>FORMAT:</strong> LANDSCAPE FIELD SHEET</div>
@@ -124,16 +124,16 @@ export const PrintReport: React.FC<PrintReportProps> = ({
         </div>
 
         {/* Metadata Summary Telemetry Grid */}
-        <div className="grid grid-cols-4 gap-2 mt-2 pt-1.5 border-t border-zinc-300 text-[10px]">
-          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-zinc-400">
-            <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight tracking-wider">
+        <div className="grid grid-cols-4 gap-2 mt-2 pt-1.5 border-t-2 border-black text-[10px]">
+          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-black">
+            <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
               [ SECTION LENGTH ]
             </span>
             <strong className="text-[12px] font-bold text-black block">{summary.lengthFt} FT</strong>
             <span className="text-zinc-600 text-[8.5px] block">({summary.totalStations} TIES)</span>
           </div>
-          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-zinc-400">
-            <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight tracking-wider">
+          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-black">
+            <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
               [ DESIGN GRADE ]
             </span>
             <strong className="text-[12px] font-bold text-black block">
@@ -141,15 +141,15 @@ export const PrintReport: React.FC<PrintReportProps> = ({
             </strong>
             <span className="text-zinc-600 text-[8.5px] block">({project.gradeMode === 'end_to_end' ? 'END-TO-END' : 'TARGET %'})</span>
           </div>
-          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-zinc-400">
-            <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight tracking-wider">
+          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-black">
+            <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
               [ TOLERANCE WINDOW ]
             </span>
-            <strong className="text-[12px] font-bold text-emerald-700 block">{tolLabel}</strong>
+            <strong className="text-[12px] font-bold text-black block">{tolLabel}</strong>
             <span className="text-zinc-600 text-[8.5px] block">(SHIM THRESHOLD)</span>
           </div>
-          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-zinc-400">
-            <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight tracking-wider">
+          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-black">
+            <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
               [ FIELD STATUS ]
             </span>
             <strong className="text-[12px] font-bold text-black block">{summary.measuredCount}/{summary.totalStations} SHOT</strong>
@@ -159,7 +159,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
       </div>
 
       {/* SVG Vertical Profile Chart */}
-      <div className="border border-zinc-300 rounded-lg p-1.5 mb-2 bg-white break-inside-avoid">
+      <div className="border border-black rounded-lg p-1.5 mb-2 bg-transparent break-inside-avoid">
         <div className="flex items-center justify-between mb-1 text-[9px] font-bold px-1 uppercase tracking-wider">
           <span>[ VERTICAL ELEVATION PROFILE (INCHES) ]</span>
           <span className="text-zinc-600 text-[8.5px]">
@@ -219,8 +219,8 @@ export const PrintReport: React.FC<PrintReportProps> = ({
             <path
               d={targetPath}
               fill="none"
-              stroke="#059669"
-              strokeWidth="1.8"
+              stroke="#000000"
+              strokeWidth="1.5"
               strokeDasharray="4,3"
             />
           )}
@@ -230,7 +230,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
             <path
               d={smoothPath}
               fill="none"
-              stroke="#09090b"
+              stroke="#000000"
               strokeWidth="2.5"
             />
           )}
@@ -242,22 +242,16 @@ export const PrintReport: React.FC<PrintReportProps> = ({
             const y = isMeasured ? getY(s.elevationInches as number) : getY(0);
 
             let badgeText = '';
-            let badgeColor = '#52525b';
             if (s.isLocked) {
               badgeText = '🔒 ROOT';
-              badgeColor = '#b45309';
             } else if (s.isTurningPoint) {
               badgeText = '🚩 TP';
-              badgeColor = '#7e22ce';
             } else if (s.action === 'ok') {
               badgeText = s.actionText === 'DATUM (REF)' ? 'REF' : 'OK';
-              badgeColor = s.actionText === 'DATUM (REF)' ? '#D71921' : '#059669';
             } else if (s.action === 'lift') {
               badgeText = `▲+${formatMeasurement(s.liftInches, project.unitFormat, project.fractionResolution)}`;
-              badgeColor = '#0284c7';
             } else if (s.action === 'lower') {
               badgeText = `▼-${formatMeasurement(Math.abs(s.liftInches || 0), project.unitFormat, project.fractionResolution)}`;
-              badgeColor = '#d97706';
             }
 
             return (
@@ -268,8 +262,8 @@ export const PrintReport: React.FC<PrintReportProps> = ({
                     cx={x}
                     cy={y}
                     r={s.completed ? 4 : 3.5}
-                    fill={s.actionText === 'DATUM (REF)' ? '#D71921' : s.action === 'ok' ? '#059669' : s.action === 'lift' ? '#0284c7' : '#d97706'}
-                    stroke="#ffffff"
+                    fill={s.completed ? '#000000' : '#ffffff'}
+                    stroke="#000000"
                     strokeWidth="1.5"
                   />
                 )}
@@ -283,7 +277,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
                     fontSize="7"
                     fontFamily="Space Mono, monospace"
                     fontWeight="bold"
-                    fill={badgeColor}
+                    fill="#000000"
                   >
                     {badgeText}
                   </text>
@@ -340,15 +334,15 @@ export const PrintReport: React.FC<PrintReportProps> = ({
           </span>
         </div>
 
-        <table className="w-full border-collapse border border-zinc-700 text-[9px]">
+        <table className="w-full border-collapse border-2 border-black text-[9px]">
           <thead>
-            <tr className="bg-zinc-900 text-white border-b-2 border-black text-left">
-              <th className="py-1 px-1.5 border-r border-zinc-700 w-[10%]">[ STATION ]</th>
-              <th className="py-1 px-1.5 border-r border-zinc-700 w-[13%]">[ LAST ROD ]</th>
-              <th className="py-1 px-1.5 border-r border-zinc-700 w-[13%]">[ TARGET ROD ]</th>
-              <th className="py-1 px-1.5 border-r border-zinc-700 w-[11%]">[ REL ELEV ]</th>
-              <th className="py-1 px-1.5 border-r border-zinc-700 w-[25%]">[ ACTION / CORRECTION ]</th>
-              <th className="py-1 px-1.5 border-r border-zinc-700 w-[7%] text-center">[ DONE ]</th>
+            <tr className="bg-transparent text-black border-b-2 border-black text-left">
+              <th className="py-1 px-1.5 border-r border-black w-[10%]">[ STATION ]</th>
+              <th className="py-1 px-1.5 border-r border-black w-[13%]">[ LAST ROD ]</th>
+              <th className="py-1 px-1.5 border-r border-black w-[13%]">[ TARGET ROD ]</th>
+              <th className="py-1 px-1.5 border-r border-black w-[11%]">[ REL ELEV ]</th>
+              <th className="py-1 px-1.5 border-r border-black w-[25%]">[ ACTION / CORRECTION ]</th>
+              <th className="py-1 px-1.5 border-r border-black w-[7%] text-center">[ DONE ]</th>
               <th className="py-1 px-1.5 w-[21%]">[ NOTES / FLAGS ]</th>
             </tr>
           </thead>
@@ -362,57 +356,57 @@ export const PrintReport: React.FC<PrintReportProps> = ({
               return (
                 <tr
                   key={s.id}
-                  className="border-b border-zinc-300 break-inside-avoid bg-white text-zinc-950"
+                  className="border-b border-zinc-400 break-inside-avoid bg-transparent text-black"
                 >
-                  <td className="py-0.5 px-1.5 border-r border-zinc-300 font-bold whitespace-nowrap">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-400 font-bold whitespace-nowrap">
                     {s.distanceFt} ft
                   </td>
-                  <td className="py-0.5 px-1.5 border-r border-zinc-300 whitespace-nowrap">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-400 whitespace-nowrap">
                     {s.readingInches !== null
                       ? formatMeasurement(s.readingInches, project.unitFormat, project.fractionResolution)
                       : '—'}
                   </td>
-                  <td className="py-0.5 px-1.5 border-r border-zinc-300 font-bold text-blue-900 whitespace-nowrap">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-400 font-bold text-black whitespace-nowrap">
                     {s.targetReadingInches !== null && s.targetReadingInches !== undefined
                       ? formatMeasurement(s.targetReadingInches, project.unitFormat, project.fractionResolution)
                       : '—'}
                   </td>
-                  <td className="py-0.5 px-1.5 border-r border-zinc-300 whitespace-nowrap">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-400 whitespace-nowrap">
                     {s.elevationInches !== null
                       ? formatMeasurement(s.elevationInches, project.unitFormat, project.fractionResolution)
                       : '—'}
                   </td>
-                  <td className="py-0.5 px-1.5 border-r border-zinc-300 font-bold whitespace-nowrap">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-400 font-bold whitespace-nowrap">
                     {isRef && (
-                      <span className="px-1.5 py-0.5 rounded border border-[#D71921] bg-red-50 text-[#D71921] text-[8px]">
+                      <span className="px-1.5 py-0.5 rounded border border-black bg-transparent text-black text-[8px] font-bold">
                         ● REF DATUM
                       </span>
                     )}
                     {!isRef && isOk && (
-                      <span className="px-1.5 py-0.5 rounded border border-emerald-600 bg-emerald-50 text-emerald-900 text-[8px]">
+                      <span className="px-1.5 py-0.5 rounded border border-black bg-transparent text-black text-[8px] font-bold">
                         ✓ ON GRADE
                       </span>
                     )}
                     {isLift && (
-                      <span className="px-1.5 py-0.5 rounded border border-sky-600 bg-sky-50 text-sky-950 text-[8px]">
+                      <span className="px-1.5 py-0.5 rounded border border-black bg-transparent text-black text-[8px] font-bold">
                         ▲ LIFT {formatMeasurement(s.liftInches, project.unitFormat, project.fractionResolution)}
                       </span>
                     )}
                     {isLower && (
-                      <span className="px-1.5 py-0.5 rounded border border-amber-600 bg-amber-50 text-amber-950 text-[8px]">
+                      <span className="px-1.5 py-0.5 rounded border border-black bg-transparent text-black text-[8px] font-bold">
                         ▼ LOWER {formatMeasurement(Math.abs(s.liftInches || 0), project.unitFormat, project.fractionResolution)}
                       </span>
                     )}
                     {!isOk && !isLift && !isLower && <span>—</span>}
                   </td>
-                  <td className="py-0.5 px-1.5 border-r border-zinc-300 text-center">
-                    <span className="inline-block w-3.5 h-3.5 border border-zinc-600 rounded-sm text-center leading-3 font-bold text-emerald-800">
+                  <td className="py-0.5 px-1.5 border-r border-zinc-400 text-center">
+                    <span className="inline-block w-3.5 h-3.5 border border-black rounded-sm text-center leading-3 font-bold text-black">
                       {s.completed ? '✓' : ''}
                     </span>
                   </td>
-                  <td className="py-0.5 px-1.5 text-[8.5px] text-zinc-700 truncate">
-                    {s.isTurningPoint && <span className="font-bold text-purple-800">[TP / Benchmark] </span>}
-                    {s.isLocked && <span className="font-bold text-amber-800">[LOCKED Point] </span>}
+                  <td className="py-0.5 px-1.5 text-[8.5px] text-black truncate">
+                    {s.isTurningPoint && <span className="font-bold">[TP / Benchmark] </span>}
+                    {s.isLocked && <span className="font-bold">[LOCKED Point] </span>}
                     {s.datumOffsetInches ? `Shift: ${s.datumOffsetInches >= 0 ? '+' : ''}${formatMeasurement(s.datumOffsetInches, project.unitFormat, project.fractionResolution)}` : ''}
                   </td>
                 </tr>

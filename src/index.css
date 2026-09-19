@@ -157,19 +157,23 @@ input, textarea {
     margin: 0.25in;
   }
 
-  html, body {
+  html,
+  body,
+  html.style-nothing,
+  html.style-nothing body,
+  html.style-nothing.dark,
+  html.style-nothing.dark body,
+  html.style-nothing.light,
+  html.style-nothing.light body,
+  #root {
     background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    width: 100% !important;
-  }
-
-  #root {
-    margin: 0 !important;
-    padding: 0 !important;
     width: 100% !important;
   }
 
@@ -372,21 +376,23 @@ html.style-nothing body {
   letter-spacing: -0.01em;
 }
 
-/* Nothing Canvas: OLED black in Dark, warm off-white paper #F5F5F5 in Light */
-html.style-nothing.dark,
-html.style-nothing.dark body {
-  background-color: #000000 !important;
-  background-image: radial-gradient(circle, #2a2a2a 1px, transparent 1px) !important;
-  background-size: 16px 16px !important;
-  color: #E8E8E8 !important;
-}
+/* Nothing Canvas: OLED black in Dark, warm off-white paper #F5F5F5 in Light (Screen only) */
+@media screen {
+  html.style-nothing.dark,
+  html.style-nothing.dark body {
+    background-color: #000000 !important;
+    background-image: radial-gradient(circle, #2a2a2a 1px, transparent 1px) !important;
+    background-size: 16px 16px !important;
+    color: #E8E8E8 !important;
+  }
 
-html.style-nothing.light,
-html.style-nothing.light body {
-  background-color: #F5F5F5 !important;
-  background-image: radial-gradient(circle, #b8b8b8 1px, transparent 1px) !important;
-  background-size: 16px 16px !important;
-  color: #1A1A1A !important;
+  html.style-nothing.light,
+  html.style-nothing.light body {
+    background-color: #F5F5F5 !important;
+    background-image: radial-gradient(circle, #b8b8b8 1px, transparent 1px) !important;
+    background-size: 16px 16px !important;
+    color: #1A1A1A !important;
+  }
 }
 
 /* Nothing Cards / Surfaces:

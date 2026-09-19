@@ -142,14 +142,14 @@ export const MobileToolsModal: React.FC<MobileToolsModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`px-4 sm:px-5 py-3.5 border-b flex items-center justify-between shrink-0 ${
+        <div className={`px-4 sm:px-5 py-3 border-b flex items-center justify-between gap-2 shrink-0 ${
           prototypeStyle === 'nothing'
             ? isDarkMode
               ? 'bg-zinc-950 border-zinc-800'
               : 'bg-white border-zinc-300'
             : 'bg-zinc-50 dark:bg-zinc-900/80 border-zinc-200 dark:border-zinc-800'
         }`}>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
               prototypeStyle === 'nothing'
                 ? isDarkMode
@@ -159,13 +159,18 @@ export const MobileToolsModal: React.FC<MobileToolsModalProps> = ({
             }`}>
               <Compass className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className={`font-bold text-xs sm:text-sm tracking-wide ${
+            <div className="min-w-0 flex-1">
+              <h3 className={`font-bold text-xs sm:text-sm tracking-wide truncate whitespace-nowrap ${
                 prototypeStyle === 'nothing' ? 'font-["Space_Mono"] uppercase tracking-[0.08em]' : ''
               }`}>
-                {prototypeStyle === 'nothing' ? '[ FIELD TOOLS & SETTINGS ]' : 'Tools & Settings'}
+                {prototypeStyle === 'nothing' ? (
+                  <>
+                    <span className="inline sm:hidden">[ TOOLS ]</span>
+                    <span className="hidden sm:inline">[ FIELD TOOLS & SETTINGS ]</span>
+                  </>
+                ) : 'Tools & Settings'}
               </h3>
-              <p className={`text-[10px] ${
+              <p className={`text-[10px] truncate ${
                 prototypeStyle === 'nothing'
                   ? isDarkMode ? 'text-zinc-400 font-["Space_Mono"] uppercase tracking-wider' : 'text-zinc-600 font-["Space_Mono"] uppercase tracking-wider'
                   : 'text-zinc-400'
@@ -177,10 +182,10 @@ export const MobileToolsModal: React.FC<MobileToolsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider transition cursor-pointer"
+            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider transition cursor-pointer whitespace-nowrap shrink-0 inline-flex items-center justify-center select-none"
             aria-label="Close tools menu"
           >
-            [ Close ]
+            [ CLOSE ]
           </button>
         </div>
 
@@ -237,20 +242,12 @@ export const MobileToolsModal: React.FC<MobileToolsModalProps> = ({
           })}
         </div>
 
-        {/* Footer info & Close */}
-        <div className={`p-3 border-t flex flex-col gap-2 ${
-          prototypeStyle === 'nothing' ? 'font-["Space_Mono"] uppercase tracking-wider border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950' : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900'
+        {/* Footer Info (Single close button is located in header) */}
+        <div className={`py-2.5 px-4 border-t flex items-center justify-between text-[9.5px] ${
+          prototypeStyle === 'nothing' ? 'font-["Space_Mono"] uppercase tracking-wider border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 text-zinc-500' : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-400'
         }`}>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-200 dark:bg-zinc-900 text-zinc-900 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-800 text-xs font-bold font-['Space_Mono'] uppercase tracking-wider transition active:scale-[0.99] cursor-pointer"
-          >
-            [ Close Tools Menu ]
-          </button>
-          <div className="text-center text-[10px] text-zinc-500">
-            <span>TRACK LEVEL COMPANION • FIELD EDITION</span>
-          </div>
+          <span>TRACK LEVEL COMPANION</span>
+          <span>FIELD EDITION</span>
         </div>
       </div>
     </div>
