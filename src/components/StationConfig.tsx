@@ -374,7 +374,7 @@ const getToleranceLabel = (tol?: number, unit?: UnitFormat) => {
 export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, summary, prototypeStyle = 'original' }) => {
   if (prototypeStyle === 'nothing') {
     return (
-      <div className="md:rounded-2xl md:border border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#000000] overflow-hidden shadow-xs divide-y divide-zinc-200 dark:divide-zinc-800 mobile-edge-to-edge">
+      <div className="shrink-0 min-h-fit md:rounded-2xl md:border border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#000000] overflow-hidden shadow-xs divide-y divide-zinc-200 dark:divide-zinc-800 mobile-edge-to-edge">
         <div className="grid grid-cols-2 divide-x divide-zinc-200 dark:divide-zinc-800">
           {/* Cell 1: Track Length */}
           <div className="p-2.5 sm:p-3 flex flex-col justify-between min-h-[74px] sm:min-h-[78px]">
@@ -506,7 +506,7 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-2 gap-2.5 sm:gap-3">
+    <div className="shrink-0 min-h-fit grid grid-cols-2 md:grid-cols-2 gap-2.5 sm:gap-3">
       {/* Card 1: Track Length */}
       <div className="proto-card bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 p-2.5 sm:p-3 rounded-xl flex flex-col justify-between min-h-[74px] sm:min-h-[78px] shadow-xs">
         <div className="min-h-[24px] flex items-start justify-between gap-1 mb-1">
@@ -627,7 +627,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
     return (
       <div
         data-tutorial="alignment-bar"
-        className="proto-card bg-white dark:bg-[#000000] md:border border-b border-zinc-200 dark:border-zinc-800 md:rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-2.5 text-xs transition-colors mobile-edge-to-edge"
+        className="shrink-0 min-h-fit proto-card bg-white dark:bg-[#000000] md:border border-b border-zinc-200 dark:border-zinc-800 md:rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-2.5 text-xs transition-colors mobile-edge-to-edge"
       >
         {/* Tier 1: Target Grade Mode Selector & Readout */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -770,7 +770,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
   return (
     <div
       data-tutorial="alignment-bar"
-      className="proto-card bg-white dark:bg-black md:border border-b border-zinc-200 dark:border-zinc-800 md:rounded-2xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs transition-colors mobile-edge-to-edge"
+      className="shrink-0 min-h-fit proto-card bg-white dark:bg-black md:border border-b border-zinc-200 dark:border-zinc-800 md:rounded-2xl p-2.5 sm:p-3 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs transition-colors mobile-edge-to-edge"
     >
       {/* Target Grade Mode Segmented Control */}
       <div className="flex items-center gap-2 flex-wrap">

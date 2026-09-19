@@ -1247,22 +1247,32 @@ export const App: React.FC = () => {
               </div>
             </div>
 
-            {/* ROW 2: Essential Survey Telemetry (Station Length, Grade Mode, On-Grade Count) */}
+            {/* ROW 2: Essential Survey Telemetry (Station Length, Grade Mode, On-Grade Count, Lift & Lower) */}
             <div className="flex items-center justify-between gap-1.5 pt-1 border-t border-zinc-200/60 dark:border-zinc-800/60 text-[11px]">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 shrink-0">
                 <span className="font-bold text-zinc-900 dark:text-zinc-100">{summary.lengthFt}'</span>
-                <span className="text-zinc-500">({summary.totalStations} ties)</span>
+                <span className="text-zinc-500 text-[10px]">({summary.totalStations} ties)</span>
               </div>
-              <div className="flex items-center gap-1 truncate max-w-[130px]">
+              <div className="flex items-center gap-1 truncate max-w-[120px]">
                 <span className="text-zinc-500 uppercase text-[10px]">Grade:</span>
                 <span className={`font-bold truncate ${prototypeStyle === 'nothing' ? 'text-zinc-900 dark:text-white' : 'text-amber-600 dark:text-amber-400'}`}>
                   {project.gradeMode === 'end_to_end' ? 'End-to-End' : `${project.targetGradePercent >= 0 ? '+' : ''}${project.targetGradePercent.toFixed(2)}%`}
                 </span>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <span className={`font-bold ${prototypeStyle === 'nothing' ? 'text-[#4A9E5C]' : 'text-emerald-700 dark:text-emerald-400'}`}>
-                  ✓ {summary.onGradeCount}/{summary.measuredCount} On Grade
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className={`font-bold text-[10px] ${prototypeStyle === 'nothing' ? 'text-[#4A9E5C]' : 'text-emerald-700 dark:text-emerald-400'}`} title="On Grade count">
+                  ✓ {summary.onGradeCount}/{summary.measuredCount}
                 </span>
+                {summary.measuredCount >= 2 && summary.liftCount > 0 && (
+                  <span className={`font-bold text-[10px] ${prototypeStyle === 'nothing' ? 'text-[#5B9BF6]' : 'text-sky-600 dark:text-sky-400'}`} title="Needs Lift count">
+                    ▲ {summary.liftCount}
+                  </span>
+                )}
+                {summary.measuredCount >= 2 && summary.lowerCount > 0 && (
+                  <span className={`font-bold text-[10px] ${prototypeStyle === 'nothing' ? 'text-[#D4A843]' : 'text-amber-600 dark:text-amber-400'}`} title="Needs Lower count">
+                    ▼ {summary.lowerCount}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -1361,18 +1371,22 @@ export const App: React.FC = () => {
               />
             </div>
 
-            <StationSummaryBar
-              project={project}
-              summary={summary}
-              prototypeStyle={prototypeStyle}
-            />
+            <div className="shrink-0 min-h-fit">
+              <StationSummaryBar
+                project={project}
+                summary={summary}
+                prototypeStyle={prototypeStyle}
+              />
+            </div>
 
-            <StationAlignmentBar
-              project={project}
-              onChangeProject={handleUpdateProject}
-              calculatedStations={calculatedStations}
-              prototypeStyle={prototypeStyle}
-            />
+            <div className="shrink-0 min-h-fit">
+              <StationAlignmentBar
+                project={project}
+                onChangeProject={handleUpdateProject}
+                calculatedStations={calculatedStations}
+                prototypeStyle={prototypeStyle}
+              />
+            </div>
           </div>
 
           {/* RIGHT COLUMN: Actionable Trackside Checklist Table */}
