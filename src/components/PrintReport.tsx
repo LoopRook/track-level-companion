@@ -98,41 +98,42 @@ export const PrintReport: React.FC<PrintReportProps> = ({
     `±${tol.toFixed(3)}"`;
 
   return (
-    <div className="print-report-container p-0 bg-white text-black font-['Space_Mono',monospace] text-xs">
-      {/* Report Header */}
-      <div className="border-b-2 border-black pb-2 mb-2">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-black inline-block shrink-0" />
-              <span className="text-[10px] font-bold text-zinc-600 tracking-wider uppercase">
-                [ TRACK LEVEL COMPANION • FIELD REPORT ]
-              </span>
+    <div className="print-report-container p-0 bg-transparent text-black font-['Space_Mono',monospace] text-xs min-h-[96vh] flex flex-col justify-between">
+      <div>
+        {/* Report Header */}
+        <div className="border-b-2 border-black pb-2 mb-2 bg-white">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-black inline-block shrink-0" />
+                <span className="text-[10px] font-bold text-zinc-600 tracking-wider uppercase">
+                  [ TRACK LEVEL COMPANION • FIELD REPORT ]
+                </span>
+              </div>
+              <h1 className="text-base font-bold tracking-tight text-black uppercase leading-tight mt-0.5">
+                [ {project.name || 'TRACK SECTION PROFILE'} ]
+              </h1>
+              <p className="text-[9.5px] font-medium text-zinc-500 mt-0.5 tracking-wider uppercase">
+                TRACK VERTICAL PROFILE & FIELD LEVELING TELEMETRY • {APP_VERSION_LABEL}
+              </p>
             </div>
-            <h1 className="text-base font-bold tracking-tight text-black uppercase leading-tight mt-0.5">
-              [ {project.name || 'TRACK SECTION PROFILE'} ]
-            </h1>
-            <p className="text-[9.5px] font-medium text-zinc-500 mt-0.5 tracking-wider uppercase">
-              TRACK VERTICAL PROFILE & FIELD LEVELING TELEMETRY • {APP_VERSION_LABEL}
-            </p>
+            <div className="text-right font-mono text-[9px] text-black leading-tight border border-black rounded px-2.5 py-1 bg-white">
+              <div><strong>DATE:</strong> {project.date || new Date().toISOString().split('T')[0]}</div>
+              <div><strong>DATUM:</strong> {project.laserDatumMode === 'relative_to_first' ? 'STATION 0 (REF)' : 'BENCHMARK'}</div>
+              <div><strong>FORMAT:</strong> LANDSCAPE FIELD SHEET</div>
+            </div>
           </div>
-          <div className="text-right font-mono text-[9px] text-black leading-tight border border-black rounded px-2.5 py-1 bg-transparent">
-            <div><strong>DATE:</strong> {project.date || new Date().toISOString().split('T')[0]}</div>
-            <div><strong>DATUM:</strong> {project.laserDatumMode === 'relative_to_first' ? 'STATION 0 (REF)' : 'BENCHMARK'}</div>
-            <div><strong>FORMAT:</strong> LANDSCAPE FIELD SHEET</div>
-          </div>
-        </div>
 
-        {/* Metadata Summary Telemetry Grid */}
-        <div className="grid grid-cols-4 gap-2 mt-2 pt-1.5 border-t-2 border-black text-[10px]">
-          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-black">
-            <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
-              [ SECTION LENGTH ]
-            </span>
-            <strong className="text-[12px] font-bold text-black block">{summary.lengthFt} FT</strong>
-            <span className="text-zinc-600 text-[8.5px] block">({summary.totalStations} TIES)</span>
-          </div>
-          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-black">
+          {/* Metadata Summary Telemetry Grid */}
+          <div className="grid grid-cols-4 gap-2 mt-2 pt-1.5 border-t-2 border-black text-[10px]">
+            <div className="py-1 px-2.5 bg-white rounded-lg border border-black">
+              <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
+                [ SECTION LENGTH ]
+              </span>
+              <strong className="text-[12px] font-bold text-black block">{summary.lengthFt} FT</strong>
+              <span className="text-zinc-600 text-[8.5px] block">({summary.totalStations} TIES)</span>
+            </div>
+            <div className="py-1 px-2.5 bg-white rounded-lg border border-black">
             <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
               [ DESIGN GRADE ]
             </span>
@@ -141,14 +142,14 @@ export const PrintReport: React.FC<PrintReportProps> = ({
             </strong>
             <span className="text-zinc-600 text-[8.5px] block">({project.gradeMode === 'end_to_end' ? 'END-TO-END' : 'TARGET %'})</span>
           </div>
-          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-black">
+          <div className="py-1 px-2.5 bg-white rounded-lg border border-black">
             <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
               [ TOLERANCE WINDOW ]
             </span>
             <strong className="text-[12px] font-bold text-black block">{tolLabel}</strong>
             <span className="text-zinc-600 text-[8.5px] block">(SHIM THRESHOLD)</span>
           </div>
-          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-black">
+          <div className="py-1 px-2.5 bg-white rounded-lg border border-black">
             <span className="text-[8px] uppercase font-bold text-zinc-600 block leading-tight tracking-wider">
               [ FIELD STATUS ]
             </span>
@@ -159,7 +160,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
       </div>
 
       {/* SVG Vertical Profile Chart */}
-      <div className="border border-black rounded-lg p-1.5 mb-2 bg-transparent break-inside-avoid">
+      <div className="border border-black rounded-lg p-1.5 mb-2 bg-white break-inside-avoid">
         <div className="flex items-center justify-between mb-1 text-[9px] font-bold px-1 uppercase tracking-wider">
           <span>[ VERTICAL ELEVATION PROFILE (INCHES) ]</span>
           <span className="text-zinc-600 text-[8.5px]">
@@ -334,9 +335,9 @@ export const PrintReport: React.FC<PrintReportProps> = ({
           </span>
         </div>
 
-        <table className="w-full border-collapse border-2 border-black text-[9px]">
+        <table className="w-full border-collapse border-2 border-black text-[9px] bg-white">
           <thead>
-            <tr className="bg-transparent text-black border-b-2 border-black text-left">
+            <tr className="bg-white text-black border-b-2 border-black text-left">
               <th className="py-1 px-1.5 border-r border-black w-[10%]">[ STATION ]</th>
               <th className="py-1 px-1.5 border-r border-black w-[13%]">[ LAST ROD ]</th>
               <th className="py-1 px-1.5 border-r border-black w-[13%]">[ TARGET ROD ]</th>
@@ -356,7 +357,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
               return (
                 <tr
                   key={s.id}
-                  className="border-b border-zinc-400 break-inside-avoid bg-transparent text-black"
+                  className="border-b border-zinc-400 break-inside-avoid bg-white text-black"
                 >
                   <td className="py-0.5 px-1.5 border-r border-zinc-400 font-bold whitespace-nowrap">
                     {s.distanceFt} ft
@@ -415,14 +416,23 @@ export const PrintReport: React.FC<PrintReportProps> = ({
           </tbody>
         </table>
       </div>
+    </div>
 
-      {/* Footer Signoff Block */}
-      <div className="mt-2 pt-1.5 border-t-2 border-black flex justify-between items-center text-[8.5px] text-zinc-600 uppercase tracking-wider break-inside-avoid">
-        <div>[ SURVEYOR: ________________________ ]</div>
-        <div>[ TAMPING CREW: ________________________ ]</div>
-        <div>[ INSPECTED: ________________________ ]</div>
-        <div>NOTHING OS TELEMETRY • TRACK LEVEL COMPANION</div>
+    {/* Field Notes & Engineering Grid Section (Filler Space with Nothing OS Dot Matrix) */}
+    <div className="mt-1 mb-1 flex-1 min-h-[40px] border border-black rounded-lg p-1.5 bg-transparent break-inside-avoid relative">
+      <div className="flex justify-between items-center text-[8px] font-bold text-zinc-600 uppercase tracking-wider mb-0.5">
+        <span>[ FIELD NOTES, TURNOUT OBSTRUCTIONS & SKETCH GRID ]</span>
+        <span className="text-[7.5px] text-zinc-500">16PX FIELD CALIBRATION GRID</span>
       </div>
+    </div>
+
+    {/* Footer Signoff Block */}
+    <div className="mt-1 pt-1 border-t-2 border-black flex justify-between items-center text-[8.5px] text-zinc-600 uppercase tracking-wider break-inside-avoid bg-white">
+      <div>[ SURVEYOR: ________________________ ]</div>
+      <div>[ TAMPING CREW: ________________________ ]</div>
+      <div>[ INSPECTED: ________________________ ]</div>
+      <div>NOTHING OS TELEMETRY • TRACK LEVEL COMPANION</div>
+    </div>
     </div>
   );
 };

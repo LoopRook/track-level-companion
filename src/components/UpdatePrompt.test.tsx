@@ -43,9 +43,9 @@ describe('App Update and Versioning Engine', () => {
     (globalThis as any).window = originalWindow;
   });
 
-  it('reports correct SemVer 0.17.1', () => {
-    expect(APP_VERSION).toBe('0.17.1');
-    expect(APP_VERSION_LABEL).toBe('v0.17.1 Beta');
+  it('reports correct SemVer 0.17.2', () => {
+    expect(APP_VERSION).toBe('0.17.2');
+    expect(APP_VERSION_LABEL).toBe('v0.17.2 Beta');
   });
 
   it('detects offline state during update check', async () => {

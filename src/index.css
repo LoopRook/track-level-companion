@@ -166,15 +166,16 @@ input, textarea {
   html.style-nothing.light,
   html.style-nothing.light body,
   #root {
-    background: #ffffff !important;
     background-color: #ffffff !important;
-    background-image: none !important;
+    background-image: radial-gradient(circle, #a1a1aa 1.1px, transparent 1.1px) !important;
+    background-size: 16px 16px !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     width: 100% !important;
+    min-height: 100% !important;
   }
 
   /* Completely hide the interactive web app screen during print */
