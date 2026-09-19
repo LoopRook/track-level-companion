@@ -56,13 +56,15 @@ export interface EndToEndGradeInfo {
 }
 
 
+export type FractionResolution = 16 | 8 | 32;
+
 export interface TrackProject {
   id: string;
   name: string;
   date: string;
   gauge: string; // e.g. "7 1/4\""
   unitFormat: UnitFormat;
-  fractionResolution: 16 | 8 | 32;
+  fractionResolution: FractionResolution;
   toleranceInches: number; // e.g. 0.0625 (1/16")
   stationIntervalFt: number; // default interval, e.g. 5
   laserDatumMode: 'relative_to_first' | 'fixed_datum';

@@ -377,9 +377,9 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
       <div className="shrink-0 min-h-fit md:rounded-2xl md:border border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#000000] overflow-hidden shadow-xs divide-y divide-zinc-200 dark:divide-zinc-800 mobile-edge-to-edge">
         <div className="grid grid-cols-2 divide-x divide-zinc-200 dark:divide-zinc-800">
           {/* Cell 1: Track Length */}
-          <div className="p-2.5 sm:p-3 flex flex-col justify-between min-h-[74px] sm:min-h-[78px]">
-            <div className="min-h-[22px] flex items-center justify-between gap-1 mb-1">
-              <span className="text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400">
+          <div className="p-2 sm:p-3 flex flex-col justify-between min-h-[62px] sm:min-h-[78px]">
+            <div className="min-h-[20px] sm:min-h-[22px] flex items-center justify-between gap-1 mb-0.5 sm:mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                 [ TRACK LENGTH ]
               </span>
               {summary.completedCount !== undefined && summary.completedCount > 0 && (
@@ -391,43 +391,44 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
                 </span>
               )}
             </div>
-            <div className="mt-auto pt-1 flex items-baseline flex-wrap gap-x-1.5">
-              <span className="font-['Doto'] font-bold text-2xl sm:text-3xl text-zinc-900 dark:text-white tracking-tight">
+            <div className="mt-auto pt-0.5 sm:pt-1 flex items-baseline flex-wrap gap-x-1.5">
+              <span className="font-['Doto'] font-bold text-xl sm:text-3xl text-zinc-900 dark:text-white tracking-tight">
                 {summary.lengthFt}
               </span>
-              <span className="text-[11px] font-normal whitespace-nowrap font-['Space_Mono'] text-zinc-500 uppercase">
+              <span className="text-[10px] sm:text-[11px] font-normal whitespace-nowrap font-['Space_Mono'] text-zinc-500 uppercase">
                 FT ({summary.measuredCount}/{summary.totalStations} shot)
               </span>
             </div>
           </div>
 
           {/* Cell 2: On Grade */}
-          <div className="p-2.5 sm:p-3 flex flex-col justify-between min-h-[74px] sm:min-h-[78px]">
-            <div className="min-h-[22px] flex items-center justify-between gap-1 mb-1">
-              <span className="text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-[0.08em] text-[#2E7D32] dark:text-[#4A9E5C] flex items-center gap-1.5">
+          <div className="p-2 sm:p-3 flex flex-col justify-between min-h-[62px] sm:min-h-[78px]">
+            <div className="min-h-[20px] sm:min-h-[22px] flex items-center justify-between gap-1 mb-0.5 sm:mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-[0.08em] text-[#2E7D32] dark:text-[#4A9E5C] flex items-center gap-1.5 whitespace-nowrap">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] dark:bg-[#4A9E5C] shrink-0 inline-block"></span>
-                [ ON GRADE ({getToleranceLabel(project.toleranceInches, project.unitFormat)}) ]
+                <span className="hidden sm:inline">[ ON GRADE ({getToleranceLabel(project.toleranceInches, project.unitFormat)}) ]</span>
+                <span className="inline sm:hidden">[ ON GRADE ]</span>
               </span>
             </div>
-            <div className="mt-auto pt-1 flex items-baseline flex-wrap gap-x-2">
-              <span className="font-['Doto'] font-bold text-2xl sm:text-3xl text-[#2E7D32] dark:text-[#4A9E5C] tracking-tight">
+            <div className="mt-auto pt-0.5 sm:pt-1 flex items-baseline flex-wrap gap-x-2">
+              <span className="font-['Doto'] font-bold text-xl sm:text-3xl text-[#2E7D32] dark:text-[#4A9E5C] tracking-tight">
                 {summary.measuredCount >= 2
                   ? `${Math.round((summary.onGradeCount / summary.measuredCount) * 100)}%`
                   : '—'}
               </span>
-              <span className="text-[11px] font-semibold whitespace-nowrap font-['Space_Mono'] text-[#2E7D32]/80 dark:text-[#4A9E5C]/80 uppercase">
+              <span className="text-[10px] sm:text-[11px] font-semibold whitespace-nowrap font-['Space_Mono'] text-[#2E7D32]/80 dark:text-[#4A9E5C]/80 uppercase">
                 {summary.measuredCount < 2 ? '(Need ≥ 2)' : `(${summary.onGradeCount} pts)`}
               </span>
             </div>
             {summary.measuredCount >= 2 && (
-              <div className="flex gap-1 w-full mt-2">
+              <div className="flex gap-1 w-full mt-1.5 sm:mt-2">
                 {Array.from({ length: 10 }).map((_, i) => {
                   const percent = Math.round((summary.onGradeCount / summary.measuredCount) * 100);
                   const isFilled = i < Math.round(percent / 10);
                   return (
                     <div
                       key={i}
-                      className={`h-1.5 flex-1 rounded-none transition-colors ${
+                      className={`h-1 sm:h-1.5 flex-1 rounded-none transition-colors ${
                         isFilled
                           ? 'bg-[#2E7D32] dark:bg-[#4A9E5C]'
                           : 'bg-zinc-200 dark:bg-[#262626]'
@@ -442,18 +443,18 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
 
         <div className="grid grid-cols-2 divide-x divide-zinc-200 dark:divide-zinc-800">
           {/* Cell 3: Needs Lift */}
-          <div className="p-2.5 sm:p-3 flex flex-col justify-between min-h-[74px] sm:min-h-[78px]">
-            <div className="min-h-[22px] flex items-center justify-between gap-1 mb-1">
-              <span className="text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-[0.08em] text-[#1D4ED8] dark:text-[#5B9BF6] flex items-center gap-1.5">
+          <div className="p-2 sm:p-3 flex flex-col justify-between min-h-[62px] sm:min-h-[78px]">
+            <div className="min-h-[20px] sm:min-h-[22px] flex items-center justify-between gap-1 mb-0.5 sm:mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-[0.08em] text-[#1D4ED8] dark:text-[#5B9BF6] flex items-center gap-1.5 whitespace-nowrap">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#1D4ED8] dark:bg-[#5B9BF6] shrink-0 inline-block"></span>
                 [ NEEDS LIFT ]
               </span>
             </div>
-            <div className="mt-auto pt-1 flex items-baseline flex-wrap gap-x-2">
-              <span className="font-['Doto'] font-bold text-2xl sm:text-3xl text-[#1D4ED8] dark:text-[#5B9BF6] tracking-tight">
+            <div className="mt-auto pt-0.5 sm:pt-1 flex items-baseline flex-wrap gap-x-2">
+              <span className="font-['Doto'] font-bold text-xl sm:text-3xl text-[#1D4ED8] dark:text-[#5B9BF6] tracking-tight">
                 {summary.measuredCount >= 2 ? summary.liftCount : '—'}
               </span>
-              <span className="text-[11px] font-semibold whitespace-nowrap font-['Space_Mono'] text-[#1D4ED8]/80 dark:text-[#5B9BF6]/80 uppercase">
+              <span className="text-[10px] sm:text-[11px] font-semibold whitespace-nowrap font-['Space_Mono'] text-[#1D4ED8]/80 dark:text-[#5B9BF6]/80 uppercase">
                 {summary.measuredCount >= 2 && summary.maxLift > 0 ? (
                   `(Max +${project.unitFormat === 'decimal_inches'
                     ? `${summary.maxLift.toFixed(2)}"`
@@ -472,18 +473,18 @@ export const StationSummaryBar: React.FC<StationSummaryBarProps> = ({ project, s
           </div>
 
           {/* Cell 4: Needs Lower */}
-          <div className="p-2.5 sm:p-3 flex flex-col justify-between min-h-[74px] sm:min-h-[78px]">
-            <div className="min-h-[22px] flex items-center justify-between gap-1 mb-1">
-              <span className="text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-[0.08em] text-[#B45309] dark:text-[#D4A843] flex items-center gap-1.5">
+          <div className="p-2 sm:p-3 flex flex-col justify-between min-h-[62px] sm:min-h-[78px]">
+            <div className="min-h-[20px] sm:min-h-[22px] flex items-center justify-between gap-1 mb-0.5 sm:mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-[0.08em] text-[#B45309] dark:text-[#D4A843] flex items-center gap-1.5 whitespace-nowrap">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#B45309] dark:bg-[#D4A843] shrink-0 inline-block"></span>
                 [ NEEDS LOWER ]
               </span>
             </div>
-            <div className="mt-auto pt-1 flex items-baseline flex-wrap gap-x-2">
-              <span className="font-['Doto'] font-bold text-2xl sm:text-3xl text-[#B45309] dark:text-[#D4A843] tracking-tight">
+            <div className="mt-auto pt-0.5 sm:pt-1 flex items-baseline flex-wrap gap-x-2">
+              <span className="font-['Doto'] font-bold text-xl sm:text-3xl text-[#B45309] dark:text-[#D4A843] tracking-tight">
                 {summary.measuredCount >= 2 ? summary.lowerCount : '—'}
               </span>
-              <span className="text-[11px] font-semibold whitespace-nowrap font-['Space_Mono'] text-[#B45309]/80 dark:text-[#D4A843]/80 uppercase">
+              <span className="text-[10px] sm:text-[11px] font-semibold whitespace-nowrap font-['Space_Mono'] text-[#B45309]/80 dark:text-[#D4A843]/80 uppercase">
                 {summary.measuredCount >= 2 && summary.maxLower > 0 ? (
                   `(Max -${project.unitFormat === 'decimal_inches'
                     ? `${summary.maxLower.toFixed(2)}"`
@@ -630,16 +631,16 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
         className="shrink-0 min-h-fit proto-card bg-white dark:bg-[#000000] md:border border-b border-zinc-200 dark:border-zinc-800 md:rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-2.5 text-xs transition-colors mobile-edge-to-edge"
       >
         {/* Tier 1: Target Grade Mode Selector & Readout */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="font-['Space_Mono'] uppercase tracking-[0.08em] text-[10px] text-zinc-500 shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="font-['Space_Mono'] uppercase tracking-[0.08em] text-[10px] text-zinc-500 shrink-0 whitespace-nowrap">
               [ TARGET: ]
             </span>
-            <div className="flex p-0.5 h-7 items-center rounded-lg border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950">
+            <div className="flex p-0.5 h-7 items-center rounded-lg border border-zinc-300 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-950 shrink-0">
               <button
                 type="button"
                 onClick={() => onChangeProject({ gradeMode: 'target_grade' })}
-                className={`h-full px-3 text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider rounded-md transition ${
+                className={`h-full px-2.5 sm:px-3 text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider rounded-md transition whitespace-nowrap ${
                   project.gradeMode === 'target_grade'
                     ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
                     : 'text-zinc-500 hover:text-black dark:hover:text-white'
@@ -651,7 +652,7 @@ export const StationAlignmentBar: React.FC<StationAlignmentBarProps> = ({
               <button
                 type="button"
                 onClick={() => onChangeProject({ gradeMode: 'end_to_end' })}
-                className={`h-full px-3 text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider rounded-md transition ${
+                className={`h-full px-2.5 sm:px-3 text-[10px] sm:text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider rounded-md transition whitespace-nowrap ${
                   project.gradeMode === 'end_to_end'
                     ? 'bg-black text-white dark:bg-white dark:text-black shadow-xs'
                     : 'text-zinc-500 hover:text-black dark:hover:text-white'

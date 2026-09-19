@@ -187,7 +187,7 @@ export const ProfileChart: React.FC<ProfileChartProps> = ({
   // Zooming adjusts the elevation calculation span window (Y-axis magnification), NOT the physical DOM height.
   const chartHeight = useMemo(() => {
     if (isMobile) {
-      return 340;
+      return 230;
     }
     return 180;
   }, [isMobile]);

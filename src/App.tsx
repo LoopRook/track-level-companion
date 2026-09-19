@@ -34,7 +34,7 @@ const UserGuideModal = React.lazy(() =>
 );
 import { useBodyScrollLock } from './core/useBodyScrollLock';
 import { getHapticPreference, setHapticPreference } from './core/haptics';
-import { ListTodo, TrendingUp, Plus, Sliders, Flag, Layers, HelpCircle, CheckSquare, Smartphone } from 'lucide-react';
+import { ListTodo, TrendingUp, Plus, Sliders, ChevronDown, Flag, Layers, HelpCircle, CheckSquare, Smartphone } from 'lucide-react';
 
 const INITIAL_STATIONS: StationPoint[] = [
   { id: 'st-0', distanceFt: 0, readingInches: 6.28 },
@@ -247,6 +247,7 @@ export const App: React.FC = () => {
   const [isMobileExtendOpen, setIsMobileExtendOpen] = useState(false);
   const [isMobileMoveLaserOpen, setIsMobileMoveLaserOpen] = useState(false);
   const [isCustomPointModalOpen, setIsCustomPointModalOpen] = useState(false);
+  const [isMobileAlignmentExpanded, setIsMobileAlignmentExpanded] = useState(false);
   const [isCompactLandscape, setIsCompactLandscape] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return window.innerHeight < 550 && window.innerWidth >= 600;
@@ -1379,7 +1380,37 @@ export const App: React.FC = () => {
               />
             </div>
 
-            <div className="shrink-0 min-h-fit">
+            {/* Mobile Collapsible Alignment Bar (Zero-scroll default) */}
+            <div className="block md:hidden shrink-0">
+              <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black mobile-edge-to-edge">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileAlignmentExpanded(!isMobileAlignmentExpanded)}
+                  className="w-full py-2 px-3.5 flex items-center justify-between text-[11px] font-bold font-['Space_Mono'] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-3.5 h-3.5 text-[#D71921] shrink-0" />
+                    <span className="truncate">
+                      [ GRADE: {project.gradeMode === 'end_to_end' ? 'END-TO-END' : `${project.targetGradePercent >= 0 ? '+' : ''}${project.targetGradePercent.toFixed(2)}%`} ]
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isMobileAlignmentExpanded ? 'rotate-180 text-[#D71921]' : ''}`} />
+                </button>
+                {isMobileAlignmentExpanded && (
+                  <div className="p-1 sm:p-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <StationAlignmentBar
+                      project={project}
+                      onChangeProject={handleUpdateProject}
+                      calculatedStations={calculatedStations}
+                      prototypeStyle={prototypeStyle}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop / Tablet StationAlignmentBar */}
+            <div className="hidden md:block shrink-0 min-h-fit">
               <StationAlignmentBar
                 project={project}
                 onChangeProject={handleUpdateProject}
@@ -1621,11 +1652,18 @@ export const App: React.FC = () => {
           }}
         />
 
-        {/* First-Time Welcome Modal */}
+        {/* First-Time Setup & Onboarding Guide Modal */}
         <FirstTimeWelcomeModal
           isOpen={isWelcomeModalOpen}
           prototypeStyle={prototypeStyle}
           isDarkMode={isDarkMode}
+          project={project}
+          onChangeProject={handleUpdateProject}
+          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+          onOpenSettings={() => {
+            setIsWelcomeModalOpen(false);
+            setIsSettingsOpen(true);
+          }}
           onClose={() => setIsWelcomeModalOpen(false)}
           onStartTutorial={() => {
             setIsWelcomeModalOpen(false);
@@ -1681,6 +1719,7 @@ export const App: React.FC = () => {
           onOpenTutorials={() => setIsTutorialsModalOpen(true)}
           onOpenGuide={() => setIsGuideOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
+          onOpenSetupGuide={() => setIsWelcomeModalOpen(true)}
           onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
           prototypeStyle={prototypeStyle}
           isDarkMode={isDarkMode}

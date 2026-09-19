@@ -16,10 +16,10 @@ describe('FirstTimeWelcomeModal Component', () => {
     );
 
     expect(html).toContain('Welcome to Track Level Companion');
-    expect(html).toContain('Start Tutorial');
-    expect(html).toContain('Explore Sample Track (85ft Demo)');
-    expect(html).toContain('Start Blank Field Survey');
-    expect(html).toContain('Recommended');
+    expect(html).toContain('Start Interactive Tutorial');
+    expect(html).toContain('Explore Demo');
+    expect(html).toContain('Blank Track');
+    expect(html).toContain('RECOMMENDED');
   });
 
   it('renders nothing when isOpen is false', () => {

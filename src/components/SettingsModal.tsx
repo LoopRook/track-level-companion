@@ -169,17 +169,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-4 sm:px-5 py-3.5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0">
-          <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[#D71921]" />
-            <h2 className="text-sm sm:text-base font-bold font-['Space_Mono'] uppercase tracking-wider">
-              [ Leveling & App Settings ]
+        <div className="bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-white px-3.5 sm:px-5 py-3 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 shrink-0 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Settings className="w-5 h-5 text-[#D71921] shrink-0" />
+            <h2 className="text-xs sm:text-base font-bold font-['Space_Mono'] uppercase tracking-wider whitespace-nowrap truncate">
+              <span className="inline sm:hidden">[ SETTINGS ]</span>
+              <span className="hidden sm:inline">[ LEVELING & APP SETTINGS ]</span>
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-500 font-['Space_Mono'] uppercase tracking-wider text-[11px] font-bold transition cursor-pointer"
+            className="px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-500 font-['Space_Mono'] uppercase tracking-wider text-[11px] font-bold transition cursor-pointer whitespace-nowrap shrink-0"
             aria-label="Close Settings"
           >
             [ Close ]
@@ -194,7 +195,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
                 <Palette className={`w-4 h-4 ${isNothing ? 'text-[#D71921]' : 'text-amber-500'}`} />
-                <span className={isNothing ? "font-['Space_Mono'] uppercase tracking-wider text-xs sm:text-sm" : ''}>
+                <span className={`whitespace-nowrap ${isNothing ? "font-['Space_Mono'] uppercase tracking-wider text-xs sm:text-sm" : ''}`}>
                   {isNothing ? '[ Appearance & Theme ]' : 'Appearance & Theme'}
                 </span>
               </div>
@@ -580,7 +581,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Section: Interactive Tutorial */}
           {onStartTutorial && (
-            <div className={`p-3.5 rounded-xl flex items-center justify-between gap-3 border ${
+            <div className={`p-3.5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border ${
               isNothing
                 ? isDarkMode
                   ? 'bg-zinc-950/60 border-zinc-800'
@@ -588,7 +589,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 : 'bg-amber-500/10 border-amber-500/30 rounded-2xl'
             }`}>
               <div>
-                <h4 className={`font-bold text-xs ${
+                <h4 className={`font-bold text-xs whitespace-nowrap ${
                   isNothing
                     ? 'text-zinc-100 dark:text-white font-["Space_Mono"] uppercase tracking-wider'
                     : 'text-zinc-900 dark:text-zinc-100'
@@ -605,7 +606,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onClose();
                   onStartTutorial();
                 }}
-                className={`proto-ignore px-3 py-1.5 text-xs font-bold transition shadow-xs whitespace-nowrap active:scale-95 shrink-0 cursor-pointer ${
+                className={`proto-ignore self-start sm:self-auto px-3 py-1.5 text-xs font-bold transition shadow-xs whitespace-nowrap active:scale-95 shrink-0 cursor-pointer ${
                   isNothing
                     ? 'rounded-lg border border-[#D71921] bg-[#D71921] hover:bg-[#b5141b] text-white font-["Space_Mono"] uppercase tracking-wider'
                     : 'rounded-xl bg-amber-500 text-black hover:bg-amber-400'
@@ -618,7 +619,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* Section: Field Guide & Handbook */}
           {onOpenGuideModal && (
-            <div className={`p-3.5 rounded-xl flex items-center justify-between gap-3 border ${
+            <div className={`p-3.5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border ${
               isNothing
                 ? isDarkMode
                   ? 'bg-zinc-950/60 border-zinc-800'
@@ -626,7 +627,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 : 'bg-sky-500/10 border-sky-500/30 rounded-2xl'
             }`}>
               <div>
-                <h4 className={`font-bold text-xs ${
+                <h4 className={`font-bold text-xs whitespace-nowrap ${
                   isNothing
                     ? 'text-zinc-100 dark:text-white font-["Space_Mono"] uppercase tracking-wider'
                     : 'text-zinc-900 dark:text-zinc-100'
@@ -643,7 +644,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onClose();
                   onOpenGuideModal();
                 }}
-                className={`proto-ignore px-3 py-1.5 text-xs font-bold transition shadow-xs whitespace-nowrap active:scale-95 shrink-0 cursor-pointer ${
+                className={`proto-ignore self-start sm:self-auto px-3 py-1.5 text-xs font-bold transition shadow-xs whitespace-nowrap active:scale-95 shrink-0 cursor-pointer ${
                   isNothing
                     ? 'rounded-lg border border-zinc-700 bg-zinc-900 text-white hover:border-zinc-500 font-["Space_Mono"] uppercase tracking-wider'
                     : 'rounded-xl bg-sky-500 text-white hover:bg-sky-400'
@@ -746,17 +747,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             className="bg-zinc-50 dark:bg-zinc-950 p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 transition select-none"
             title={devModeUnlocked ? 'Developer options active' : 'Tap 9 times to unlock Developer Options'}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className={`w-4 h-4 ${isNothing ? 'text-[#4A9E5C]' : 'text-emerald-500'}`} />
-                <span className={`font-bold text-xs ${isNothing ? 'font-["Space_Mono"] text-zinc-900 dark:text-zinc-100' : 'text-zinc-900 dark:text-zinc-100'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <ShieldCheck className={`w-4 h-4 shrink-0 ${isNothing ? 'text-[#4A9E5C]' : 'text-emerald-500'}`} />
+                <span className={`font-bold text-xs whitespace-nowrap ${isNothing ? 'font-["Space_Mono"] text-zinc-900 dark:text-zinc-100' : 'text-zinc-900 dark:text-zinc-100'}`}>
                   Track Level Companion
                 </span>
                 <span
                   className={
                     isNothing
-                      ? 'text-[9px] font-["Space_Mono"] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700'
-                      : 'text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-400 font-extrabold px-1.5 py-0.5 rounded border border-amber-500/30'
+                      ? 'text-[9px] font-["Space_Mono"] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 whitespace-nowrap'
+                      : 'text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-400 font-extrabold px-1.5 py-0.5 rounded border border-amber-500/30 whitespace-nowrap'
                   }
                 >
                   {APP_VERSION_LABEL}
@@ -771,14 +772,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 className={
                   updateStatus === 'available'
                     ? (isNothing
-                        ? 'px-2.5 py-1 bg-[#D71921] hover:bg-[#b5141b] text-white text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider rounded-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse'
-                        : 'px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse')
+                        ? 'self-start sm:self-auto px-3 py-1.5 bg-[#D71921] hover:bg-[#b5141b] text-white text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider rounded-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse whitespace-nowrap'
+                        : 'self-start sm:self-auto px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse whitespace-nowrap')
                     : (isNothing
-                        ? 'text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider text-zinc-500 dark:text-zinc-400 hover:text-[#D71921] transition flex items-center gap-1 cursor-pointer'
-                        : 'text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition flex items-center gap-1 cursor-pointer')
+                        ? 'self-start sm:self-auto px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-800 text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider text-zinc-600 dark:text-zinc-400 hover:border-[#D71921] hover:text-[#D71921] transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap'
+                        : 'self-start sm:self-auto px-2.5 py-1 rounded-lg border border-zinc-300 dark:border-zinc-800 text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap')
                 }
               >
-                <RefreshCw className={`w-3 h-3 ${updateStatus === 'available' ? 'text-white' : (isNothing ? 'text-[#D71921]' : '')} ${updateStatus === 'checking' || updateStatus === 'installing' ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 shrink-0 ${updateStatus === 'available' ? 'text-white' : (isNothing ? 'text-[#D71921]' : '')} ${updateStatus === 'checking' || updateStatus === 'installing' ? 'animate-spin' : ''}`} />
                 <span>
                   {updateStatus === 'checking'
                     ? (isNothing ? '[ CHECKING... ]' : 'Checking...')

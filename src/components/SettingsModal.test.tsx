@@ -50,7 +50,7 @@ describe('SettingsModal Component', () => {
       />
     );
 
-    expect(html).toContain('Leveling &amp; App Settings');
+    expect(html).toContain('LEVELING &amp; APP SETTINGS');
     expect(html).toContain('Nothing OS');
     expect(html).toContain('Production Active');
     expect(html).toContain('[ Close ]');

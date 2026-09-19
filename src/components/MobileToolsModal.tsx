@@ -21,6 +21,7 @@ export interface MobileToolsModalProps {
   onOpenTutorials: () => void;
   onOpenGuide: () => void;
   onOpenSettings: () => void;
+  onOpenSetupGuide?: () => void;
   onToggleDarkMode?: () => void;
   prototypeStyle?: PrototypeStyle;
   isDarkMode?: boolean;
@@ -34,6 +35,7 @@ export const MobileToolsModal: React.FC<MobileToolsModalProps> = ({
   onOpenTutorials,
   onOpenGuide,
   onOpenSettings,
+  onOpenSetupGuide,
   onToggleDarkMode,
   prototypeStyle = 'nothing',
   isDarkMode = true,
@@ -98,6 +100,17 @@ export const MobileToolsModal: React.FC<MobileToolsModalProps> = ({
         onOpenSettings();
       },
     },
+    ...(onOpenSetupGuide ? [{
+      id: 'setup-guide',
+      title: 'First-Time Setup Guide',
+      desc: 'Reconfigure default units, display theme, and tour settings',
+      icon: Compass,
+      badge: 'SETUP',
+      action: () => {
+        onClose();
+        onOpenSetupGuide();
+      },
+    }] : []),
     ...(onToggleDarkMode ? [{
       id: 'theme',
       title: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',

@@ -116,7 +116,7 @@ export const PrintReport: React.FC<PrintReportProps> = ({
               TRACK VERTICAL PROFILE & FIELD LEVELING TELEMETRY • {APP_VERSION_LABEL}
             </p>
           </div>
-          <div className="text-right font-mono text-[9px] text-zinc-800 leading-tight border border-zinc-300 rounded px-2.5 py-1 bg-zinc-50">
+          <div className="text-right font-mono text-[9px] text-zinc-800 leading-tight border border-zinc-400 rounded px-2.5 py-1 bg-transparent">
             <div><strong>DATE:</strong> {project.date || new Date().toISOString().split('T')[0]}</div>
             <div><strong>DATUM:</strong> {project.laserDatumMode === 'relative_to_first' ? 'STATION 0 (REF)' : 'BENCHMARK'}</div>
             <div><strong>FORMAT:</strong> LANDSCAPE FIELD SHEET</div>
@@ -125,14 +125,14 @@ export const PrintReport: React.FC<PrintReportProps> = ({
 
         {/* Metadata Summary Telemetry Grid */}
         <div className="grid grid-cols-4 gap-2 mt-2 pt-1.5 border-t border-zinc-300 text-[10px]">
-          <div className="py-1 px-2.5 bg-zinc-50 rounded-lg border border-zinc-300">
+          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-zinc-400">
             <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight tracking-wider">
               [ SECTION LENGTH ]
             </span>
             <strong className="text-[12px] font-bold text-black block">{summary.lengthFt} FT</strong>
             <span className="text-zinc-600 text-[8.5px] block">({summary.totalStations} TIES)</span>
           </div>
-          <div className="py-1 px-2.5 bg-zinc-50 rounded-lg border border-zinc-300">
+          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-zinc-400">
             <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight tracking-wider">
               [ DESIGN GRADE ]
             </span>
@@ -141,14 +141,14 @@ export const PrintReport: React.FC<PrintReportProps> = ({
             </strong>
             <span className="text-zinc-600 text-[8.5px] block">({project.gradeMode === 'end_to_end' ? 'END-TO-END' : 'TARGET %'})</span>
           </div>
-          <div className="py-1 px-2.5 bg-zinc-50 rounded-lg border border-zinc-300">
+          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-zinc-400">
             <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight tracking-wider">
               [ TOLERANCE WINDOW ]
             </span>
             <strong className="text-[12px] font-bold text-emerald-700 block">{tolLabel}</strong>
             <span className="text-zinc-600 text-[8.5px] block">(SHIM THRESHOLD)</span>
           </div>
-          <div className="py-1 px-2.5 bg-zinc-50 rounded-lg border border-zinc-300">
+          <div className="py-1 px-2.5 bg-transparent rounded-lg border border-zinc-400">
             <span className="text-[8px] uppercase font-bold text-zinc-500 block leading-tight tracking-wider">
               [ FIELD STATUS ]
             </span>
