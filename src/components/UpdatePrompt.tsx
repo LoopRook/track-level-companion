@@ -4,25 +4,83 @@ import { RefreshCw, X } from 'lucide-react';
 import { PrototypeStyle } from '../core/types';
 
 let globalSWRegistration: ServiceWorkerRegistration | null = null;
+let globalUpdateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | null = null;
+let globalSetNeedRefresh: ((val: boolean) => void) | null = null;
+
+/**
+ * Checks whether an installed service worker update is currently waiting to activate.
+ */
+export const hasWaitingAppUpdate = async (): Promise<boolean> => {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return false;
+  }
+  try {
+    const reg = globalSWRegistration || (await navigator.serviceWorker?.getRegistration());
+    return Boolean(reg?.waiting);
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Activates any waiting service worker and reloads the application.
+ */
+export const applyAppUpdate = async (): Promise<void> => {
+  try {
+    if (globalUpdateServiceWorker) {
+      await globalUpdateServiceWorker(true);
+      return;
+    }
+    const reg = globalSWRegistration || (await navigator.serviceWorker?.getRegistration());
+    if (reg?.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      navigator.serviceWorker.addEventListener(
+        'controllerchange',
+        () => {
+          window.location.reload();
+        },
+        { once: true }
+      );
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      return;
+    }
+    window.location.reload();
+  } catch (err) {
+    console.error('Failed to apply app update:', err);
+    window.location.reload();
+  }
+};
 
 /**
  * Triggers an immediate network check for service worker updates.
  * Bypasses timer throttling and HTTP caches when invoked.
+ * If an update was previously found/waiting and dismissed, re-opens the update prompt.
  */
 export const triggerAppUpdateCheck = async (): Promise<'update_found' | 'up_to_date' | 'offline' | 'error'> => {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
-    return 'up_to_date';
-  }
-  if (!navigator.onLine) {
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
     return 'offline';
+  }
+  if (typeof window === 'undefined' || typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+    return 'up_to_date';
   }
 
   try {
     const reg = globalSWRegistration || (await navigator.serviceWorker?.getRegistration());
     if (!reg) return 'up_to_date';
     
+    // 1. If an update was already downloaded and is waiting, re-notify and return 'update_found'
+    if (reg.waiting) {
+      globalSetNeedRefresh?.(true);
+      window.dispatchEvent(new CustomEvent('tlc-update-available'));
+      return 'update_found';
+    }
+
     await reg.update();
     if (reg.waiting || reg.installing) {
+      globalSetNeedRefresh?.(true);
+      window.dispatchEvent(new CustomEvent('tlc-update-available'));
       return 'update_found';
     }
     return 'up_to_date';
@@ -41,6 +99,7 @@ export const UpdatePrompt: React.FC<UpdatePromptProps> = ({
   prototypeStyle = 'nothing',
   isDarkMode = true,
 }) => {
+  const dismissedRef = React.useRef(false);
   const {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
@@ -86,6 +145,39 @@ export const UpdatePrompt: React.FC<UpdatePromptProps> = ({
       console.error('SW registration error', error);
     },
   });
+
+  React.useEffect(() => {
+    globalUpdateServiceWorker = updateServiceWorker;
+    globalSetNeedRefresh = (val: boolean) => {
+      dismissedRef.current = !val;
+      setNeedRefresh(val);
+    };
+
+    const handleUpdateAvailable = () => {
+      dismissedRef.current = false;
+      setNeedRefresh(true);
+    };
+    window.addEventListener('tlc-update-available', handleUpdateAvailable);
+
+    // Check if an update is already waiting upon mount
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((r) => {
+        if (r) globalSWRegistration = r;
+        if (r?.waiting && !dismissedRef.current) {
+          setNeedRefresh(true);
+        }
+      }).catch(() => {});
+    }
+
+    return () => {
+      window.removeEventListener('tlc-update-available', handleUpdateAvailable);
+    };
+  }, [updateServiceWorker, setNeedRefresh]);
+
+  const handleDismiss = () => {
+    dismissedRef.current = true;
+    setNeedRefresh(false);
+  };
 
   if (!needRefresh) return null;
 
@@ -152,7 +244,7 @@ export const UpdatePrompt: React.FC<UpdatePromptProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setNeedRefresh(false)}
+              onClick={handleDismiss}
               className={
                 isNothing
                   ? `px-3 py-1.5 border text-[11px] font-bold font-["Space_Mono"] uppercase tracking-wider rounded-lg transition cursor-pointer ${
@@ -169,7 +261,7 @@ export const UpdatePrompt: React.FC<UpdatePromptProps> = ({
         </div>
         <button
           type="button"
-          onClick={() => setNeedRefresh(false)}
+          onClick={handleDismiss}
           className={
             isNothing
               ? `px-2 py-1 rounded-lg border text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider transition cursor-pointer shrink-0 ${

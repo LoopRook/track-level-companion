@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { TrackProject, StationPoint, CalculatedStation, PrototypeStyle } from '../core/types';
 import { exportTrackToCSV, parseTrackFromCSV, appendStations, generateCSVTemplate, generateGoogleSheetsTSVTemplate } from '../core/csv';
 import { formatMeasurement } from '../core/units';
@@ -22,7 +22,7 @@ import {
   Printer,
 } from 'lucide-react';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
-import { triggerAppUpdateCheck } from './UpdatePrompt';
+import { triggerAppUpdateCheck, hasWaitingAppUpdate, applyAppUpdate } from './UpdatePrompt';
 import { APP_VERSION_LABEL } from '../core/version';
 import { QRCodeModal } from './QRCodeModal';
 
@@ -74,10 +74,24 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
   const [pendingCsvStations, setPendingCsvStations] = useState<{ stations: StationPoint[]; sourceName: string } | null>(null);
   const [pastedText, setPastedText] = useState('');
   const [showRawCsv, setShowRawCsv] = useState(false);
-  const [modalUpdateStatus, setModalUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
+  const [modalUpdateStatus, setModalUpdateStatus] = useState<'idle' | 'checking' | 'updated' | 'available' | 'installing' | 'offline'>('idle');
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      hasWaitingAppUpdate().then((waiting) => {
+        if (waiting) setModalUpdateStatus('available');
+      });
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleAvailable = () => setModalUpdateStatus('available');
+    window.addEventListener('tlc-update-available', handleAvailable);
+    return () => window.removeEventListener('tlc-update-available', handleAvailable);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -934,12 +948,24 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
           <button
             type="button"
             onClick={async () => {
-              if (modalUpdateStatus === 'checking') return;
+              if (modalUpdateStatus === 'checking' || modalUpdateStatus === 'installing') return;
+
+              if (modalUpdateStatus === 'available') {
+                setModalUpdateStatus('installing');
+                await applyAppUpdate();
+                return;
+              }
+
               setModalUpdateStatus('checking');
               try {
                 const res = await triggerAppUpdateCheck();
-                if (res === 'up_to_date') {
+                if (res === 'update_found') {
+                  setModalUpdateStatus('available');
+                } else if (res === 'up_to_date') {
                   setModalUpdateStatus('updated');
+                  setTimeout(() => setModalUpdateStatus('idle'), 3000);
+                } else if (res === 'offline') {
+                  setModalUpdateStatus('offline');
                   setTimeout(() => setModalUpdateStatus('idle'), 3000);
                 } else {
                   setModalUpdateStatus('idle');
@@ -948,19 +974,31 @@ export const DataManagementModal: React.FC<DataManagementModalProps> = ({
                 setModalUpdateStatus('idle');
               }
             }}
-            className={`text-[11px] transition flex items-center gap-1.5 cursor-pointer ${
-              prototypeStyle === 'nothing'
-                ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
-                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-            }`}
-            title="Check for application updates"
+            className={
+              modalUpdateStatus === 'available'
+                ? (prototypeStyle === 'nothing'
+                    ? 'px-2.5 py-1 bg-[#D71921] hover:bg-[#b5141b] text-white text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider rounded-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse'
+                    : 'px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse')
+                : `text-[11px] transition flex items-center gap-1.5 cursor-pointer ${
+                    prototypeStyle === 'nothing'
+                      ? 'font-["Space_Mono"] uppercase tracking-wider text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                      : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                  }`
+            }
+            title={modalUpdateStatus === 'available' ? 'Update downloaded and ready - tap to restart' : 'Check for application updates'}
           >
-            <RefreshCw className={`w-3 h-3 ${prototypeStyle === 'nothing' ? 'text-[#D71921]' : 'text-amber-500'} ${modalUpdateStatus === 'checking' ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3 h-3 ${modalUpdateStatus === 'available' ? 'text-white' : (prototypeStyle === 'nothing' ? 'text-[#D71921]' : 'text-amber-500')} ${modalUpdateStatus === 'checking' || modalUpdateStatus === 'installing' ? 'animate-spin' : ''}`} />
             <span>
               {modalUpdateStatus === 'checking'
                 ? (prototypeStyle === 'nothing' ? '[ CHECKING FOR UPDATES... ]' : 'Checking for updates...')
+                : modalUpdateStatus === 'installing'
+                ? (prototypeStyle === 'nothing' ? '[ RESTARTING APP... ]' : 'Restarting app...')
+                : modalUpdateStatus === 'available'
+                ? (prototypeStyle === 'nothing' ? '[ UPDATE READY - TAP TO RESTART ]' : 'Update Ready - Tap to Restart')
                 : modalUpdateStatus === 'updated'
                 ? (prototypeStyle === 'nothing' ? '[ APP IS UP TO DATE ✓ ]' : 'App is up to date ✓')
+                : modalUpdateStatus === 'offline'
+                ? (prototypeStyle === 'nothing' ? '[ OFFLINE - CHECK LATER ]' : 'Offline - check later')
                 : (prototypeStyle === 'nothing' ? `[ TLC ${APP_VERSION_LABEL} • CHECK FOR UPDATES ]` : `Track Level Companion ${APP_VERSION_LABEL} • Check for Updates`)}
             </span>
           </button>

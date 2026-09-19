@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrackProject, UnitFormat, PrototypeStyle } from '../core/types';
 import { useBodyScrollLock } from '../core/useBodyScrollLock';
-import { triggerAppUpdateCheck } from './UpdatePrompt';
+import { triggerAppUpdateCheck, hasWaitingAppUpdate, applyAppUpdate } from './UpdatePrompt';
 import { APP_VERSION_LABEL } from '../core/version';
 import { Settings, Check, RefreshCw, Sliders, Hash, ShieldCheck, Smartphone, Vibrate, Palette, Moon, Sun, FlaskConical } from 'lucide-react';
 import { triggerHaptic } from '../core/haptics';
@@ -28,12 +28,10 @@ export interface SettingsModalProps {
 }
 
 const TOLERANCE_PRESETS = [
-  { label: '1/32"', sub: '±0.031"', val: 0.03125 },
-  { label: '1/16"', sub: '±0.062"', val: 0.0625 },
-  { label: '0.05"', sub: '±0.050"', val: 0.05 },
-  { label: '1/8"', sub: '±0.125"', val: 0.125 },
-  { label: '1.0 mm', sub: '±0.039"', val: 0.03937 },
-  { label: '2.0 mm', sub: '±0.079"', val: 0.07874 },
+  { label: '± 1/16"', sub: '0.0625" (Strict / Mainline)', val: 0.0625 },
+  { label: '± 1/8"', sub: '0.1250" (Standard Yard)', val: 0.125 },
+  { label: '± 1/4"', sub: '0.2500" (Rough Siding)', val: 0.25 },
+  { label: '± 1/2"', sub: '0.5000" (Coarse Rough)', val: 0.5 },
 ];
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -49,9 +47,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenGuideModal,
   prototypeStyle = 'nothing',
   onChangePrototypeStyle,
-  showPrototypeBar = false,
+  showPrototypeBar,
   onChangeShowPrototypeBar,
-  isDarkMode,
+  isDarkMode = true,
   onToggleDarkMode,
   onToggleMobilePreview,
 }) => {
@@ -62,7 +60,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const isNothing = prototypeStyle === 'nothing';
 
   const [testPulseMsg, setTestPulseMsg] = useState<string | null>(null);
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'updated' | 'available' | 'installing' | 'offline'>('idle');
   const [customTolerance, setCustomTolerance] = useState<string>(
     project.toleranceInches ? project.toleranceInches.toString() : '0.0625'
   );
@@ -115,15 +113,41 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setTimeout(() => setDevToast(null), 2500);
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      hasWaitingAppUpdate().then((waiting) => {
+        if (waiting) setUpdateStatus('available');
+      });
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleAvailable = () => setUpdateStatus('available');
+    window.addEventListener('tlc-update-available', handleAvailable);
+    return () => window.removeEventListener('tlc-update-available', handleAvailable);
+  }, []);
+
   if (!isOpen) return null;
 
   const handleCheckUpdates = async () => {
-    if (updateStatus === 'checking') return;
+    if (updateStatus === 'checking' || updateStatus === 'installing') return;
+
+    if (updateStatus === 'available') {
+      setUpdateStatus('installing');
+      await applyAppUpdate();
+      return;
+    }
+
     setUpdateStatus('checking');
     try {
       const res = await triggerAppUpdateCheck();
-      if (res === 'up_to_date') {
+      if (res === 'update_found') {
+        setUpdateStatus('available');
+      } else if (res === 'up_to_date') {
         setUpdateStatus('updated');
+        setTimeout(() => setUpdateStatus('idle'), 3000);
+      } else if (res === 'offline') {
+        setUpdateStatus('offline');
         setTimeout(() => setUpdateStatus('idle'), 3000);
       } else {
         setUpdateStatus('idle');
@@ -745,17 +769,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   handleCheckUpdates();
                 }}
                 className={
-                  isNothing
-                    ? 'text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider text-zinc-500 dark:text-zinc-400 hover:text-[#D71921] transition flex items-center gap-1 cursor-pointer'
-                    : 'text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition flex items-center gap-1 cursor-pointer'
+                  updateStatus === 'available'
+                    ? (isNothing
+                        ? 'px-2.5 py-1 bg-[#D71921] hover:bg-[#b5141b] text-white text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider rounded-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse'
+                        : 'px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-lg transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm animate-pulse')
+                    : (isNothing
+                        ? 'text-[10px] font-bold font-["Space_Mono"] uppercase tracking-wider text-zinc-500 dark:text-zinc-400 hover:text-[#D71921] transition flex items-center gap-1 cursor-pointer'
+                        : 'text-[11px] font-bold text-amber-600 dark:text-amber-400 hover:text-amber-500 transition flex items-center gap-1 cursor-pointer')
                 }
               >
-                <RefreshCw className={`w-3 h-3 ${isNothing ? 'text-[#D71921]' : ''} ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-3 h-3 ${updateStatus === 'available' ? 'text-white' : (isNothing ? 'text-[#D71921]' : '')} ${updateStatus === 'checking' || updateStatus === 'installing' ? 'animate-spin' : ''}`} />
                 <span>
                   {updateStatus === 'checking'
                     ? (isNothing ? '[ CHECKING... ]' : 'Checking...')
+                    : updateStatus === 'installing'
+                    ? (isNothing ? '[ RESTARTING... ]' : 'Restarting...')
+                    : updateStatus === 'available'
+                    ? (isNothing ? '[ UPDATE READY - RESTART ]' : 'Update Ready - Restart')
                     : updateStatus === 'updated'
                     ? (isNothing ? '[ UP TO DATE ✓ ]' : 'Up to Date ✓')
+                    : updateStatus === 'offline'
+                    ? (isNothing ? '[ OFFLINE ]' : 'Offline')
                     : (isNothing ? '[ CHECK FOR UPDATES ]' : 'Check for Updates')}
                 </span>
               </button>

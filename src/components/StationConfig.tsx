@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { UnitFormat, TrackProject, CalculatedStation, PrototypeStyle } from '../core/types';
 import { calculateGradeInfo } from '../core/calculations';
 import { Sliders, Sun, Moon, Compass, BookOpen, CheckCircle2, TrendingUp, Plus, Download, Settings, HelpCircle, Play } from 'lucide-react';
-import { triggerAppUpdateCheck } from './UpdatePrompt';
+import { triggerAppUpdateCheck, hasWaitingAppUpdate, applyAppUpdate } from './UpdatePrompt';
 
 export interface StationSummaryData {
   totalStations: number;
@@ -66,7 +66,7 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
   onOpenToolsModal,
 }) => {
   const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
-  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'updated'>('idle');
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'updated' | 'available' | 'installing'>('idle');
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -79,12 +79,30 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    hasWaitingAppUpdate().then((waiting) => {
+      if (waiting) setUpdateStatus('available');
+    });
+    const handleAvailable = () => setUpdateStatus('available');
+    window.addEventListener('tlc-update-available', handleAvailable);
+    return () => window.removeEventListener('tlc-update-available', handleAvailable);
+  }, []);
+
   const handleCheckForUpdates = async () => {
-    if (updateStatus === 'checking') return;
+    if (updateStatus === 'checking' || updateStatus === 'installing') return;
+
+    if (updateStatus === 'available') {
+      setUpdateStatus('installing');
+      await applyAppUpdate();
+      return;
+    }
+
     setUpdateStatus('checking');
     try {
       const res = await triggerAppUpdateCheck();
-      if (res === 'up_to_date') {
+      if (res === 'update_found') {
+        setUpdateStatus('available');
+      } else if (res === 'up_to_date') {
         setUpdateStatus('updated');
         setTimeout(() => setUpdateStatus('idle'), 3000);
       } else {
@@ -141,17 +159,37 @@ export const StationConfigHeader: React.FC<StationConfigHeaderProps> = ({
                 <button
                   type="button"
                   onClick={handleCheckForUpdates}
-                  className="flex items-center gap-1 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition cursor-pointer whitespace-nowrap"
-                  title="Service Worker active (offline ready). Tap to check for app updates."
+                  className={`flex items-center gap-1 text-[10px] transition cursor-pointer whitespace-nowrap ${
+                    updateStatus === 'available'
+                      ? 'text-[#D71921] font-bold animate-pulse'
+                      : 'text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white'
+                  }`}
+                  title={
+                    updateStatus === 'available'
+                      ? 'App update ready - tap to restart'
+                      : 'Service Worker active (offline ready). Tap to check for app updates.'
+                  }
                 >
                   {prototypeStyle === 'nothing' ? (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#4A9E5C] inline-block" />
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full inline-block ${
+                        updateStatus === 'available' ? 'bg-[#D71921]' : 'bg-[#4A9E5C]'
+                      }`}
+                    />
                   ) : (
-                    <CheckCircle2 className={`w-3 h-3 text-emerald-500 ${updateStatus === 'checking' ? 'animate-spin' : ''}`} />
+                    <CheckCircle2
+                      className={`w-3 h-3 ${
+                        updateStatus === 'available' ? 'text-amber-500' : 'text-emerald-500'
+                      } ${updateStatus === 'checking' || updateStatus === 'installing' ? 'animate-spin' : ''}`}
+                    />
                   )}
                   <span>
                     {updateStatus === 'checking'
                       ? 'Checking...'
+                      : updateStatus === 'installing'
+                      ? 'Restarting...'
+                      : updateStatus === 'available'
+                      ? (prototypeStyle === 'nothing' ? '[ UPDATE READY ]' : 'Update Ready')
                       : updateStatus === 'updated'
                       ? 'Up to Date ✓'
                       : 'Offline Ready'}
